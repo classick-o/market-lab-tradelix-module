@@ -1,0 +1,167 @@
+/*
+ * MARKET//LAB design tokens — dark-first, premium fintech.
+ * Deep navy surfaces, off-white text, cool greys, one lime accent and a restrained blue.
+ * Green and red are reserved for simulated gains and losses (always paired with a sign).
+ * A host app can override any --ml-* token on .ml-root.
+ */
+
+.ml-root {
+  /* ── Colour: surfaces (deep navy) ─────────────────────────────── */
+  --ml-black: #05080e;
+  --ml-bg: #0a0e16;
+  --ml-bg-2: #0c111a;
+  --ml-surface: #111723;
+  --ml-surface-2: #161d2b;
+  --ml-surface-hover: #1c2435;
+  --ml-surface-active: #242e42;
+  --ml-overlay: rgba(3, 6, 12, 0.72);
+
+  /* ── Colour: lines ────────────────────────────────────────────── */
+  --ml-border: #1f2738;
+  --ml-border-strong: #2e3950;
+  --ml-border-input: #3d4a63;
+  --ml-hairline: rgba(160, 180, 220, 0.08);
+
+  /* ── Colour: text & icons (≥ 4.5:1 on every surface up to --ml-surface-hover) ── */
+  --ml-text: #eef1f6;
+  --ml-text-2: #a3adbe;
+  --ml-text-3: #8a95a9;
+  --ml-text-disabled: #4f5a6e;
+  --ml-icon: #dfe4ec;
+  --ml-inverse: #eef1f6;
+  --ml-inverse-text: #0a0e16;
+  --ml-focus: var(--ml-accent-fg);
+
+  /* ── Colour: accent (primary actions, selection, progress). Set from Preferences → Accent. ── */
+  --ml-accent: #c8f25a;
+  --ml-accent-hover: #d9f68b;
+  --ml-accent-ink: #0a0e16;
+  --ml-accent-fg: #c8f25a; /* accent for small text and hairlines, always ≥ 4.5:1 */
+  --ml-accent-soft: rgba(200, 242, 90, 0.12);
+  --ml-accent-line: rgba(200, 242, 90, 0.45);
+
+  /* ── Colour: secondary accent (restrained blue: links, info, secondary data) ── */
+  --ml-blue: #5b8def;
+  --ml-blue-fg: #7fa6f3;
+  --ml-blue-soft: rgba(91, 141, 239, 0.14);
+
+  /* ── Colour: outcomes (simulated gains and losses only) ───────── */
+  --ml-pos: #3dd68c;
+  --ml-pos-soft: rgba(61, 214, 140, 0.12);
+  --ml-neg: #ff6b6b;
+  --ml-neg-soft: rgba(255, 107, 107, 0.12);
+
+  /* ── Colour: semantic, for errors and destructive actions ─────── */
+  --ml-danger: #f2555a;
+  --ml-danger-text: #ff8f8f;
+  --ml-danger-soft: rgba(242, 85, 90, 0.1);
+  --ml-danger-line: rgba(242, 85, 90, 0.35);
+  --ml-warn: #ffb547;
+
+  /* ── Colour: chart ────────────────────────────────────────────── */
+  --ml-candle-up: #dce3ee;
+  --ml-candle-up-wick: #c3ccda;
+  --ml-candle-down: #263044;
+  --ml-candle-down-line: #8792a6;
+  --ml-grid: #121a28;
+  --ml-volume-up: #1f2a3d;
+  --ml-volume-down: #172031;
+  --ml-line-soft: #b9c3d3;
+  --ml-line-muted: #56627a;
+  --ml-indicator-1: #7fa6f3;
+  --ml-indicator-2: #ffb547;
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --ml-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --ml-fs-display: clamp(42px, 5.2vw, 72px);
+  --ml-fs-h1: clamp(26px, 2.6vw, 34px);
+  --ml-fs-h2: clamp(20px, 1.8vw, 24px);
+  --ml-fs-h3: 17px;
+  --ml-fs-lg: 16px;
+  --ml-fs-body: 14px;
+  --ml-fs-sm: 13px;
+  --ml-fs-xs: 12px;
+  --ml-lh-tight: 1.08;
+  --ml-lh-heading: 1.2;
+  --ml-lh-body: 1.55;
+  --ml-track-display: -0.04em;
+  --ml-track-heading: -0.022em;
+  --ml-track-label: 0.04em;
+
+  /* ── Space (4px base, compact density) ────────────────────────── */
+  --ml-s1: 4px;
+  --ml-s2: 6px;
+  --ml-s3: 10px;
+  --ml-s4: 12px;
+  --ml-s5: 16px;
+  --ml-s6: 20px;
+  --ml-s7: 28px;
+  --ml-s8: 36px;
+  --ml-s9: 48px;
+  --ml-s10: 64px;
+  --ml-s11: 80px;
+
+  /* ── Radius ───────────────────────────────────────────────────── */
+  --ml-r-sm: 8px;
+  --ml-r-md: 12px;
+  --ml-r-lg: 16px;
+  --ml-r-xl: 22px;
+  --ml-r-full: 999px;
+
+  /* ── Controls ─────────────────────────────────────────────────── */
+  --ml-control-sm: 30px;
+  --ml-control-md: 36px;
+  --ml-control-lg: 42px;
+
+  /* ── Motion ───────────────────────────────────────────────────── */
+  --ml-d-instant: 80ms;
+  --ml-d-micro: 140ms;
+  --ml-d-fast: 200ms;
+  --ml-d-standard: 280ms;
+  --ml-d-emphasis: 400ms;
+  --ml-d-cinematic: 600ms;
+  --ml-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ml-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ml-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ml-ease-expressive: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  --ml-header-h: 52px;
+  --ml-sb-w: 264px;
+  --ml-sb-rail: 64px;
+  --ml-bottomnav-h: 60px;
+  --ml-container: 1440px;
+  --ml-gutter: clamp(14px, 2vw, 24px);
+  --ml-dock-w: 380px;
+}
+
+/* Charcoal theme: the neutral near-black of the original Market Lab. */
+.ml-root[data-theme="charcoal"] {
+  --ml-black: #000000;
+  --ml-bg: #0b0b0c;
+  --ml-bg-2: #0e0e10;
+  --ml-surface: #131315;
+  --ml-surface-2: #1a1a1c;
+  --ml-surface-hover: #212124;
+  --ml-surface-active: #2a2a2e;
+  --ml-overlay: rgba(0, 0, 0, 0.7);
+  --ml-border: #26262a;
+  --ml-border-strong: #3a3a3f;
+  --ml-border-input: #4a4a50;
+  --ml-hairline: rgba(255, 255, 255, 0.07);
+  --ml-text: #f5f5f5;
+  --ml-text-2: #a8a8ad;
+  --ml-text-3: #8c8c92;
+  --ml-icon: #ededed;
+  --ml-inverse: #f5f5f5;
+  --ml-inverse-text: #0a0a0a;
+  --ml-candle-up: #e6e6e6;
+  --ml-candle-up-wick: #cfcfcf;
+  --ml-candle-down: #2b2b2b;
+  --ml-candle-down-line: #8a8a8a;
+  --ml-grid: #161616;
+  --ml-volume-up: #2a2a2a;
+  --ml-volume-down: #1c1c1c;
+  --ml-line-soft: #bdbdbd;
+  --ml-line-muted: #5e5e5e;
+}

@@ -1,0 +1,310 @@
+/* Base: element defaults, typography and layout utilities. Everything is scoped under .ml-root. */
+
+.ml-root {
+  background: var(--ml-bg);
+  color: var(--ml-text);
+  font-family: var(--ml-font);
+  font-size: var(--ml-fs-body);
+  line-height: var(--ml-lh-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss03";
+}
+
+.ml-root *,
+.ml-root *::before,
+.ml-root *::after {
+  box-sizing: border-box;
+}
+
+.ml-root :where(h1, h2, h3, h4, p, dl, dd, ul, ol, figure, blockquote, fieldset) {
+  margin: 0;
+  padding: 0;
+}
+.ml-root :where(ul, ol) {
+  list-style: none;
+}
+.ml-root :where(fieldset) {
+  border: 0;
+  min-width: 0;
+}
+.ml-root :where(legend) {
+  padding: 0;
+}
+.ml-root :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+.ml-root :where(button, input, textarea, select) {
+  font: inherit;
+  color: inherit;
+}
+.ml-root :where(button) {
+  cursor: pointer;
+}
+.ml-root ::selection {
+  background: var(--ml-accent-soft);
+}
+.ml-root :focus {
+  outline: none;
+}
+.ml-root :focus-visible {
+  outline: 2px solid var(--ml-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+
+.ml-root h1 {
+  font-size: var(--ml-fs-h1);
+  line-height: var(--ml-lh-heading);
+  letter-spacing: var(--ml-track-heading);
+  font-weight: 600;
+  text-wrap: balance;
+}
+.ml-root h2 {
+  font-size: var(--ml-fs-h2);
+  line-height: var(--ml-lh-heading);
+  letter-spacing: var(--ml-track-heading);
+  font-weight: 600;
+  text-wrap: balance;
+}
+.ml-root .ml-h3,
+.ml-root h3 {
+  font-size: var(--ml-fs-h3);
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+}
+.ml-h1-sm {
+  font-size: clamp(26px, 2.6vw, 34px) !important;
+}
+.ml-display {
+  font-size: var(--ml-fs-display) !important;
+  line-height: var(--ml-lh-tight) !important;
+  letter-spacing: var(--ml-track-display) !important;
+  font-weight: 600 !important;
+}
+.ml-display span {
+  color: var(--ml-text-3);
+}
+.ml-lead {
+  font-size: var(--ml-fs-lg);
+  line-height: 1.55;
+  color: var(--ml-text-2);
+  max-width: 58ch;
+}
+.ml-body {
+  font-size: var(--ml-fs-body);
+  color: var(--ml-text);
+  max-width: 68ch;
+}
+.ml-muted {
+  color: var(--ml-text-2);
+}
+.ml-fine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ml-fs-xs);
+  color: var(--ml-text-3);
+}
+.ml-eyebrow {
+  display: block;
+  font-size: var(--ml-fs-xs);
+  font-weight: 500;
+  letter-spacing: var(--ml-track-label);
+  color: var(--ml-text-3);
+  margin-bottom: var(--ml-s2);
+}
+.ml-meta {
+  font-size: var(--ml-fs-sm);
+  color: var(--ml-text-3);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "cv11", "ss03";
+}
+
+.ml-text-link {
+  color: var(--ml-text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--ml-border-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-text-link:hover {
+  text-decoration-color: var(--ml-text);
+}
+.ml-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-sm);
+  font-weight: 500;
+  transition: color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-text-btn:hover {
+  color: var(--ml-text);
+}
+
+.ml-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.ml-skip {
+  position: absolute;
+  left: var(--ml-s4);
+  top: -48px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: var(--ml-r-sm);
+  background: var(--ml-inverse);
+  color: var(--ml-inverse-text);
+  font-weight: 600;
+  transition: top var(--ml-d-fast) var(--ml-ease);
+}
+.ml-skip:focus {
+  top: var(--ml-s3);
+}
+
+/* ── Layout utilities ───────────────────────────────────────────────── */
+
+.ml-container {
+  width: 100%;
+  max-width: var(--ml-container);
+  margin-inline: auto;
+  padding-inline: var(--ml-gutter);
+}
+.ml-main {
+  flex: 1;
+  padding-bottom: var(--ml-s8);
+}
+.ml-page {
+  width: 100%;
+  max-width: var(--ml-container);
+  margin-inline: auto;
+  padding: var(--ml-s6) var(--ml-gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s6);
+}
+/* Narrow content keeps the page's left edge; only the measure is limited. */
+.ml-page--narrow > *,
+.ml-page--settings > .ml-settings:not(:first-of-type) {
+  max-width: 920px;
+}
+.ml-stack-1 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s1);
+}
+.ml-stack-2 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s2);
+}
+.ml-stack-4 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s4);
+}
+.ml-stack-5 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s5);
+}
+.ml-stack-6 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s6);
+}
+.ml-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ml-s3);
+}
+.ml-row--between {
+  justify-content: space-between;
+}
+.ml-row--end {
+  justify-content: flex-end;
+}
+.ml-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ml-s3);
+}
+.ml-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ml-s3);
+}
+.ml-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ml-s6) var(--ml-s7);
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+
+@keyframes ml-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ml-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ml-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ml-route {
+  animation: ml-rise var(--ml-d-standard) var(--ml-ease-expressive) both;
+}
+.ml-enter-up {
+  animation: ml-rise var(--ml-d-standard) var(--ml-ease-expressive) both;
+}
+
+html.ml-scroll-lock {
+  overflow: hidden;
+}
+
+.ml-reduced-motion *,
+.ml-reduced-motion *::before,
+.ml-reduced-motion *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  scroll-behavior: auto !important;
+}

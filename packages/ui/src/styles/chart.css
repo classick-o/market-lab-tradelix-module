@@ -1,0 +1,354 @@
+/* Chart: monochrome candles, line styles that never rely on colour, and the "Reveal" veil. */
+
+.ml-chart {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ml-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ml-s4);
+  flex-wrap: wrap;
+  padding: var(--ml-s3) var(--ml-s4) 4px;
+}
+.ml-chart-title {
+  min-width: 0;
+}
+.ml-chart-symbol {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ml-chart-symbol span {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--ml-text-3);
+}
+.ml-chart-ohlc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ml-s3);
+  font-size: var(--ml-fs-xs);
+  color: var(--ml-text);
+}
+.ml-chart-time,
+.ml-chart-change {
+  color: var(--ml-text-3);
+}
+.ml-chart-canvas {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+.ml-chart-canvas svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--ml-font);
+}
+.ml-chart-canvas svg:focus-visible {
+  outline: 2px solid var(--ml-focus);
+  outline-offset: -2px;
+  border-radius: var(--ml-r-sm);
+}
+.ml-chart.is-pick .ml-chart-canvas svg {
+  cursor: crosshair;
+}
+
+.ml-grid {
+  stroke: var(--ml-grid);
+  stroke-width: 1;
+}
+.ml-axis {
+  fill: var(--ml-text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Candles: light = closed above its open, dark = closed below. */
+.ml-candle line {
+  stroke-width: 1;
+}
+.ml-candle.up line {
+  stroke: var(--ml-candle-up-wick);
+}
+.ml-candle.up rect {
+  fill: var(--ml-candle-up);
+}
+.ml-candle.down line {
+  stroke: var(--ml-candle-down-line);
+}
+.ml-candle.down rect {
+  fill: var(--ml-candle-down);
+  stroke: var(--ml-candle-down-line);
+  stroke-width: 1;
+}
+.ml-candle.is-read rect {
+  stroke: var(--ml-text);
+  stroke-width: 1.5;
+}
+.ml-candle.is-new {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ml-candle-in var(--ml-d-fast) var(--ml-ease-expressive) both;
+}
+@keyframes ml-candle-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ml-vol.up {
+  fill: var(--ml-volume-up);
+}
+.ml-vol.down {
+  fill: var(--ml-volume-down);
+}
+
+.ml-highlight {
+  fill: var(--ml-accent-soft);
+  stroke: var(--ml-accent);
+  stroke-width: 1;
+}
+.ml-zone rect {
+  fill: rgba(255, 255, 255, 0.04);
+  stroke: var(--ml-border-strong);
+  stroke-dasharray: 3 4;
+}
+.ml-zone text,
+.ml-after text {
+  fill: var(--ml-text-2);
+  font-size: 11px;
+  font-weight: 500;
+}
+.ml-after rect {
+  fill: rgba(255, 255, 255, 0.025);
+}
+
+.ml-decision line {
+  stroke: var(--ml-accent-line);
+  stroke-dasharray: 2 4;
+}
+.ml-decision rect {
+  fill: var(--ml-accent);
+}
+.ml-decision text {
+  fill: var(--ml-accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* The Reveal: hatched future behind a veil that glides right, one candle at a time. */
+.ml-veil {
+  transition: transform var(--ml-d-emphasis) var(--ml-ease-expressive);
+  will-change: transform;
+}
+.ml-hatch {
+  stroke: var(--ml-border);
+  stroke-width: 1;
+}
+.ml-veil-fill {
+  opacity: 1;
+}
+.ml-now-line {
+  stroke: var(--ml-accent-fg);
+  stroke-opacity: 0.8;
+  stroke-width: 1;
+}
+.ml-now-label {
+  fill: var(--ml-accent-fg);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ml-veil-label {
+  fill: var(--ml-text-3);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* Price lines: distinguished by dash pattern and label, not by colour. */
+.ml-pline line {
+  stroke-width: 1;
+}
+.ml-pline-label {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--ml-text-2);
+}
+.ml-pline--entry line {
+  stroke: var(--ml-text);
+  stroke-opacity: 0.9;
+}
+.ml-pline--entry .ml-pline-label {
+  fill: var(--ml-text);
+}
+.ml-pline--stop line {
+  stroke: var(--ml-line-soft);
+  stroke-dasharray: 6 4;
+}
+.ml-pline--target line {
+  stroke: var(--ml-line-soft);
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+.ml-pline--limit line {
+  stroke: var(--ml-line-soft);
+  stroke-dasharray: 10 3 2 3;
+}
+.ml-pline--level line {
+  stroke: var(--ml-line-muted);
+  stroke-dasharray: 12 6;
+}
+.ml-pline--level-strong line {
+  stroke: var(--ml-text-3);
+  stroke-dasharray: 12 6;
+}
+.ml-pline.is-draft {
+  opacity: 0.6;
+}
+.ml-ptag {
+  fill: var(--ml-surface-2);
+  stroke: var(--ml-border-strong);
+}
+.ml-ptag-text {
+  fill: var(--ml-text);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+rect.ml-ptag--entry {
+  fill: var(--ml-inverse);
+  stroke: none;
+}
+text.ml-ptag--entry {
+  fill: var(--ml-inverse-text);
+}
+rect.ml-ptag--level {
+  fill: var(--ml-bg);
+}
+text.ml-ptag--level {
+  fill: var(--ml-text-2);
+}
+
+.ml-marker--buy {
+  fill: var(--ml-text);
+  stroke: var(--ml-bg);
+  stroke-width: 1;
+}
+.ml-marker--sell {
+  fill: var(--ml-bg);
+  stroke: var(--ml-text);
+  stroke-width: 1.5;
+}
+.ml-marker--exit-stop {
+  fill: var(--ml-bg);
+  stroke: var(--ml-text);
+  stroke-width: 1.5;
+}
+.ml-marker--exit-target {
+  fill: var(--ml-text);
+  stroke: var(--ml-bg);
+  stroke-width: 1.5;
+}
+.ml-marker--exit {
+  fill: var(--ml-text-3);
+  stroke: var(--ml-bg);
+  stroke-width: 1.5;
+}
+
+.ml-last rect {
+  fill: var(--ml-surface-active);
+}
+.ml-last text {
+  fill: var(--ml-text);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ml-picked line {
+  stroke: var(--ml-accent);
+  stroke-dasharray: 2 3;
+}
+.ml-picked circle {
+  fill: var(--ml-accent);
+  stroke: var(--ml-bg);
+  stroke-width: 2;
+}
+.ml-cross line {
+  stroke: var(--ml-border-input);
+  stroke-dasharray: 3 3;
+}
+.ml-cross rect {
+  fill: var(--ml-inverse);
+}
+.ml-cross text {
+  fill: var(--ml-inverse-text);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legend (mission brief). */
+.ml-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s3);
+  font-size: 14px;
+}
+.ml-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s2);
+  flex-wrap: wrap;
+}
+.ml-legend-swatch {
+  width: 10px;
+  height: 18px;
+  border-radius: 1px;
+}
+.ml-legend-swatch.is-up {
+  background: var(--ml-candle-up);
+}
+.ml-legend-swatch.is-down {
+  background: var(--ml-candle-down);
+  border: 1px solid var(--ml-candle-down-line);
+}
+.ml-legend-line {
+  width: 28px;
+  height: 0;
+  border-top: 1px dashed var(--ml-line-soft);
+}
+.ml-legend-line.is-target {
+  border-top-style: dotted;
+  border-top-width: 2px;
+}
+.ml-legend-veil {
+  width: 28px;
+  height: 18px;
+  border-left: 1px solid var(--ml-accent);
+  background: repeating-linear-gradient(-45deg, transparent 0 4px, var(--ml-border) 4px 5px);
+}
+
+.ml-overlay {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.ml-overlay--1 {
+  stroke: var(--ml-indicator-1);
+}
+.ml-overlay--2 {
+  stroke: var(--ml-indicator-2);
+  stroke-dasharray: 5 3;
+}
