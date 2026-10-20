@@ -1,0 +1,53 @@
+/* Decorative artwork: candle strip, line illustrations, difficulty candles (components/Art.tsx). */
+
+.ml-candlestrip {
+  display: block;
+  width: 100%;
+  height: 260px;
+}
+.ml-candlestrip.is-mini {
+  position: absolute;
+  inset: 17px 0 30px;
+  height: 220px;
+  opacity: 0.9;
+}
+.ml-continue-chart .ml-candlestrip.is-mini {
+  width: 100%;
+  height: calc(100% - 47px);
+}
+.ml-cs-grid {
+  stroke: var(--ml-grid);
+  stroke-width: 1;
+}
+.ml-cs-up {
+  color: var(--ml-candle-up);
+}
+.ml-cs-down {
+  color: var(--ml-candle-down);
+}
+.ml-candlestrip line {
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+.ml-candlestrip rect {
+  fill: currentColor;
+  opacity: 0.85;
+}
+
+.ml-illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ml-accent);
+}
+
+.ml-diffcandles {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  color: #34363a;
+}
+.ml-diffcandles svg.is-lit {
+  color: var(--ml-accent);
+}

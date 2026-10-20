@@ -6,3 +6,5 @@
 @import "./styles/layout.css";
 @import "./styles/shell.css";
 @import "./styles/pages.css";
+@import "./styles/screens/art.css";
+@import "./styles/screens/dashboard.css";

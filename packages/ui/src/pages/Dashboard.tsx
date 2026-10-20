@@ -1,10 +1,12 @@
-import { LEARNING_PATHS, LESSONS, TOPICS, getLesson, pathProgress, weekActivity } from "@market-lab/academy";
+import { useState } from "react";
+import { LEARNING_PATHS, MISSION_TOPICS, TOPIC_BY_ID, getLesson, pathProgress, weekActivity, type LearningPath } from "@market-lab/academy";
 import type { SkillId } from "@market-lab/evaluation";
-import { LEVEL_LABEL, SKILLS, SKILL_BY_ID, levelOf, recommend, thetaProgress } from "@market-lab/learning";
+import { LEVEL_LABEL, SKILLS, SKILL_BY_ID, XP_RULES, levelOf, recommend, thetaProgress } from "@market-lab/learning";
 import { LEARNING_PATH, MISSIONS, getArenaScenario, getMission, missionMeta } from "@market-lab/missions";
-import { Card, MiniRing, PageHead, Pnl } from "../components/Page";
-import { Button, Icon, Meter, cx } from "../components/ui";
-import { DIFFICULTY_LABEL, formatDayKey, relativeTime } from "../format";
+import { CandleStrip, missionGlyph } from "../components/Art";
+import { Pnl } from "../components/Page";
+import { Button, Dialog, Icon, cx } from "../components/ui";
+import { DIFFICULTY_LABEL, bandLabel, formatDayKey, formatDuration, formatPct, relativeTime } from "../format";
 import { usePlan } from "../host";
 import { LOOKUP } from "../labels";
 import { activityFeed, resultRds, useProgress } from "../progress";
@@ -16,67 +18,130 @@ function greeting(): string {
   return h < 5 ? "Good evening" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
 }
 
+/** "TUESDAY, OCTOBER 20, 2026" in the user's time zone. */
+function longDate(tz: string): string {
+  const opts: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric", year: "numeric" };
+  try {
+    return new Date().toLocaleDateString("en-US", tz && tz !== "auto" ? { ...opts, timeZone: tz } : opts);
+  } catch {
+    return new Date().toLocaleDateString("en-US", opts);
+  }
+}
+
+const SKILL_BARS: Record<string, number> = { novice: 2, developing: 3, proficient: 4, advanced: 5 };
+
+function stepInfo(path: LearningPath, index: number) {
+  const step = path.steps[index];
+  if (step.kind === "lesson") {
+    const l = getLesson(step.id);
+    return { title: l?.title ?? step.id, kind: "Lesson", icon: "book", minutes: l?.minutes ?? 4, cta: "Continue learning", to: `/learn/lessons/${step.id}` };
+  }
+  if (step.kind === "mission") {
+    const m = getMission(step.id);
+    return { title: m.title, kind: "Mission", icon: "target", minutes: m.estMinutes, cta: "Start mission", to: null as string | null, missionId: step.id };
+  }
+  return { title: LOOKUP.check(step.id), kind: "Knowledge check", icon: "quiz", minutes: 4, cta: "Take the check", to: `/learn/checks/${step.id}` };
+}
+
+function GoalDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const lab = useLab();
+  const store = useStore();
+  const [goal, setGoal] = useState(lab.profile.goals.dailyXp);
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Edit daily goal"
+      description="Make practice a habit. Choose a goal that works for you."
+      footer={
+        <Button
+          variant="primary"
+          block
+          onClick={() => {
+            store.setGoals({ dailyXp: goal });
+            onClose();
+          }}
+        >
+          Save daily goal
+        </Button>
+      }
+    >
+      <div className="ml-goal-options" role="radiogroup" aria-label="Daily XP goal">
+        {[30, 50, 100, 150].map((n) => (
+          <Button key={n} role="radio" aria-checked={goal === n} variant={goal === n ? "primary" : "secondary"} onClick={() => setGoal(n)}>
+            {n} XP
+          </Button>
+        ))}
+      </div>
+    </Dialog>
+  );
+}
+
 export function DashboardPage() {
   const lab = useLab();
   const store = useStore();
   const { navigate } = useRouter();
   const { pro } = usePlan();
-  const progress = useProgress(lab);
-  const { level, rank, streak, xpToday, snapshot, today, days } = progress;
-  const history = missionHistory(lab);
-  const rec = recommend({ missions: MISSIONS.map(missionMeta), skills: lab.skills, history, path: LEARNING_PATH, now: Date.now() });
-  const name = lab.profile.displayName;
+  const { level, rank, streak, xpToday, snapshot, today, days } = useProgress(lab);
+  const [editGoal, setEditGoal] = useState(false);
+  const tz = lab.settings.timeZone;
+  const firstName = (lab.profile.displayName || "").trim().split(/\s+/)[0];
   const goal = lab.profile.goals;
-
-  // Overall progress: distinct missions done, lessons done and topic checks passed.
-  const missionsDone = new Set(snapshot.missions.map((m) => m.missionId)).size;
-  const lessonsDone = snapshot.lessons.length;
-  const checksPassed = new Set(snapshot.checks.filter((c) => c.kind === "check" && c.passed).map((c) => c.topic)).size;
-  const totalUnits = MISSIONS.length + LESSONS.length + TOPICS.length;
-  const overall = (missionsDone + lessonsDone + checksPassed) / totalUnits;
+  const week = weekActivity(days, today);
+  const activeThisWeek = week.filter((d) => d.active).length;
+  const levelPct = Math.round((level.into / level.needed) * 100);
 
   const skillIds = SKILLS.map((s) => s.id).filter((id) => id !== "reflection_review" || lab.skills[id].n > 0) as SkillId[];
   const meanTheta = skillIds.reduce((s, id) => s + lab.skills[id].theta, 0) / skillIds.length;
   const observations = skillIds.reduce((s, id) => s + lab.skills[id].n, 0);
-  const week = weekActivity(days, today);
-  const activeThisWeek = week.filter((d) => d.active).length;
+  const skillLevel = levelOf(meanTheta);
+  const skillRows = [...skillIds]
+    .map((id) => ({ id, value: Math.round(thetaProgress(lab.skills[id].theta) * 100) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+
+  // "Your X is up +N this week": the largest gain in the last 7 days, on the 0–100 scale.
+  const weekAgo = Date.now() - 7 * 86_400_000;
+  const weekResults = Object.values(lab.results)
+    .filter((r) => r.completedAt >= weekAgo)
+    .sort((a, b) => a.completedAt - b.completedAt);
+  const gains = skillIds
+    .map((id) => {
+      const deltas = weekResults.flatMap((r) => r.skillDeltas.filter((d) => d.skill === id));
+      if (!deltas.length) return { id, delta: 0 };
+      return { id, delta: Math.round((thetaProgress(deltas[deltas.length - 1].after) - thetaProgress(deltas[0].before)) * 100) };
+    })
+    .filter((g) => g.delta > 0)
+    .sort((a, b) => b.delta - a.delta);
 
   // Continue learning: an unfinished session first, then the next step of a started path.
   const activeMission = (Object.values(lab.sessions).filter((s) => s.kind === "mission" && s.status === "active") as MissionSession[]).sort((a, b) => b.updatedAt - a.updatedAt)[0];
   const activeArena = store.activeArena();
-  const startedPath =
-    LEARNING_PATHS.map((p) => ({ p, pr: pathProgress(p, snapshot) })).find(({ p, pr }) => pr.completed > 0 && pr.nextIndex !== null && (p.tier === "free" || pro)) ??
-    LEARNING_PATHS.map((p) => ({ p, pr: pathProgress(p, snapshot) })).find(({ pr }) => pr.nextIndex !== null);
+  const paths = LEARNING_PATHS.filter((p) => p.tier === "free" || pro).map((p) => ({ p, pr: pathProgress(p, snapshot) }));
+  const started = paths.find(({ pr }) => pr.completed > 0 && pr.nextIndex !== null) ?? paths.find(({ pr }) => pr.nextIndex !== null);
 
+  const rec = recommend({ missions: MISSIONS.map(missionMeta), skills: lab.skills, history: missionHistory(lab), path: LEARNING_PATH, now: Date.now() });
   const primary = rec.primary?.missionId ? getMission(rec.primary.missionId) : null;
+  const primaryTopic = primary ? MISSION_TOPICS[primary.id]?.[0] : undefined;
+
   const lastArena = Object.values(lab.results)
     .filter((r) => r.kind === "arena")
     .sort((a, b) => b.completedAt - a.completedAt)[0];
-  const lastArenaSession = lastArena ? (lab.sessions[lastArena.sessionId] as ArenaSession | undefined) : undefined;
-  const feed = activityFeed(lab, 6, LOOKUP);
-  const growing = [...skillIds].sort((a, b) => lab.skills[a].theta - lab.skills[b].theta);
+  const lastSession = lastArena ? (lab.sessions[lastArena.sessionId] as ArenaSession | undefined) : undefined;
+  const lastRds = lastArena ? resultRds(lab, lastArena) : null;
+  const feed = activityFeed(lab, 4, LOOKUP);
+  const dailyDone = Boolean(lab.dailies[today]);
 
   return (
     <div className="ml-page ml-dash">
-      <PageHead
-        eyebrow={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
-        title={`${greeting()}${name ? `, ${name}` : ""}.`}
-        sub={
-          <>
-            Level {level.level} · <span className="ml-accent-text">{rank.title}</span> · {snapshot.xp} XP earned through practice
-          </>
-        }
-        actions={
-          <div className="ml-actions">
-            <Button variant="secondary" iconLeft="calculator" onClick={() => navigate("/arena/risk-calculator")}>
-              Risk calculator
-            </Button>
-            <Button variant="primary" iconLeft="candles" onClick={() => navigate("/arena/simulator")}>
-              {activeArena ? "Resume Arena" : "Open the Arena"}
-            </Button>
-          </div>
-        }
-      />
+      <header className="ml-page-head">
+        <span className="ml-eyebrow">{longDate(tz)}</span>
+        <h1>
+          {greeting()}
+          {firstName ? `, ${firstName}` : ""}
+          <span className="ml-accent-text">.</span>
+        </h1>
+      </header>
 
       {!lab.profile.onboarded && (
         <section className="ml-banner">
@@ -90,251 +155,437 @@ export function DashboardPage() {
         </section>
       )}
 
-      <div className="ml-grid ml-grid--4">
-        <Card eyebrow="Your progress" className="ml-card--stat">
-          <div className="ml-kpi">
-            <span className="ml-kpi-value num">Level {level.level}</span>
-            <span className="ml-kpi-sub">{rank.next ? `${rank.next.title} at level ${rank.next.level}` : "Top rank"}</span>
+      <section className="ml-stats" aria-label="Your progress at a glance">
+        <div className="ml-stat-card">
+          <div className="ml-sc-label">
+            Your progress
+            <Icon name="bolt" size={15} />
           </div>
-          <Meter value={level.into / level.needed} label={`${level.into} of ${level.needed} XP to level ${level.level + 1}`} />
-          <span className="ml-fine num">
-            {level.needed - level.into} XP to level {level.level + 1} · {Math.round(overall * 100)}% of the curriculum done
-          </span>
-        </Card>
-
-        <Card eyebrow="Daily goal" className="ml-card--stat" action={<Link to="/settings/profile" className="ml-text-link ml-small">Edit</Link>}>
-          <div className="ml-goal">
-            <MiniRing value={xpToday / goal.dailyXp} size={52} stroke={5} />
-            <div className="ml-kpi">
-              <span className="ml-kpi-value num">
-                {xpToday}
-                <small> / {goal.dailyXp} XP</small>
-              </span>
-              <span className="ml-kpi-sub">{xpToday >= goal.dailyXp ? "Goal reached today" : `${goal.dailyXp - xpToday} XP to go today`}</span>
-            </div>
+          <div className="ml-sc-value">
+            Level {level.level} <span className="ml-sc-badge">{rank.title}</span>
           </div>
-          <span className="ml-fine num">
-            Weekly goal: {activeThisWeek} of {goal.weeklyDays} active days
-          </span>
-        </Card>
-
-        <Card eyebrow="Learning streak" className="ml-card--stat" action={<Link to="/progress/streaks" className="ml-text-link ml-small">History</Link>}>
-          <div className="ml-kpi">
-            <span className="ml-kpi-value num">
-              <Icon name="flame" size={22} className={cx(streak.activeToday && "ml-flame-on")} /> {streak.current} {streak.current === 1 ? "day" : "days"}
+          <div className="ml-bar" role="meter" aria-label="XP towards the next level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={levelPct}>
+            <i style={{ width: `${levelPct}%` }} />
+          </div>
+          <div className="ml-sc-bottom">
+            <span>
+              <b>{level.needed - level.into} XP</b> to level {level.level + 1}
             </span>
-            <span className="ml-kpi-sub">{streak.atRisk ? "Practise today to keep it going" : streak.activeToday ? "Today counts" : "Complete anything to start one"}</span>
+            <span className="num">{levelPct}%</span>
           </div>
-          <ol className="ml-weekdots" aria-label="This week">
+        </div>
+
+        <div className="ml-stat-card">
+          <div className="ml-sc-label">
+            Daily goal
+            <button type="button" onClick={() => setEditGoal(true)}>
+              Edit
+              <Icon name="chevron-right" size={11} />
+            </button>
+          </div>
+          <div className="ml-sc-value">
+            <span className="num">{xpToday}</span>
+            <span className="ml-sc-muted num">/ {goal.dailyXp}</span>
+            <span className="ml-sc-unit">XP</span>
+            <span className="ml-sc-icon">
+              <Icon name="target" size={29} />
+            </span>
+          </div>
+          <div className="ml-sc-desc">{xpToday >= goal.dailyXp ? "Goal reached today." : `${goal.dailyXp - xpToday} XP remaining.`}</div>
+          <div className="ml-bar" role="meter" aria-label="Daily XP goal" aria-valuemin={0} aria-valuemax={goal.dailyXp} aria-valuenow={Math.min(xpToday, goal.dailyXp)}>
+            <i style={{ width: `${Math.min(100, (xpToday / goal.dailyXp) * 100)}%` }} />
+          </div>
+          <div className="ml-sc-bottom">
+            <span>Weekly goal</span>
+            <span>
+              <b className="num">{activeThisWeek}</b> / {goal.weeklyDays} active days
+            </span>
+          </div>
+        </div>
+
+        <div className="ml-stat-card">
+          <div className="ml-sc-label">
+            Learning streak
+            <Icon name="flame" size={15} />
+          </div>
+          <div className="ml-sc-value">
+            <span className="num">{streak.current}</span> <span className="ml-sc-unit">{streak.current === 1 ? "day" : "days"}</span>
+            {streak.current > 1 && streak.current >= streak.longest && <span className="ml-positive-badge">Personal best</span>}
+          </div>
+          <ol className="ml-week" aria-label="This week">
             {week.map((d) => (
-              <li key={d.day} className={cx(d.active && "is-on", d.day === today && "is-today", d.future && "is-future")} title={formatDayKey(d.day)}>
-                <span aria-hidden="true">{formatDayKey(d.day, { weekday: "narrow" })}</span>
+              <li key={d.day} className={cx(d.active && "is-done", d.day === today && "is-today")}>
+                <span aria-hidden="true">{d.active ? <Icon name="check" size={12} /> : null}</span>
+                <small aria-hidden="true">{formatDayKey(d.day, { weekday: "narrow" })}</small>
                 <span className="ml-sr">
                   {formatDayKey(d.day)}: {d.active ? "active" : "no activity"}
                 </span>
               </li>
             ))}
           </ol>
-        </Card>
+        </div>
 
-        <Card eyebrow="Current skill level" className="ml-card--stat" action={<Link to="/progress/skills" className="ml-text-link ml-small">Profile</Link>}>
-          <div className="ml-kpi">
-            <span className="ml-kpi-value">{LEVEL_LABEL[levelOf(meanTheta)]}</span>
-            <span className="ml-kpi-sub num">Average across {skillIds.length} skills · {observations} observations</span>
+        <div className="ml-stat-card">
+          <div className="ml-sc-label">
+            Current skill level
+            <Icon name="chart" size={15} />
           </div>
-          <Meter value={thetaProgress(meanTheta)} label="Average skill estimate" />
-          <span className="ml-fine">Estimated from decisions, never from profit.</span>
-        </Card>
-      </div>
+          <div className="ml-sc-value ml-skill-value">
+            {LEVEL_LABEL[skillLevel]}
+            <span className="ml-skill-bars" aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <i key={n} className={cx(n <= SKILL_BARS[skillLevel] && "is-filled")} style={{ height: `${8 + n * 5}px` }} />
+              ))}
+            </span>
+          </div>
+          <div className="ml-sc-desc num">
+            Across {skillIds.length} skills · {observations} observations
+          </div>
+          <div className="ml-skill-fine">
+            <Icon name="shield" size={13} />
+            Measured by decisions. Never profit.
+          </div>
+        </div>
+      </section>
 
-      <div className="ml-split">
-        <div className="ml-stack-5">
-          <Card eyebrow="Continue learning" className="ml-card--feature">
-            {activeMission ? (
-              <ContinueRow
-                icon="flag"
-                title={getMission(activeMission.missionId).title}
-                meta={`Mission in progress · saved ${relativeTime(activeMission.updatedAt)}`}
-                cta="Resume mission"
-                onClick={() => navigate(`/play/${activeMission.id}`)}
-              />
-            ) : activeArena ? (
-              <ContinueRow icon="candles" title={getArenaScenario(activeArena.regime).title} meta={`Arena session in progress · saved ${relativeTime(activeArena.updatedAt)}`} cta="Resume session" onClick={() => navigate("/arena/simulator")} />
-            ) : startedPath && startedPath.pr.nextIndex !== null ? (
-              <PathStepRow path={startedPath.p} index={startedPath.pr.nextIndex} done={startedPath.pr.completed} />
-            ) : (
-              <p className="ml-muted">You've completed every path available to you. Try the Arena, or revisit a lesson.</p>
-            )}
-          </Card>
+      <div className="ml-dash-columns">
+        <div className="ml-dash-main">
+          <section className="ml-continue-card" aria-label="Continue learning">
+            <div className="ml-continue-copy">
+              <div className="ml-eyebrow ml-continue-eyebrow">Continue learning</div>
+              {activeMission ? (
+                (() => {
+                  const m = getMission(activeMission.missionId);
+                  return (
+                    <>
+                      <div className="ml-path-label">
+                        Mission in progress <span>{m.id}</span>
+                      </div>
+                      <h2>{m.title}</h2>
+                      <div className="ml-continue-meta">
+                        <span>
+                          <Icon name="target" size={14} />
+                          Saved {relativeTime(activeMission.updatedAt)}
+                        </span>
+                        <span>
+                          <Icon name="clock" size={14} />
+                          {m.estMinutes} min
+                        </span>
+                      </div>
+                      <Button variant="primary" iconRight="arrow-right" onClick={() => navigate(`/play/${activeMission.id}`)}>
+                        Resume mission
+                      </Button>
+                    </>
+                  );
+                })()
+              ) : activeArena ? (
+                <>
+                  <div className="ml-path-label">
+                    Arena session <span>LABX</span>
+                  </div>
+                  <h2>{getArenaScenario(activeArena.regime).title}</h2>
+                  <div className="ml-continue-meta">
+                    <span>
+                      <Icon name="chart" size={14} />
+                      Simulator
+                    </span>
+                    <span>
+                      <Icon name="clock" size={14} />
+                      Saved {relativeTime(activeArena.updatedAt)}
+                    </span>
+                  </div>
+                  <Button variant="primary" iconRight="arrow-right" onClick={() => navigate("/arena/simulator")}>
+                    Resume session
+                  </Button>
+                </>
+              ) : started && started.pr.nextIndex !== null ? (
+                (() => {
+                  const info = stepInfo(started.p, started.pr.nextIndex!);
+                  return (
+                    <>
+                      <div className="ml-path-label">
+                        {started.p.title}{" "}
+                        <span className="num">
+                          {String(started.pr.nextIndex! + 1).padStart(2, "0")} / {String(started.p.steps.length).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <h2>{info.title}</h2>
+                      <div className="ml-continue-meta">
+                        <span>
+                          <Icon name={info.icon} size={14} />
+                          {info.kind}
+                        </span>
+                        <span>
+                          <Icon name="clock" size={14} />
+                          {info.minutes} min
+                        </span>
+                      </div>
+                      <Button variant="primary" iconRight="arrow-right" onClick={() => (info.to ? navigate(info.to) : navigate(`/play/${store.startMission(info.missionId!)}`))}>
+                        {info.cta}
+                      </Button>
+                    </>
+                  );
+                })()
+              ) : (
+                <>
+                  <h2>Every path completed</h2>
+                  <p className="ml-muted">Try a new Arena scenario, or revisit a lesson to keep the knowledge fresh.</p>
+                  <Button variant="primary" iconRight="arrow-right" onClick={() => navigate("/arena/scenarios")}>
+                    Arena scenarios
+                  </Button>
+                </>
+              )}
+            </div>
+            <div className="ml-continue-chart" aria-hidden="true">
+              <div className="ml-chart-top">
+                <span>
+                  LABX <span className="ml-muted">/ vUSD</span>
+                </span>
+                <span className="ml-synthetic">Synthetic data</span>
+              </div>
+              <CandleStrip mini />
+              <div className="ml-level-line is-target">
+                <span>Take profit</span>
+                <b>128.50</b>
+              </div>
+              <div className="ml-level-line is-entry">
+                <span>Entry</span>
+                <b>124.82</b>
+              </div>
+              <div className="ml-level-line is-stop">
+                <span>Stop loss</span>
+                <b>121.40</b>
+              </div>
+            </div>
+          </section>
 
           {primary && (
-            <Card eyebrow="Recommended next mission" className="ml-card--feature">
-              <div className="ml-reco">
-                <div className="ml-reco-main">
-                  <h2 className="ml-reco-title">{primary.title}</h2>
-                  <p className="ml-muted">{primary.tagline}</p>
-                  <p className="ml-meta">
-                    {SKILL_BY_ID[primary.skillPrimary].name} · {DIFFICULTY_LABEL[primary.difficulty]} · about {primary.estMinutes} min
-                  </p>
-                  <p className="ml-why">{rec.primary!.reason}</p>
-                </div>
-                <div className="ml-actions">
-                  <Button variant="primary" iconRight="arrow-right" onClick={() => navigate(`/play/${store.startMission(primary.id)}`)}>
-                    {store.activeSessionFor(primary.id) ? "Resume" : "Start mission"}
-                  </Button>
-                  <Button variant="tertiary" onClick={() => navigate(`/mission/${primary.id}`)}>
-                    Details
-                  </Button>
-                </div>
+            <section className="ml-card ml-panel-flush ml-recommended" aria-label="Recommended next mission">
+              <div className="ml-section-heading">
+                <h3>Recommended next mission</h3>
+                <Link to="/missions/all" className="ml-text-arrow">
+                  All missions <Icon name="arrow-right" size={14} />
+                </Link>
               </div>
-            </Card>
+              <div className="ml-mission-preview">
+                <div className="ml-mission-art" aria-hidden="true">
+                  <span className="ml-art-grid" />
+                  <Icon name={missionGlyph(primaryTopic)} size={40} />
+                  <span>M / {primary.id.slice(1)}</span>
+                </div>
+                <div className="ml-mission-info">
+                  <div className="ml-tags">
+                    {primaryTopic && <span className="ml-tag ml-tag--default">{TOPIC_BY_ID[primaryTopic].name}</span>}
+                    <span className="ml-for-you">For you</span>
+                  </div>
+                  <h3>{primary.title}</h3>
+                  <p>{primary.tagline}</p>
+                  <div className="ml-mission-meta">
+                    <span className="ml-diff" aria-label={`Difficulty: ${DIFFICULTY_LABEL[primary.difficulty]}`}>
+                      {DIFFICULTY_LABEL[primary.difficulty]}
+                    </span>
+                    <span>
+                      <Icon name="clock" size={13} />~{primary.estMinutes} min
+                    </span>
+                    <span className="ml-accent-text">
+                      <Icon name="bolt" size={13} />+{XP_RULES.missionByDifficulty[primary.difficulty]} XP
+                    </span>
+                  </div>
+                </div>
+                <button type="button" className="ml-mission-arrow" onClick={() => navigate(`/play/${store.startMission(primary.id)}`)} aria-label={`${store.activeSessionFor(primary.id) ? "Resume" : "Start"} ${primary.title}`}>
+                  <Icon name="arrow-right" size={22} />
+                </button>
+              </div>
+              <div className="ml-reason">
+                <Icon name="bolt" size={13} />
+                <span>
+                  <strong>Why this mission?</strong> {rec.primary!.reason}
+                </span>
+              </div>
+            </section>
           )}
 
-          <Card title="Recent activity" action={<Link to="/journal/sessions" className="ml-text-link ml-small">Session history</Link>}>
+          <section className="ml-card ml-panel-flush" aria-label="Recent activity">
+            <div className="ml-section-heading">
+              <h3>Recent activity</h3>
+              <Link to="/journal/sessions" className="ml-text-arrow">
+                Session history <Icon name="arrow-right" size={14} />
+              </Link>
+            </div>
             {feed.length === 0 ? (
-              <p className="ml-muted">Nothing yet. Missions, lessons, checks and Arena sessions you complete will show up here.</p>
+              <p className="ml-panel-empty">Nothing yet. Missions, lessons, checks and Arena sessions you complete will show up here.</p>
             ) : (
-              <ul className="ml-feed">
+              <ul className="ml-activity-list">
                 {feed.map((f) => (
                   <li key={f.id}>
-                    <Link to={f.to} className="ml-feed-row">
-                      <span className="ml-feed-icon">
-                        <Icon name={f.icon} size={16} />
+                    <Link to={f.to} className="ml-activity-row">
+                      <span className={cx("ml-activity-icon", `is-${f.kind}`)}>
+                        <Icon name={f.icon} size={17} />
                       </span>
-                      <span className="ml-feed-main">
-                        <b>{f.title}</b>
-                        <span className="ml-muted num">{f.meta}</span>
+                      <span className="ml-activity-title">
+                        <strong>{f.title}</strong>
+                        <small>
+                          {f.meta} · {relativeTime(f.at)}
+                        </small>
                       </span>
-                      <span className="ml-feed-time">{relativeTime(f.at)}</span>
+                      {f.score !== null && (
+                        <span className="ml-activity-score num">
+                          {f.score}
+                          <small>Decision quality</small>
+                        </span>
+                      )}
+                      {f.xp > 0 && <span className="ml-activity-xp num">+{f.xp} XP</span>}
+                      <Icon name="chevron-right" size={13} />
                     </Link>
                   </li>
                 ))}
               </ul>
             )}
-          </Card>
+          </section>
         </div>
 
-        <aside className="ml-stack-5" aria-label="Overview">
-          <Card title="Skill development" action={<Link to="/progress/skills" className="ml-text-link ml-small">All skills</Link>}>
-            <ul className="ml-skill-rows ml-skill-rows--compact">
-              {growing.slice(0, 5).map((id) => {
-                const st = lab.skills[id];
-                return (
-                  <li key={id}>
-                    <span className="ml-skill-name">{SKILL_BY_ID[id].name}</span>
-                    <Meter value={thetaProgress(st.theta)} label={`${SKILL_BY_ID[id].name} estimate`} />
-                    <span className="ml-skill-level">{LEVEL_LABEL[levelOf(st.theta)]}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
-
-          <Card title="Last simulation" action={<Link to="/arena/portfolio" className="ml-text-link ml-small">Portfolio</Link>}>
-            {lastArena ? (
-              <Link to={`/arena/session/${lastArena.sessionId}`} className="ml-simsum">
-                <span className="ml-muted">
-                  {lastArenaSession ? getArenaScenario(lastArenaSession.regime).title : "Arena"} · {relativeTime(lastArena.completedAt)}
-                </span>
-                <dl className="ml-trio">
-                  <div>
-                    <dt>Decision quality</dt>
-                    <dd className="num">{lastArena.dqs ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>Risk discipline</dt>
-                    <dd className="num">{resultRds(lab, lastArena) ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>Simulated outcome</dt>
-                    <dd>
-                      <Pnl value={lastArena.net} unit={false} />
-                    </dd>
-                  </div>
-                </dl>
+        <aside className="ml-dash-aside" aria-label="Overview">
+          <section className="ml-card ml-panel-flush ml-skill-panel" aria-label="Skill development">
+            <div className="ml-section-heading">
+              <h3>Skill development</h3>
+              <Link to="/progress/skills" className="ml-text-arrow">
+                All skills <Icon name="arrow-right" size={14} />
               </Link>
-            ) : (
-              <p className="ml-muted">No Arena sessions yet. Pick a scenario and trade a simulated market with virtual money.</p>
-            )}
-          </Card>
+            </div>
+            {skillRows.map((s, i) => (
+              <div className="ml-skill-row" key={s.id}>
+                <div>
+                  <span className="ml-skill-name">
+                    {SKILL_BY_ID[s.id].name}
+                    <span className="ml-skill-info">
+                      <button type="button" aria-label={`About ${SKILL_BY_ID[s.id].name}`} aria-describedby={`ml-skill-tip-${i}`}>
+                        <Icon name="info" size={14} />
+                      </button>
+                      <span className="ml-skill-tooltip" role="tooltip" id={`ml-skill-tip-${i}`}>
+                        {SKILL_BY_ID[s.id].description}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="num">
+                    {s.value}
+                    <small>/100</small>
+                  </span>
+                </div>
+                <div className="ml-bar ml-bar--thin" aria-hidden="true">
+                  <i style={{ width: `${s.value}%` }} />
+                </div>
+              </div>
+            ))}
+            <div className="ml-skill-note">
+              {gains[0] ? (
+                <>
+                  Your {SKILL_BY_ID[gains[0].id].name.toLowerCase()} is up <b>+{gains[0].delta}</b> this week.
+                </>
+              ) : (
+                "Skill estimates move as you complete missions and checks."
+              )}
+            </div>
+          </section>
 
-          <Card title="Quick actions">
-            <ul className="ml-quick">
-              <li>
-                <Link to="/missions/daily" className="ml-quick-link">
-                  <Icon name="sun" size={18} />
-                  Daily challenge
-                  {!lab.dailies[today] && <span className="ml-dot" aria-label="not done yet" />}
-                </Link>
-              </li>
-              <li>
-                <Link to="/arena/scenarios" className="ml-quick-link">
-                  <Icon name="layers" size={18} />
-                  Arena scenarios
-                </Link>
-              </li>
-              <li>
-                <Link to="/arena/risk-calculator" className="ml-quick-link">
-                  <Icon name="calculator" size={18} />
-                  Risk calculator
-                </Link>
-              </li>
-              <li>
-                <Link to="/learn/glossary" className="ml-quick-link">
-                  <Icon name="list" size={18} />
-                  Glossary
-                </Link>
-              </li>
-            </ul>
-          </Card>
+          <section className="ml-card ml-panel-flush" aria-label="Last simulation">
+            <div className="ml-section-heading">
+              <h3>Last simulation</h3>
+              <Link to={lastArena ? `/arena/session/${lastArena.sessionId}` : "/arena/simulator"} className="ml-text-arrow">
+                {lastArena ? "View" : "Open"} <Icon name="arrow-right" size={14} />
+              </Link>
+            </div>
+            {lastArena && lastSession ? (
+              <>
+                <div className="ml-last-title">
+                  <span className="ml-activity-icon is-arena">
+                    <Icon name="chart" size={16} />
+                  </span>
+                  <div>
+                    <strong>{getArenaScenario(lastSession.regime).title}</strong>
+                    <small>
+                      {relativeTime(lastArena.completedAt)} · {formatDuration(lastArena.completedAt - lastSession.createdAt)} · LABX
+                    </small>
+                  </div>
+                  <span className="ml-complete-tag">{lastArena.completionMet ? "Cleared" : "Completed"}</span>
+                </div>
+                <div className="ml-sim-scores">
+                  <div>
+                    <span>Decision quality</span>
+                    <strong className="num">
+                      {lastArena.dqs ?? "—"}
+                      <small>/100</small>
+                    </strong>
+                    <span className="ml-score-rating">{lastArena.dqs === null ? "Not scored" : bandLabel(lastArena.dqs)}</span>
+                  </div>
+                  <div>
+                    <span>Risk discipline</span>
+                    <strong className="num">
+                      {lastRds ?? "—"}
+                      <small>/100</small>
+                    </strong>
+                    <span className="ml-score-rating">{lastRds === null ? "No risk taken" : bandLabel(lastRds)}</span>
+                  </div>
+                  <div>
+                    <span>Sim. outcome</span>
+                    <strong className={cx("num", lastArena.net > 0 ? "ml-pos" : lastArena.net < 0 ? "ml-neg" : undefined)}>
+                      {formatPct(lastArena.returnPct, 1, true)}
+                    </strong>
+                    <span>
+                      <Pnl value={lastArena.net} />
+                    </span>
+                  </div>
+                </div>
+                <p className="ml-sim-note">
+                  <Icon name="quiz" size={12} />A good process matters more than one result.
+                </p>
+              </>
+            ) : (
+              <p className="ml-panel-empty">No Arena sessions yet. Pick a scenario and trade a simulated market with virtual money.</p>
+            )}
+          </section>
+
+          <section className="ml-card ml-panel-flush ml-quick-panel" aria-label="Quick actions">
+            <div className="ml-section-heading">
+              <h3>Quick actions</h3>
+              <Icon name="bolt" size={15} />
+            </div>
+            <Link to="/missions/daily" className="ml-quick-row">
+              <Icon name="target" size={16} />
+              <strong>Daily challenge</strong>
+              <span>{dailyDone ? "Done today" : "+40 XP"}</span>
+              <Icon name="chevron-right" size={13} />
+            </Link>
+            <Link to="/arena/scenarios" className="ml-quick-row">
+              <Icon name="chart" size={16} />
+              <strong>Arena scenarios</strong>
+              <span>9 scenarios</span>
+              <Icon name="chevron-right" size={13} />
+            </Link>
+            <Link to="/arena/risk-calculator" className="ml-quick-row">
+              <Icon name="calculator" size={16} />
+              <strong>Risk calculator</strong>
+              <span>Free tool</span>
+              <Icon name="chevron-right" size={13} />
+            </Link>
+          </section>
 
           {!pro && (
-            <Card className="ml-card--upgrade" eyebrow="MARKET//LAB Pro">
-              <p className="ml-body">Advanced scenarios, the Intermediate and Psychology paths, full analytics history and unlimited Arena sessions.</p>
-              <div className="ml-actions">
-                <Button variant="secondary" iconLeft="sparkle" onClick={() => navigate("/pricing")}>
-                  See plans
-                </Button>
-              </div>
-            </Card>
+            <Link to="/pricing" className="ml-pro-banner">
+              <span className="ml-pro-banner-icon">
+                <Icon name="star" size={23} />
+              </span>
+              <span>
+                <strong>
+                  MARKET//LAB Pro<b>PRO</b>
+                </strong>
+                <small>Advanced scenarios and analytics.</small>
+              </span>
+              <Icon name="arrow-right" size={17} />
+            </Link>
           )}
         </aside>
       </div>
+      <GoalDialog key={String(editGoal)} open={editGoal} onClose={() => setEditGoal(false)} />
     </div>
-  );
-}
-
-function ContinueRow({ icon, title, meta, cta, onClick }: { icon: string; title: string; meta: string; cta: string; onClick: () => void }) {
-  return (
-    <div className="ml-continue">
-      <span className="ml-continue-icon">
-        <Icon name={icon} size={20} />
-      </span>
-      <div className="ml-continue-main">
-        <b>{title}</b>
-        <span className="ml-muted">{meta}</span>
-      </div>
-      <Button variant="primary" iconRight="arrow-right" onClick={onClick}>
-        {cta}
-      </Button>
-    </div>
-  );
-}
-
-function PathStepRow({ path, index, done }: { path: (typeof LEARNING_PATHS)[number]; index: number; done: number }) {
-  const { navigate } = useRouter();
-  const store = useStore();
-  const step = path.steps[index];
-  const title = step.kind === "lesson" ? getLesson(step.id)?.title : step.kind === "mission" ? getMission(step.id).title : LOOKUP.check(step.id);
-  const go = () =>
-    step.kind === "lesson" ? navigate(`/learn/lessons/${step.id}`) : step.kind === "mission" ? navigate(`/play/${store.startMission(step.id)}`) : navigate(`/learn/checks/${step.id}`);
-  return (
-    <ContinueRow
-      icon={step.kind === "lesson" ? "book" : step.kind === "mission" ? "flag" : "quiz"}
-      title={title ?? step.id}
-      meta={`${path.title} · step ${index + 1} of ${path.steps.length}${done ? ` · ${done} done` : ""}`}
-      cta={step.kind === "lesson" ? "Open lesson" : step.kind === "mission" ? "Start mission" : "Take the check"}
-      onClick={go}
-    />
   );
 }

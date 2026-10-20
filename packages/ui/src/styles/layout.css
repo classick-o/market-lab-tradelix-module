@@ -1453,16 +1453,10 @@
     padding-top: var(--ml-s3);
     gap: var(--ml-s3);
   }
-  .ml-sim .ml-sim-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
   .ml-sim {
-    padding: 0 9px;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 10px;
   }
   .ml-grid-2,
   .ml-principle-example {

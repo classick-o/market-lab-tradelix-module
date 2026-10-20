@@ -108,25 +108,36 @@ export type ProgressState = ReturnType<typeof useProgress>;
 
 export interface ActivityItem {
   id: string;
+  kind: "mission" | "arena" | "lesson" | "check" | "daily";
   at: number;
   icon: string;
   title: string;
+  /** "Mission completed", "Lesson completed"… */
   meta: string;
+  /** Decision quality, when the activity has one. */
+  score: number | null;
+  /** XP earned by this activity, if any. */
+  xp: number;
   to: string;
 }
 
 /** Recent learning activity across missions, sessions, lessons, checks and challenges, newest first. */
 export function activityFeed(lab: LabData, limit = 8, lookup: { mission: (id: string) => string; lesson: (id: string) => string; check: (id: string) => string; scenario: (id: string) => string }): ActivityItem[] {
+  const xpFor = (ref: string, at?: number) => lab.xp.filter((x) => x.ref === ref && (at === undefined || Math.abs(x.at - at) < 60_000)).reduce((s, x) => s + x.amount, 0);
   const items: ActivityItem[] = [];
   for (const r of Object.values(lab.results)) {
     const s = lab.sessions[r.sessionId];
     if (r.kind === "mission")
-      items.push({ id: r.sessionId, at: r.completedAt, icon: "flag", title: lookup.mission(r.missionId), meta: `Mission · decision quality ${r.dqs ?? "—"}`, to: `/debrief/${r.sessionId}` });
-    else items.push({ id: r.sessionId, at: r.completedAt, icon: "candles", title: lookup.scenario(s?.kind === "arena" ? s.regime : ""), meta: `Arena session · discipline ${resultRds(lab, r) ?? "—"}`, to: `/arena/session/${r.sessionId}` });
+      items.push({ id: r.sessionId, kind: "mission", at: r.completedAt, icon: "target", title: lookup.mission(r.missionId), meta: "Mission completed", score: r.dqs, xp: xpFor(r.sessionId), to: `/debrief/${r.sessionId}` });
+    else
+      items.push({ id: r.sessionId, kind: "arena", at: r.completedAt, icon: "chart", title: lookup.scenario(s?.kind === "arena" ? s.regime : ""), meta: "Arena session", score: r.dqs, xp: xpFor(r.sessionId), to: `/arena/session/${r.sessionId}` });
   }
-  for (const [id, v] of Object.entries(lab.lessons)) if (v.completedAt) items.push({ id, at: v.completedAt, icon: "book", title: lookup.lesson(id), meta: "Lesson completed", to: `/learn/lessons/${id}` });
+  for (const [id, v] of Object.entries(lab.lessons))
+    if (v.completedAt) items.push({ id, kind: "lesson", at: v.completedAt, icon: "book", title: lookup.lesson(id), meta: "Lesson completed", score: null, xp: xpFor(id), to: `/learn/lessons/${id}` });
   for (const [id, attempts] of Object.entries(lab.checks))
-    for (const a of attempts) items.push({ id: `${id}-${a.at}`, at: a.at, icon: "quiz", title: lookup.check(id), meta: `${a.correct} of ${a.total} correct${a.passed ? " · passed" : ""}`, to: `/learn/checks/${id}` });
-  for (const [day, d] of Object.entries(lab.dailies)) items.push({ id: day, at: d.at, icon: "sun", title: "Daily challenge", meta: `${d.correct} of ${d.total} correct`, to: "/missions/daily" });
+    for (const a of attempts)
+      items.push({ id: `${id}-${a.at}`, kind: "check", at: a.at, icon: "quiz", title: lookup.check(id), meta: `${a.correct} of ${a.total} correct${a.passed ? " · passed" : ""}`, score: null, xp: xpFor(id, a.at), to: `/learn/checks/${id}` });
+  for (const [day, d] of Object.entries(lab.dailies))
+    items.push({ id: day, kind: "daily", at: d.at, icon: "sun", title: "Daily challenge", meta: `${d.correct} of ${d.total} correct`, score: null, xp: xpFor(day), to: "/missions/daily" });
   return items.sort((a, b) => b.at - a.at).slice(0, limit);
 }
