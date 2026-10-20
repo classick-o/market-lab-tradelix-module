@@ -365,7 +365,6 @@ export function DashboardPage() {
                 <div className="ml-mission-info">
                   <div className="ml-tags">
                     {primaryTopic && <span className="ml-tag ml-tag--default">{TOPIC_BY_ID[primaryTopic].name}</span>}
-                    <span className="ml-for-you">For you</span>
                   </div>
                   <h3>{primary.title}</h3>
                   <p>{primary.tagline}</p>

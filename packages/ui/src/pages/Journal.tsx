@@ -65,7 +65,7 @@ export function SessionHistoryPage() {
         />
       </div>
       {shown.length === 0 ? (
-        <Empty icon="history" title={sessions.length ? "No sessions match these filters" : "No sessions yet"} action={<Link to="/missions/for-you" className="ml-text-link">Find a mission</Link>}>
+        <Empty icon="history" title={sessions.length ? "No sessions match these filters" : "No sessions yet"} action={<Link to="/missions/all" className="ml-text-link">Find a mission</Link>}>
           {sessions.length ? "Try another filter." : "Completed missions and Arena sessions are listed here."}
         </Empty>
       ) : (
@@ -349,7 +349,7 @@ function CompletedPicker({ to, empty, cta }: { to: (id: string) => string; empty
     .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
   if (done.length === 0)
     return (
-      <Empty icon="replay" title="Nothing to review yet" action={<Link to="/missions/for-you" className="ml-text-link">Find a mission</Link>}>
+      <Empty icon="replay" title="Nothing to review yet" action={<Link to="/missions/all" className="ml-text-link">Find a mission</Link>}>
         {empty}
       </Empty>
     );

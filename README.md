@@ -42,7 +42,7 @@ Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 6 destinații 
 | Destinație | Secțiuni |
 |---|---|
 | Dashboard | – |
-| Missions | For You · All Missions · Daily Challenges · Weekly Challenges · Assessments |
+| Missions | All Missions · Daily Challenges · Weekly Challenges · Assessments |
 | Trading Arena | Simulator · Scenarios · Virtual Portfolio · Risk Calculator |
 | Trade Journal | Session History · Decision Journal · Trade Replay · Alternative Decisions · Performance Analytics |
 | Learn | Learning Paths · Lessons · Concept Library · Glossary · Knowledge Checks |
@@ -73,8 +73,7 @@ Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentr
   - activitatea recentă și ultima simulare;
   - acțiuni rapide și cardul Pro (doar pentru Free).
 - **Missions:**
-  - **For You:** recomandări și golurile de competență.
-  - **All Missions:** căutare și filtre (topic, dificultate, durată, status), cu cele 10 categorii din specificație.
+  - **All Missions:** misiunea recomandată (cu motivul ei), apoi căutare și filtre (topic, dificultate, durată, status), cu cele 10 categorii din specificație.
   - **Provocări zilnice:** 3 itemi pe un obiectiv, generați determinist din dată.
   - **Provocări săptămânale:** scenariul săptămânii plus 3 obiective și 150 XP.
   - **Assessments:** evaluarea inițială, teste pe topic, evaluări practice și finală, evoluția competențelor.

@@ -437,20 +437,6 @@
 .ml-continue-main b {
   font-size: 15px;
 }
-.ml-reco {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: var(--ml-s4);
-  flex-wrap: wrap;
-}
-.ml-reco-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1 1 320px;
-  min-width: 0;
-}
 .ml-reco-title {
   font-size: 20px !important;
 }
@@ -541,35 +527,6 @@
 }
 
 /* ── Missions ───────────────────────────────────────────────────────── */
-
-.ml-gaps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ml-s3);
-}
-.ml-gaps > li {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: var(--ml-s3);
-  border-bottom: 1px solid var(--ml-hairline);
-}
-.ml-gaps > li:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-.ml-gap-head {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-size: 13.5px;
-}
-.ml-gap-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 
 .ml-mission-list {
   display: flex;

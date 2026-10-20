@@ -90,7 +90,7 @@ Specificația „MARKET//LAB — Product Functional Architecture & Sidebar Speci
 | Modul | Rută | Ce s-a implementat | Faza din specificație |
 |---|---|---|---|
 | Dashboard | `/dashboard` | Progres, obiective zilnice și săptămânale, streak, Continue Learning, misiunea recomandată, activitate, ultima simulare, acțiuni rapide, card Pro | 1 |
-| Missions | `/missions/*` | For You, All Missions (căutare și filtre pe 10 categorii), Daily, Weekly, Assessments, pagina de misiune, feedback imediat în player | 1 |
+| Missions | `/missions/*` | All Missions (misiunea recomandată, căutare și filtre pe 10 categorii), Daily, Weekly, Assessments, pagina de misiune, feedback imediat în player | 1 |
 | Trading Arena | `/arena/*` | Simulator (1H/4H, SMA, market/limit, istoric ordine), 9 scenarii, Virtual Portfolio, Risk Calculator | 1 (un instrument) |
 | Trade Journal | `/journal/*` | Session History, Decision Journal, Trade Replay (misiuni și Arena), Alternative Decisions, Performance Analytics; debrief-ul de sesiune | 1–2 |
 | Learn | `/learn/*` | 5 trasee + o secvență personalizată, 18 lecții, 40 de concepte, 90 de termeni, 20 de verificări de cunoștințe | 1–2 |

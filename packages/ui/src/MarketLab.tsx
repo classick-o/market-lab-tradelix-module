@@ -34,7 +34,6 @@ function page<M extends Record<string, any>>(load: () => Promise<M>, name: keyof
 }
 
 const Dashboard = page(() => import("./pages/Dashboard"), "DashboardPage");
-const ForYou = page(() => import("./pages/Missions"), "ForYouPage");
 const AllMissions = page(() => import("./pages/Missions"), "AllMissionsPage");
 const Daily = page(() => import("./pages/Missions"), "DailyPage");
 const Weekly = page(() => import("./pages/Missions"), "WeeklyPage");
@@ -77,7 +76,6 @@ const ProfileHub = page(() => import("./pages/ProfileHub"), "ProfileHubPage");
 
 const ROUTES: [string, (p: Record<string, string>) => ReactNode][] = [
   ["/dashboard", () => <Dashboard />],
-  ["/missions/for-you", () => <ForYou />],
   ["/missions/all", () => <AllMissions />],
   ["/missions/daily", () => <Daily />],
   ["/missions/weekly", () => <Weekly />],

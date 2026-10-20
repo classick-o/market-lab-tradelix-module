@@ -31,7 +31,6 @@ export const NAV: NavItem[] = [
     icon: "flag",
     group: "workspace",
     children: [
-      { id: "for-you", label: "For You", to: "/missions/for-you", icon: "sparkle" },
       { id: "all", label: "All Missions", to: "/missions/all", icon: "list" },
       { id: "daily", label: "Daily Challenges", to: "/missions/daily", icon: "sun" },
       { id: "weekly", label: "Weekly Challenges", to: "/missions/weekly", icon: "calendar" },

@@ -25,6 +25,12 @@ Când o regulă se schimbă, se schimbă întâi aici, apoi în cod.
 - **Bara de sus:** afișează streak-ul de învățare și XP-ul de azi față de goal-ul zilnic. Nu are breadcrumb și nu are insigna „Simulation”. Pe telefon are butonul de meniu, logo-ul și streak-ul; XP-ul de azi se vede acolo în cardul Daily goal.
   - În cod: `Topbar` din `packages/ui/src/components/Shell.tsx`.
 
+## Missions
+
+- Secțiunile sunt: All Missions, Daily Challenges, Weekly Challenges și Assessments. `/missions` deschide All Missions.
+- Misiunea recomandată, cu motivul ei, apare sus pe All Missions și pe Dashboard.
+  - În cod: `NAV` din `packages/ui/src/nav.ts`, `recommend()` din `packages/learning`.
+
 ## Dashboard
 
 ### Continue learning

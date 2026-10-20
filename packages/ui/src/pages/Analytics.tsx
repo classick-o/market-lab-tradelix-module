@@ -190,7 +190,7 @@ export function AnalyticsPage() {
       <SubNav module="journal" />
 
       {rows.length === 0 ? (
-        <Empty icon="bars" title="No sessions in this period" action={<Link to="/missions/for-you" className="ml-text-link">Start a mission</Link>}>
+        <Empty icon="bars" title="No sessions in this period" action={<Link to="/missions/all" className="ml-text-link">Start a mission</Link>}>
           Complete missions or Arena sessions and your trends will build up here.
         </Empty>
       ) : (
