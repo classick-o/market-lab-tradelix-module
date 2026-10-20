@@ -113,7 +113,7 @@ Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 3 grupuri și 
   - **Standalone, checkout-ul e demo și nu ia bani.**
 - **Settings:**
   - profil (nume, avatar, nivel, obiective, topicuri de focus);
-  - preferințe (limbă, temă Navy/Charcoal, accent, fus orar, grafice, redare);
+  - preferințe (limbă, temă Black/Charcoal/Navy, accent, fus orar, grafice, redare);
   - notificări, confidențialitate (consimțăminte, export, ștergere) și billing.
 - **Stări:** fiecare secțiune are stări de încărcare (skeleton), gol și eroare (cu Try again), iar o eroare izolată nu dărâmă restul aplicației.
 
@@ -164,6 +164,19 @@ import "@market-lab/ui/styles.css";
 | `onUpgrade`, `onManageBilling` | Checkout-ul și portalul de facturare ale Tradelix, în locul celor demo. |
 | `onSignOut`, `user` | Sign-out-ul și identitatea reale. |
 | `showNav={false}` | Ascunde sidebar-ul și barele modulului, dacă navigația o asigură Tradelix. Secțiunile rămân accesibile prin tab-urile din pagini. |
+
+## Portarea în Angular
+
+Dacă aplicația-mamă e în Angular, cea mai mare parte se mută direct:
+
+| Ce | Cum se mută |
+|---|---|
+| `packages/engine`, `scenario-gen`, `evaluation`, `learning`, `missions`, `academy` | Direct. Sunt TypeScript pur, fără React și fără DOM: motorul, scorurile, XP-ul, recomandările și tot conținutul. |
+| Stilurile (`packages/ui/src/styles.css` și `styles/`) | Direct, ca stylesheet global. Sunt CSS simplu cu variabile `--ml-*`, toate clasele au prefixul `ml-`, iar tema se pune pe un element `.ml-root` (`data-theme`, plus variabilele de accent). Fișierele din `styles/screens/` corespund ecranelor, deci pot fi atașate și pe componentă. |
+| Componentele din `packages/ui` | Se rescriu ca componente Angular, păstrând markup-ul și clasele. Sunt mici și fără logică proprie: logica stă în pachetele de mai sus și în `store.ts` / `progress.ts`, care pot deveni un serviciu Angular. |
+| Routerul propriu (`router.tsx`) | Se înlocuiește cu Angular Router; rutele sunt listate în `nav.ts`. |
+
+Ordinea recomandată: pachetele de logică și CSS-ul, apoi un serviciu care ține starea (echivalentul `store.ts`), apoi ecranele, începând cu shell-ul (sidebar, bara de sus) și Dashboard.
 
 ## Cum adaugi conținut
 

@@ -904,8 +904,8 @@
 .ml-dialog-panel {
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, var(--ml-surface) 95%, white);
-  border: 1px solid #3b3a38;
+  background: var(--ml-surface-2);
+  border: 1px solid var(--ml-border-strong);
   box-shadow: 0 25px 100px rgba(0, 0, 0, 0.6);
   font-family: var(--ml-font);
   font-size: var(--ml-fs-body);

@@ -1,6 +1,6 @@
 # MARKET//LAB · Sistemul de design
 
-Direcția: **premium fintech × gaming**, dark-first. Suprafețele sunt navy adânc, textul e off-white și griuri reci. Accentul e lime, albastrul e secundar și discret. Elementele de gaming sunt subtile: niveluri, ranguri, streak-uri, realizări. Puțin zgomot vizual, date clare.
+Direcția vine din designul generat în Figma Make („Dark Theme App Design”): **negru pur, suprafețe neutre, un singur accent albastru electric** (#55A8FF) și un violet secundar (#B19AF4) folosit doar în ilustrații. Tipografie compactă (Inter, 13px), colțuri de 9px, carduri liniștite. Atenția vizuală e rezervată pentru următoarea acțiune de învățare, nu pentru fiecare card.
 
 ## Direcția de experiență
 
@@ -9,10 +9,10 @@ Direcția: **premium fintech × gaming**, dark-first. Suprafețele sunt navy ad�
   - **Risk Discipline:** dacă limitele au fost respectate;
   - **Simulated Outcome:** P&L-ul simulat.
 
-  Verdele și roșul apar doar la rezultate simulate și mereu cu semn (+/−), deci culoarea nu e singurul indiciu.
-- **Interacțiunea-semnătură: „The Reveal”.** Viitorul pieței stă sub un văl hașurat, marcat „Unknown”. După decizie, cursorul „Now” alunecă spre dreapta, iar vălul se retrage. Axa timpului e fixă.
-- **Decizia lângă grafic.** În player și în Simulator, panoul de decizie stă lipit lângă grafic. Stop-loss-ul și ținta apar pe grafic ca linii „draft” cât timp le tastezi.
-- **Orientarea:** sidebar-ul arată mereu unde ești, bara de sus are breadcrumbs, iar paginile lungi au tab-uri de secțiune când sidebar-ul e colapsat sau pe mobil.
+  Verde-salvia și roșu-cărămiziu apar doar la rezultate simulate și la lumânări, mereu cu semn (+/−), deci culoarea nu e singurul indiciu.
+- **O singură acțiune evidențiată pe ecran.** Pe Dashboard: cardul „Continue learning” și misiunea recomandată au animație de intrare și reacție la hover; restul cardurilor sunt statice. Pe Missions și Learn, același rol îl au spotlight-ul și cardul „feature”.
+- **„The Reveal”** rămâne interacțiunea-semnătură din player: viitorul pieței stă sub un văl hașurat, iar după decizie vălul se retrage.
+- **Orientarea:** sidebar-ul arată mereu unde ești, bara de sus are breadcrumbs, iar fiecare modul are tab-uri de secțiune sub titlu (mereu vizibile, ca în design).
 
 ## Tokeni
 
@@ -20,91 +20,105 @@ Toți tokenii sunt în [`packages/ui/src/styles/tokens.css`](packages/ui/src/sty
 
 | Grup | Tokeni |
 |---|---|
-| Suprafețe (navy) | `--ml-bg` #0A0E16, `--ml-bg-2` (sidebar), `--ml-surface` #111723, `--ml-surface-2` #161D2B, `--ml-surface-hover`, `--ml-surface-active`, `--ml-black` (grafice, ilustrații) |
-| Linii | `--ml-border` #1F2738, `--ml-border-strong`, `--ml-border-input`, `--ml-hairline` |
-| Text | `--ml-text` #EEF1F6, `--ml-text-2` #A3ADBE, `--ml-text-3` #8A95A9 (≥ 4,5:1 pe toate suprafețele) |
-| Accent | `--ml-accent` (implicit lime #C8F25A), `-hover`, `-ink`, `-fg` (deschis automat până la 4,5:1), `-soft`, `-line`. Se alege din Preferences → Accent colour. Folosit pentru acțiunea principală, selecție, progres, focus, cursorul „Now”. |
-| Secundar | `--ml-blue` #5B8DEF, `--ml-blue-fg`, `--ml-blue-soft`: exemple numerice, stări „în curs”, indicatori. |
-| Rezultate | `--ml-pos` #3DD68C, `--ml-neg` #FF6B6B (+ `-soft`), doar pentru câștiguri și pierderi simulate. |
-| Semantic | `--ml-danger*` pentru erori și acțiuni distructive, `--ml-warn` pentru avertismente. |
-| Grafic | `--ml-candle-up/down`, `--ml-grid`, `--ml-volume-*`, `--ml-indicator-1/2` (SMA 20 / SMA 50) |
-| Tipografie | Inter; body 14px, h3 17px, h2 20–24px, h1 26–34px; cifre tabulare (`.num`). Lecțiile folosesc 15px, pentru citit. |
-| Spațiu | Densitate compactă: 4, 6, 10, 12, 16, 20, 28, 36, 48 (`--ml-s1`…). Cardurile au padding de 16px. |
-| Layout | Sidebar 264px (`--ml-sb-w`) sau rail de 64px; bara de sus 52px; bara de jos pe mobil 60px; gutter 14–24px. |
-| Teme | `navy` (implicit) și `charcoal` (negrul neutru inițial), prin `data-theme` pe `.ml-root`. |
+| Suprafețe | `--ml-bg` #000, `--ml-bg-2` #030303 (sidebar, bara de sus), `--ml-surface` #050505 (carduri, inputuri), `--ml-surface-2` #0A0A0A, `--ml-surface-hover` #0F0F0F, `--ml-surface-active` #161616 |
+| Linii | `--ml-border` #252525, `--ml-border-strong` #343538, `--ml-border-input` #35363A, `--ml-hairline` |
+| Text | `--ml-text` #E9E9E9, `--ml-text-2` #929499, `--ml-text-3` #7D8086. Griurile cele mai închise din design (#62656C etc.) au fost ridicate unde pică sub 4,5:1 pe text mic. |
+| Accent | `--ml-accent` (implicit Electric #55A8FF), `-hover`, `-ink`, `-fg`, `-soft`, `-line`, `-muted` (accent amestecat cu gri, pentru text secundar), `-deep` (accent aproape negru, pentru fundaluri). Se alege din Preferences → Accent colour. |
+| Secundar | `--ml-accent-2` #B19AF4 (alias vechi `--ml-blue`): tonurile ilustrațiilor, stări „în curs”. |
+| Rezultate | `--ml-pos` #90B8A5, `--ml-neg` #D77662 (+ `-soft`), doar pentru câștiguri și pierderi simulate. |
+| Grafic | `--ml-candle-up` #86B7A4, `--ml-candle-down` #D77662, `--ml-grid`, `--ml-volume-*`, `--ml-indicator-1/2` |
+| Tipografie | Inter (400–700); body 13px, h3 14px, h1 26–29px (550, −0.8px); etichete uppercase de 11px cu spațiere 0.45px; cifre tabulare (`.num`). |
+| Raze | 4px butoane și inputuri, 6px câmpuri de căutare, 9px carduri, 3px tag-uri. |
+| Layout | Sidebar 236px (209px sub 1190px), rail de 72px (sub 960px); bara de sus 65px; bara de jos pe mobil 64px; gutter 29px (37px peste 1550px); conținut maxim 1580px. |
+| Teme | `black` (implicit), `charcoal` și `navy`, prin `data-theme` pe `.ml-root`. |
+
+### Puncte de întrerupere
+
+| Lățime | Ce se schimbă |
+|---|---|
+| ≥ 1550px | Fonturi și padding-uri puțin mai mari. |
+| ≤ 1190px | Sidebar de 209px, griduri de 4 coloane devin 2. |
+| ≤ 960px | Sidebar-ul devine rail de 72px; Dashboard pe o coloană. |
+| ≤ 760px | Telefon: drawer din stânga și bara de jos cu 5 destinații. |
+| ≤ 480px | Ilustrațiile mari se ascund, biletul de risc devine o bandă orizontală. |
+
+## Fișiere de stil
+
+```
+styles.css                 punctul de intrare (importă tot în ordinea de mai jos)
+styles/tokens.css          tokeni, teme, puncte de întrerupere
+styles/base.css            reset, tipografie, focus
+styles/components.css      butoane, tag-uri, câmpuri, dialoguri, tabele, toast
+styles/chart.css           graficul și overlay-urile lui
+styles/layout.css          antetul paginii și componente vechi comune
+styles/shell.css           sidebar, bara de sus, drawer, bara de jos
+styles/pages.css           carduri, tile-uri, filtre
+styles/screens/shared.css  bara de căutare și filtre (Missions, Lessons, Concepts)
+styles/screens/art.css     lumânări sintetice, ilustrații, lumânările de dificultate
+styles/screens/dashboard.css
+styles/screens/missions.css
+styles/screens/learn.css
+```
+
+Toate clasele au prefixul `ml-`, deci CSS-ul poate fi copiat ca atare într-o altă aplicație (vezi „Portarea în Angular” din README).
 
 ## Navigație
 
 - **Sidebar** ([`Shell.tsx`](packages/ui/src/components/Shell.tsx)):
-  - brand și widget de progres;
-  - 3 grupuri cu titlu (Workspace, Learning, Account);
-  - părinte = link + buton separat de expandare (`aria-expanded`, `aria-controls`);
-  - indicatorul activ: o bară lime la stânga și `aria-current="page"`;
-  - footer cu contul.
-- **Colapsat (rail):**
-  - doar iconițe;
-  - etichetele rămân în DOM pentru cititoarele de ecran;
-  - flyout-uri cu secțiunile, deschise la hover sau la focus (deci și din tastatură).
-- **Mobil:** o bară de jos cu 5 destinații și un drawer full-screen (Dialog `full`) cu toată navigația.
-- **Badge-uri:** un singur tip, un punct lime, doar pentru acțiuni posibile acum.
+  - brandul MARKET//LAB, cu „//” în accent;
+  - caseta de nivel (nivel, rang, progres XP), link spre Levels & XP;
+  - două grupuri cu titlu, Workspace și Learning; părintele e link, iar chevron-ul separat deschide submeniul (`aria-expanded`);
+  - elementul activ: text în accent, fundal de 7,5% accent și o bară de 2px la stânga, plus `aria-current="page"`;
+  - jos: cardul Pro (Upgrade sau Manage plan) și rândul de cont (nume, plan, rang), cu iconițe pentru Settings și notificări.
+- **Colapsat (rail):** doar iconițe, flyout-uri cu secțiunile la hover sau focus; cardul Pro devine „PRO”.
+- **Mobil:** bara de jos cu 5 destinații și un drawer care alunecă din stânga (280px) cu tot sidebar-ul.
+- **Badge-uri:** numărul de misiuni neîncepute la Missions, un punct pentru provocarea zilnică disponibilă.
 
 ## Componente
 
-În [`ui.tsx`](packages/ui/src/components/ui.tsx), [`Page.tsx`](packages/ui/src/components/Page.tsx) și fișiere dedicate:
+În [`ui.tsx`](packages/ui/src/components/ui.tsx), [`Page.tsx`](packages/ui/src/components/Page.tsx), [`Art.tsx`](packages/ui/src/components/Art.tsx) și fișiere dedicate:
 
-- **Bază:**
-  - `Button`, `IconButton`, `Tag`, `SimBadge`, `Segmented`, `Chips`, `RadioRow`, `Checkbox`, `Tabs`;
-  - `TextField`, `TextArea`, `Dialog` (center / sheet / full), `Toast`;
-  - `ScoreRing`, `Meter`, `KeyValues`, `Empty`.
-- **Pagini:** `PageHead`, `SubNav`, `Card`, `StatTile`, `FilterChips`, `Pnl`, `Avatar`, `MiniRing`, `ProBadge`.
-- **Stări:** `Skeleton` (încărcare), `ErrorState` și `RouteBoundary` (o eroare rămâne izolată în secțiunea ei), `Empty`.
-- **Învățare:**
-  - `QuestionCard` și `QuizBlock`: grilă, scenariu, exercițiu numeric, cu explicații după răspuns;
-  - `Diagram`: 14 ilustrații SVG care urmează tema;
-  - `Widget`: 7 exemple interactive care folosesc matematica motorului.
-- **Date:** `Chart` (cu overlay-uri SMA, volum și grilă opționale, etichete de timp pe timeframe), `LineChart`, `BarList`, `Heatmap`. Fiecare grafic are o descriere text pentru cititoarele de ecran.
+- **Bază:** `Button`, `IconButton`, `Tag`, `SimBadge`, `Segmented`, `Chips`, `Tabs`, `TextField`, `Dialog` (center / sheet / full / drawer), `Toast`, `ScoreRing`, `Meter`, `Empty`.
+- **Pagini:** `PageHead`, `SubNav`, `Card`, `FilterChips`, `Pnl`, `MiniRing`, `ProBadge`.
+- **Artă (decorativă, `aria-hidden`):** `CandleStrip` (lumânări sintetice deterministe), `LearningIllustration` (4 variante), `DifficultyCandles` (dificultatea 1–5), `missionGlyph(topic)`.
+- **Ecrane:**
+  - Dashboard: 4 carduri de statistici (progres, goal zilnic editabil, streak, nivelul de competență), „Continue learning” cu grafic, misiunea recomandată cu „Why this mission?”, activitate recentă, competențe, ultima simulare, acțiuni rapide;
+  - Missions: spotlight cu biletul de risc al misiunii (procentul și suma reale din regulile ei), bara de filtre, carduri de misiune;
+  - Learn: path-ul în curs cu orbite și plachetă, nota „Up next”, carduri de path, listă de pași, carduri de lecții și de concepte.
 
 ## Mișcare
 
-- **Tranziția de pagină:** opacitate și o deplasare de 8px, 280 ms.
-- **Elemente de navigație:** sidebar-ul, flyout-urile și meniul de cont apar rapid (140–200 ms).
-- **Graficele nu au animații decorative.** Doar lumânarea nouă și cursorul „Now” se mișcă în timpul redării.
-- **Reduced motion:** „Follow system / Reduced / Full”. În modul redus totul devine instantaneu.
+- **Intrare:** cardurile principale apar cu o deplasare de 12px (0,6–0,75 s), decalat.
+- **Hover:** cardurile se ridică 2–4px; săgețile din butoane se mută 3–4px.
+- **„Continue learning”:** o lumină trece de două ori peste card și conturul pulsează discret de trei ori, apoi se oprește.
+- **Reduced motion:** toate animațiile de mai sus sunt în `prefers-reduced-motion: no-preference`; setarea din Preferences rămâne valabilă.
 
 ## Decizii și compromisuri
 
 | Decizie | Compromis |
 |---|---|
-| Paleta navy + lime, conform specificației MARKET//LAB | Înlocuiește direcția monocromă inițială. Tema Charcoal și accentul Mono rămân opțiuni în Preferences. |
-| Verde/roșu doar pentru rezultate simulate, mereu cu semn | Lumânările rămân deschise/închise la culoare, ca graficul să nu concureze cu scorurile de proces. E un singur token, dacă se vor culori. |
-| Trei scoruri separate (DQ, RD, outcome) | Mai multe numere pe ecran; în schimb, profitul nu „spală” o decizie proastă. |
-| Lime ca accent, verde ca „pozitiv” | Sunt nuanțe distincte (#C8F25A față de #3DD68C), iar rezultatele au mereu semn. |
-| Tab-uri de secțiune în pagină doar când sidebar-ul nu le arată | Pe desktop, cu sidebar-ul extins, nu se dublează navigația. |
-| Pagini încărcate pe bucăți (`React.lazy`) | Un skeleton scurt la prima vizită a unei secțiuni; primul ecran se încarcă mai repede. |
-| Grafic SVG propriu | Control complet pentru văl, linii draft și indicatori; fără zoom sau pan liber. |
+| Paleta Electric pe negru, din designul Figma | Înlocuiește navy + lime. Lime, Mono și celelalte accente rămân opțiuni în Preferences; temele Charcoal și Navy la fel. |
+| Textul gri ridicat la ≥ 4,5:1 | Câteva etichete sunt puțin mai deschise decât în design. |
+| Submeniurile din specificație păstrate în sidebar | Designul nu are submeniuri; aici sidebar-ul are chevron și listă de secțiuni, iar tab-urile apar și în pagină. |
+| Upgrade și Settings mutate jos în sidebar | Ca în design. Grupul Account a dispărut; Profile rămâne în bara de jos pe mobil. |
+| Pe Learn, path-ul în curs e scos din grila de path-uri | Grila arată exact 4 carduri, ca în design; path-ul în curs are cardul mare de deasupra. |
+| Concept Library: grilă fără selecție, listă + detaliu cu selecție | Grila din design pentru explorare, lista pentru citit concept după concept. |
+| Biletul de risc arată datele misiunii (1% sau 2%, 10.000 vUSD) | Nu e un număr decorativ: se schimbă de la o misiune la alta. |
 
 ## QA
 
-**Verificat automat** (Chrome headless, scripturile de parcurs din sesiune):
+**Verificat automat** (Chrome headless, pe build-ul de producție):
 
-- [x] Toate cele 39 de rute testate, plus 4 redirectări de la adresele vechi, se încarcă fără ecran de eroare și fără 404.
-- [x] Fluxul complet:
-  - onboarding;
-  - M01 și M06 cap-coadă, cu feedback imediat și debrief;
-  - provocarea zilnică, lecția cu verificare, verificarea pe topic;
-  - sesiunea Arena cu jurnal la ordin, 4H și SMA, apoi sumarul;
-  - Journal (istoric, decizii, replay Arena, alternative, analytics);
-  - upgrade demo, billing, schimbarea temei;
-  - sidebar colapsat cu flyout, meniul de cont, sign-out și revenirea.
-- [x] Fără overflow orizontal la 360, 390, 768, 1024, 1280, 1440 și 1920px.
+- [x] 36 de rute × 6 lățimi (360, 390, 768, 1024, 1440, 1920): fără overflow orizontal.
 - [x] Zero erori și zero avertismente în consolă.
-- [x] `npm run typecheck`, `npm test` (97 de teste, inclusiv integritatea conținutului) și `npm run build` trec.
+- [x] Fluxul complet: onboarding, misiuni cap-coadă cu debrief, provocarea zilnică, lecția cu verificare, verificarea pe topic, sesiunea Arena, Journal, Progress, upgrade demo și billing, schimbarea temei, sidebar colapsat cu flyout, meniul de cont și sign-out, mobil.
+- [x] Dialogul „Edit daily goal” salvează goal-ul, iar cardul se actualizează.
+- [x] `npm run typecheck`, `npm test` (97 de teste) și `npm run build` trec.
 
-**Verificat vizual:** dashboard, misiuni, simulator, sumarul sesiunii, alternative, analytics, lecții, streak-uri, pricing, sidebar colapsat, mobil (dashboard, drawer, profil).
+**Verificat vizual:** Dashboard, toate secțiunile Missions și Learn, detaliul de misiune și de path, Arena, Progress, Pricing, lecția, dialogurile, drawer-ul pe mobil.
 
 **Rămas de făcut:**
 
-- [ ] Test manual cu un cititor de ecran (NVDA / VoiceOver), mai ales pentru flyout-urile sidebar-ului și graficele mici.
-- [ ] Măsurarea contrastului cu un instrument dedicat, pe ambele teme și pe toate accentele.
+- [ ] Test manual cu un cititor de ecran (NVDA / VoiceOver), mai ales pentru flyout-uri și tooltip-urile de la competențe.
+- [ ] Măsurarea contrastului pe toate temele și accentele.
 - [ ] Test pe dispozitive mobile reale.
-- [ ] Test de utilizare cu 5–8 utilizatori pe noua navigație.
