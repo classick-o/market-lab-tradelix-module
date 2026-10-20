@@ -276,8 +276,8 @@
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link {
   color: var(--ml-accent);
   background:
-    radial-gradient(80% 170% at 0% 50%, color-mix(in srgb, var(--ml-accent) 15%, transparent), transparent 72%),
-    color-mix(in srgb, var(--ml-accent) 2.5%, transparent);
+    radial-gradient(80% 170% at 0% 50%, color-mix(in srgb, var(--ml-accent) 8%, transparent), transparent 72%),
+    color-mix(in srgb, var(--ml-accent) 1.5%, transparent);
 }
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link > .ml-icon {
   color: var(--ml-accent);
@@ -292,8 +292,8 @@
   border-radius: 2px;
   background: var(--ml-accent);
   box-shadow:
-    0 0 6px 1px color-mix(in srgb, var(--ml-accent) 70%, transparent),
-    0 0 16px 3px color-mix(in srgb, var(--ml-accent) 32%, transparent);
+    0 0 4px color-mix(in srgb, var(--ml-accent) 50%, transparent),
+    0 0 10px 1px color-mix(in srgb, var(--ml-accent) 16%, transparent);
   transform: translateY(-50%);
 }
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::after {
@@ -302,7 +302,7 @@
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 42%, transparent), color-mix(in srgb, var(--ml-accent) 10%, transparent) 40%, transparent 85%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 24%, transparent), color-mix(in srgb, var(--ml-accent) 5%, transparent) 40%, transparent 80%);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -394,7 +394,7 @@
    the background and lights the tab's outline, fading out to the right. */
 .ml-sb-sublink[aria-current="page"] {
   color: var(--ml-text);
-  background: radial-gradient(85% 160% at 0% 50%, color-mix(in srgb, var(--ml-accent) 13%, transparent), transparent 70%);
+  background: radial-gradient(85% 160% at 0% 50%, color-mix(in srgb, var(--ml-accent) 7%, transparent), transparent 70%);
 }
 .ml-sb-sublink[aria-current="page"]::before {
   content: "";
@@ -406,8 +406,8 @@
   border-radius: 2px;
   background: var(--ml-accent);
   box-shadow:
-    0 0 5px 1px color-mix(in srgb, var(--ml-accent) 70%, transparent),
-    0 0 14px 3px color-mix(in srgb, var(--ml-accent) 30%, transparent);
+    0 0 4px color-mix(in srgb, var(--ml-accent) 45%, transparent),
+    0 0 9px 1px color-mix(in srgb, var(--ml-accent) 14%, transparent);
   transform: translateY(-50%);
 }
 .ml-sb-sublink[aria-current="page"]::after {
@@ -416,7 +416,7 @@
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 38%, transparent), color-mix(in srgb, var(--ml-accent) 9%, transparent) 40%, transparent 85%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 20%, transparent), color-mix(in srgb, var(--ml-accent) 4%, transparent) 40%, transparent 80%);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
