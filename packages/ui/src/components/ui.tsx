@@ -433,7 +433,7 @@ export function Dialog({
   description?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
-  variant?: "center" | "sheet" | "full";
+  variant?: "center" | "sheet" | "full" | "drawer";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();

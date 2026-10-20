@@ -16,35 +16,50 @@
 
 /* ── Page heads ─────────────────────────────────────────────────────── */
 
+/* Page heading from the app design: small uppercase eyebrow, 29px title, muted line under it. */
 .ml-page-head {
   display: flex;
   flex-direction: column;
-  gap: var(--ml-s2);
+  gap: 0;
+  margin-bottom: 4px;
 }
 .ml-page-head--row {
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: wrap;
-  gap: var(--ml-s4);
+  gap: 15px;
+}
+.ml-page-head .ml-eyebrow {
+  margin: 0;
+}
+.ml-root .ml-page-head h1 {
+  margin: 8px 0;
+  font-size: var(--ml-fs-h1);
+  font-weight: 550;
+  letter-spacing: -0.8px;
+}
+.ml-page-head h1 .ml-accent-text {
+  color: var(--ml-accent);
 }
 .ml-page-sub {
-  max-width: 62ch;
-  color: var(--ml-text-2);
-  font-size: var(--ml-fs-lg);
+  max-width: 70ch;
+  color: #81838a;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .ml-back {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   width: fit-content;
-  margin-bottom: var(--ml-s2);
-  color: var(--ml-text-2);
-  font-size: 14px;
+  margin-bottom: 10px;
+  color: #92949a;
+  font-size: 12px;
   transition: color var(--ml-d-fast) var(--ml-ease);
 }
 .ml-back:hover {
-  color: var(--ml-text);
+  color: var(--ml-accent);
 }
 .ml-section {
   display: flex;

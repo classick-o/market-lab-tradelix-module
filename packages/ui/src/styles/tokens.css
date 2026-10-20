@@ -1,91 +1,96 @@
 /*
- * MARKET//LAB design tokens — dark-first, premium fintech.
- * Deep navy surfaces, off-white text, cool greys, one lime accent and a restrained blue.
- * Green and red are reserved for simulated gains and losses (always paired with a sign).
- * A host app can override any --ml-* token on .ml-root.
+ * MARKET//LAB design tokens — implemented from the Figma Make "Dark Theme App Design".
+ * Pure black foundation, near-black surfaces, Inter at 13px, 9px card radius,
+ * one Electric blue accent plus a soft violet secondary. Muted green and red are
+ * reserved for candles and simulated gains/losses (always paired with a sign).
+ * Plain CSS custom properties: a host app (React, Angular, anything) can override
+ * any --ml-* token on .ml-root.
  */
 
 .ml-root {
-  /* ── Colour: surfaces (deep navy) ─────────────────────────────── */
-  --ml-black: #05080e;
-  --ml-bg: #0a0e16;
-  --ml-bg-2: #0c111a;
-  --ml-surface: #111723;
-  --ml-surface-2: #161d2b;
-  --ml-surface-hover: #1c2435;
-  --ml-surface-active: #242e42;
-  --ml-overlay: rgba(3, 6, 12, 0.72);
+  /* ── Colour: surfaces ─────────────────────────────────────────── */
+  --ml-black: #000000;
+  --ml-bg: #000000;
+  --ml-bg-2: #030303; /* sidebar, top bar */
+  --ml-surface: #050505; /* panels, cards, inputs */
+  --ml-surface-2: #0a0a0a;
+  --ml-surface-hover: #0f0f0f;
+  --ml-surface-active: #161616;
+  --ml-overlay: rgba(0, 0, 0, 0.67);
 
   /* ── Colour: lines ────────────────────────────────────────────── */
-  --ml-border: #1f2738;
-  --ml-border-strong: #2e3950;
-  --ml-border-input: #3d4a63;
-  --ml-hairline: rgba(160, 180, 220, 0.08);
+  --ml-border: #252525;
+  --ml-border-strong: #343538;
+  --ml-border-input: #35363a;
+  --ml-hairline: rgba(255, 255, 255, 0.05);
 
-  /* ── Colour: text & icons (≥ 4.5:1 on every surface up to --ml-surface-hover) ── */
-  --ml-text: #eef1f6;
-  --ml-text-2: #a3adbe;
-  --ml-text-3: #8a95a9;
-  --ml-text-disabled: #4f5a6e;
-  --ml-icon: #dfe4ec;
-  --ml-inverse: #eef1f6;
-  --ml-inverse-text: #0a0e16;
-  --ml-focus: var(--ml-accent-fg);
+  /* ── Colour: text & icons (≥ 4.5:1 on every surface) ──────────── */
+  --ml-text: #e9e9e9;
+  --ml-text-2: #929499;
+  --ml-text-3: #7d8086;
+  --ml-text-disabled: #4a4c51;
+  --ml-icon: #d8d9dc;
+  --ml-inverse: #e9e9e9;
+  --ml-inverse-text: #080808;
+  --ml-focus: var(--ml-accent);
 
   /* ── Colour: accent (primary actions, selection, progress). Set from Preferences → Accent. ── */
-  --ml-accent: #c8f25a;
-  --ml-accent-hover: #d9f68b;
-  --ml-accent-ink: #0a0e16;
-  --ml-accent-fg: #c8f25a; /* accent for small text and hairlines, always ≥ 4.5:1 */
-  --ml-accent-soft: rgba(200, 242, 90, 0.12);
-  --ml-accent-line: rgba(200, 242, 90, 0.45);
+  --ml-accent: #55a8ff;
+  --ml-accent-hover: #6fb5ff;
+  --ml-accent-ink: #080808;
+  --ml-accent-fg: #55a8ff; /* accent for small text and hairlines, always ≥ 4.5:1 */
+  --ml-accent-soft: rgba(85, 168, 255, 0.075);
+  --ml-accent-line: rgba(85, 168, 255, 0.28);
+  --ml-accent-muted: color-mix(in srgb, var(--ml-accent) 55%, #999);
+  --ml-accent-deep: color-mix(in srgb, var(--ml-accent) 28%, #080808);
 
-  /* ── Colour: secondary accent (restrained blue: links, info, secondary data) ── */
-  --ml-blue: #5b8def;
-  --ml-blue-fg: #7fa6f3;
-  --ml-blue-soft: rgba(91, 141, 239, 0.14);
+  /* ── Colour: secondary accent (soft violet: examples, "in progress", indicators) ── */
+  --ml-accent-2: #b19af4;
+  --ml-blue: var(--ml-accent-2);
+  --ml-blue-fg: var(--ml-accent-2);
+  --ml-blue-soft: rgba(177, 154, 244, 0.1);
 
   /* ── Colour: outcomes (simulated gains and losses only) ───────── */
-  --ml-pos: #3dd68c;
-  --ml-pos-soft: rgba(61, 214, 140, 0.12);
-  --ml-neg: #ff6b6b;
-  --ml-neg-soft: rgba(255, 107, 107, 0.12);
+  --ml-pos: #90b8a5;
+  --ml-pos-soft: rgba(144, 184, 165, 0.08);
+  --ml-neg: #d77662;
+  --ml-neg-soft: rgba(215, 118, 98, 0.09);
 
   /* ── Colour: semantic, for errors and destructive actions ─────── */
-  --ml-danger: #f2555a;
-  --ml-danger-text: #ff8f8f;
-  --ml-danger-soft: rgba(242, 85, 90, 0.1);
-  --ml-danger-line: rgba(242, 85, 90, 0.35);
-  --ml-warn: #ffb547;
+  --ml-danger: #e06b5b;
+  --ml-danger-text: #f0948a;
+  --ml-danger-soft: rgba(224, 107, 91, 0.09);
+  --ml-danger-line: rgba(224, 107, 91, 0.35);
+  --ml-warn: #d9b26b;
 
   /* ── Colour: chart ────────────────────────────────────────────── */
-  --ml-candle-up: #dce3ee;
-  --ml-candle-up-wick: #c3ccda;
-  --ml-candle-down: #263044;
-  --ml-candle-down-line: #8792a6;
-  --ml-grid: #121a28;
-  --ml-volume-up: #1f2a3d;
-  --ml-volume-down: #172031;
-  --ml-line-soft: #b9c3d3;
-  --ml-line-muted: #56627a;
-  --ml-indicator-1: #7fa6f3;
-  --ml-indicator-2: #ffb547;
+  --ml-candle-up: #86b7a4;
+  --ml-candle-up-wick: #86b7a4;
+  --ml-candle-down: #d77662;
+  --ml-candle-down-line: #d77662;
+  --ml-grid: rgba(255, 255, 255, 0.045);
+  --ml-volume-up: rgba(134, 183, 164, 0.16);
+  --ml-volume-down: rgba(215, 118, 98, 0.16);
+  --ml-line-soft: #b8bac0;
+  --ml-line-muted: #4f5257;
+  --ml-indicator-1: var(--ml-accent);
+  --ml-indicator-2: var(--ml-accent-2);
 
   /* ── Typography ───────────────────────────────────────────────── */
   --ml-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --ml-fs-display: clamp(42px, 5.2vw, 72px);
-  --ml-fs-h1: clamp(26px, 2.6vw, 34px);
-  --ml-fs-h2: clamp(20px, 1.8vw, 24px);
-  --ml-fs-h3: 17px;
-  --ml-fs-lg: 16px;
-  --ml-fs-body: 14px;
-  --ml-fs-sm: 13px;
-  --ml-fs-xs: 12px;
-  --ml-lh-tight: 1.08;
+  --ml-fs-display: clamp(40px, 5vw, 64px);
+  --ml-fs-h1: clamp(26px, 2vw, 29px);
+  --ml-fs-h2: clamp(19px, 1.5vw, 22px);
+  --ml-fs-h3: 14px;
+  --ml-fs-lg: 15px;
+  --ml-fs-body: 13px;
+  --ml-fs-sm: 12px;
+  --ml-fs-xs: 11px;
+  --ml-lh-tight: 1.1;
   --ml-lh-heading: 1.2;
-  --ml-lh-body: 1.55;
-  --ml-track-display: -0.04em;
-  --ml-track-heading: -0.022em;
+  --ml-lh-body: 1.6;
+  --ml-track-display: -0.035em;
+  --ml-track-heading: -0.028em;
   --ml-track-label: 0.04em;
 
   /* ── Space (4px base, compact density) ────────────────────────── */
@@ -102,16 +107,16 @@
   --ml-s11: 80px;
 
   /* ── Radius ───────────────────────────────────────────────────── */
-  --ml-r-sm: 8px;
-  --ml-r-md: 12px;
-  --ml-r-lg: 16px;
-  --ml-r-xl: 22px;
+  --ml-r-sm: 4px; /* buttons, inputs, chips */
+  --ml-r-md: 6px;
+  --ml-r-lg: 9px; /* cards and panels */
+  --ml-r-xl: 9px; /* dialogs */
   --ml-r-full: 999px;
 
   /* ── Controls ─────────────────────────────────────────────────── */
   --ml-control-sm: 30px;
-  --ml-control-md: 36px;
-  --ml-control-lg: 42px;
+  --ml-control-md: 35px;
+  --ml-control-lg: 40px;
 
   /* ── Motion ───────────────────────────────────────────────────── */
   --ml-d-instant: 80ms;
@@ -123,45 +128,72 @@
   --ml-ease: cubic-bezier(0.2, 0, 0, 1);
   --ml-ease-enter: cubic-bezier(0, 0, 0.2, 1);
   --ml-ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  --ml-ease-expressive: cubic-bezier(0.16, 1, 0.3, 1);
+  --ml-ease-expressive: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   /* ── Layout ───────────────────────────────────────────────────── */
-  --ml-header-h: 52px;
-  --ml-sb-w: 264px;
-  --ml-sb-rail: 64px;
-  --ml-bottomnav-h: 60px;
-  --ml-container: 1440px;
-  --ml-gutter: clamp(14px, 2vw, 24px);
+  --ml-header-h: 65px;
+  --ml-sb-w: 236px;
+  --ml-sb-rail: 72px;
+  --ml-bottomnav-h: 64px;
+  --ml-container: 1580px;
+  --ml-gutter: 29px;
   --ml-dock-w: 380px;
 }
 
-/* Charcoal theme: the neutral near-black of the original Market Lab. */
+@media (min-width: 1550px) {
+  .ml-root {
+    --ml-fs-body: 14px;
+    --ml-sb-w: 255px;
+    --ml-gutter: 38px;
+  }
+}
+@media (max-width: 1190px) {
+  .ml-root {
+    --ml-sb-w: 209px;
+    --ml-gutter: 21px;
+  }
+}
+@media (max-width: 960px) {
+  .ml-root {
+    --ml-header-h: 59px;
+  }
+}
+@media (max-width: 760px) {
+  .ml-root {
+    --ml-header-h: 57px;
+    --ml-gutter: 16px;
+  }
+}
+
+/* Charcoal theme: the graphite base of the original design draft. */
 .ml-root[data-theme="charcoal"] {
-  --ml-black: #000000;
-  --ml-bg: #0b0b0c;
-  --ml-bg-2: #0e0e10;
-  --ml-surface: #131315;
-  --ml-surface-2: #1a1a1c;
-  --ml-surface-hover: #212124;
-  --ml-surface-active: #2a2a2e;
-  --ml-overlay: rgba(0, 0, 0, 0.7);
-  --ml-border: #26262a;
-  --ml-border-strong: #3a3a3f;
-  --ml-border-input: #4a4a50;
-  --ml-hairline: rgba(255, 255, 255, 0.07);
-  --ml-text: #f5f5f5;
-  --ml-text-2: #a8a8ad;
-  --ml-text-3: #8c8c92;
-  --ml-icon: #ededed;
-  --ml-inverse: #f5f5f5;
-  --ml-inverse-text: #0a0a0a;
-  --ml-candle-up: #e6e6e6;
-  --ml-candle-up-wick: #cfcfcf;
-  --ml-candle-down: #2b2b2b;
-  --ml-candle-down-line: #8a8a8a;
-  --ml-grid: #161616;
-  --ml-volume-up: #2a2a2a;
-  --ml-volume-down: #1c1c1c;
-  --ml-line-soft: #bdbdbd;
-  --ml-line-muted: #5e5e5e;
+  --ml-black: #08090a;
+  --ml-bg: #0c0d0e;
+  --ml-bg-2: #101112;
+  --ml-surface: #131416;
+  --ml-surface-2: #17181a;
+  --ml-surface-hover: #1b1c1e;
+  --ml-surface-active: #222326;
+  --ml-border: #26272a;
+  --ml-border-strong: #35363a;
+  --ml-border-input: #3c3d42;
+}
+
+/* Navy theme: the deep-blue palette from the first MARKET//LAB specification. */
+.ml-root[data-theme="navy"] {
+  --ml-black: #05080e;
+  --ml-bg: #0a0e16;
+  --ml-bg-2: #0c111a;
+  --ml-surface: #111723;
+  --ml-surface-2: #161d2b;
+  --ml-surface-hover: #1c2435;
+  --ml-surface-active: #242e42;
+  --ml-overlay: rgba(3, 6, 12, 0.72);
+  --ml-border: #1f2738;
+  --ml-border-strong: #2e3950;
+  --ml-border-input: #3d4a63;
+  --ml-hairline: rgba(160, 180, 220, 0.08);
+  --ml-text: #eef1f6;
+  --ml-text-2: #a3adbe;
+  --ml-text-3: #8a95a9;
 }

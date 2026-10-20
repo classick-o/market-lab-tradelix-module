@@ -1,32 +1,31 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { dailyChallenge, QUESTIONS } from "@market-lab/academy";
-import { BOTTOM_NAV, NAV, NAV_GROUPS, resolveNav, type NavItem } from "../nav";
+import { MISSIONS } from "@market-lab/missions";
+import { BOTTOM_NAV, NAV, NAV_GROUPS, resolveNav } from "../nav";
 import { useHost, usePlan } from "../host";
+import { formatDate } from "../format";
 import { useProgress } from "../progress";
 import { Link, useRouter } from "../router";
 import { useLab, useStore } from "../store";
-import { Avatar, MiniRing } from "./Page";
-import { Button, Dialog, Icon, Meter, SimBadge, cx } from "./ui";
+import { Dialog, Icon, SimBadge, cx } from "./ui";
 
-export function LabMark() {
+/** Brand: "MARKET//LAB" with the slashes in the accent; "ML" monogram when the sidebar is a rail. */
+function Brand({ brand }: { brand?: ReactNode }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="1" y="1" width="22" height="22" rx="6" fill="var(--ml-accent)" />
-      <path d="M6 15.5l3.5-3.5 3 2.5L18 8.5" stroke="var(--ml-accent-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <Link to="/dashboard" className="ml-sb-brand" aria-label="MARKET//LAB dashboard">
+      <span className="ml-sb-mark" aria-hidden="true">
+        {brand ?? "ML"}
+      </span>
+      <span className="ml-sb-word">
+        MARKET<span aria-hidden="true">//</span>
+        <span className="ml-sr">, </span>LAB
+        <small>Trading Skill Academy</small>
+      </span>
+    </Link>
   );
 }
 
-function Wordmark() {
-  return (
-    <span className="ml-wordmark">
-      MARKET<span aria-hidden="true">//</span>
-      <span className="ml-sr">, </span>LAB
-    </span>
-  );
-}
-
-/** Small dots shown only for something the user can act on now. */
+/** Small dots, only for something the user can act on now. */
 function useBadges(): Record<string, string> {
   const lab = useLab();
   const store = useStore();
@@ -37,79 +36,64 @@ function useBadges(): Record<string, string> {
   return badges;
 }
 
-function ProgressWidget({ collapsed }: { collapsed: boolean }) {
+function LevelBox() {
   const lab = useLab();
-  const store = useStore();
   const { level, rank } = useProgress(lab);
   const toNext = level.needed - level.into;
-  const detailsId = useId();
-  if (collapsed) {
-    return (
-      <Link to="/progress/xp" className="ml-sb-levelring" aria-label={`Level ${level.level}, ${rank.title}. ${toNext} XP to level ${level.level + 1}.`}>
-        <MiniRing value={level.into / level.needed} size={34} stroke={3} />
-        <span className="num">{level.level}</span>
-        <span className="ml-sb-tip" aria-hidden="true">
-          Level {level.level} · {rank.title}
-        </span>
-      </Link>
-    );
-  }
-  const open = !lab.settings.progressCollapsed;
   return (
-    <section className="ml-sb-progress" aria-label="Your level">
-      <div className="ml-sb-progress-head">
-        <Link to="/progress/xp" className="ml-sb-progress-link">
-          <span className="ml-sb-lvl num">Level {level.level}</span>
-          <span className="ml-sb-rank">{rank.title}</span>
-        </Link>
-        <button
-          type="button"
-          className="ml-sb-mini-toggle"
-          aria-expanded={open}
-          aria-controls={detailsId}
-          aria-label={open ? "Hide XP details" : "Show XP details"}
-          onClick={() => store.setSettings({ progressCollapsed: open })}
-        >
-          <Icon name="chevron-down" size={16} />
-        </button>
-      </div>
-      <div id={detailsId} hidden={!open} className="ml-sb-progress-body">
-        <Meter value={level.into / level.needed} label={`${level.into} of ${level.needed} XP towards level ${level.level + 1}`} />
-        <span className="ml-sb-xp num">
-          {toNext} XP to level {level.level + 1}
+    <Link to="/progress/xp" className="ml-sb-level" aria-label={`Level ${level.level}, ${rank.title}. ${level.into} of ${level.needed} XP, ${toNext} to level ${level.level + 1}.`}>
+      <span className="ml-sb-level-top">
+        <span className="ml-sb-level-icon" aria-hidden="true">
+          <Icon name="bolt" size={18} />
         </span>
-      </div>
-    </section>
+        <span className="ml-sb-level-text">
+          <strong>
+            Level {level.level} <span className="ml-sb-slash">/</span> {rank.title}
+          </strong>
+          <small>Keep building your edge.</small>
+        </span>
+      </span>
+      <span className="ml-sb-progress" aria-hidden="true">
+        <i style={{ width: `${Math.round((level.into / level.needed) * 100)}%` }} />
+      </span>
+      <span className="ml-sb-xp" aria-hidden="true">
+        <span className="num">
+          {level.into.toLocaleString("en-US")} <span>/ {level.needed.toLocaleString("en-US")} XP</span>
+        </span>
+        <span className="num">
+          {toNext} to level {level.level + 1}
+        </span>
+      </span>
+    </Link>
   );
 }
 
 function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges: Record<string, string>; onNavigate?: () => void }) {
+  const lab = useLab();
   const { path } = useRouter();
-  const { pro } = usePlan();
   const match = resolveNav(path);
   const [open, setOpen] = useState<Record<string, boolean>>(() => (match.item?.children ? { [match.item.id]: true } : {}));
+  const notStarted = MISSIONS.filter((m) => !Object.values(lab.results).some((r) => r.missionId === m.id)).length;
 
   // The section that contains the current page opens by itself; others keep their state.
   useEffect(() => {
     if (match.item?.children) setOpen((o) => (o[match.item!.id] ? o : { ...o, [match.item!.id]: true }));
   }, [match.item]);
 
-  const itemFor = (item: NavItem): NavItem => (item.id === "pricing" && pro ? { ...item, label: "Manage plan", to: "/settings/billing", icon: "card" } : item);
-
   return (
     <nav className="ml-sb-nav" aria-label="Market Lab">
-      {NAV_GROUPS.map((g) => (
+      {NAV_GROUPS.filter((g) => g.id !== "account").map((g) => (
         <div key={g.id} className="ml-sb-group">
-          <h2 className="ml-sb-group-label">{g.label}</h2>
+          <p className="ml-sb-group-label">{g.label}</p>
           <ul>
-            {NAV.filter((n) => n.group === g.id).map((raw) => {
-              const item = itemFor(raw);
-              const active = match.item?.id === raw.id && !(raw.id === "pricing" && pro);
+            {NAV.filter((n) => n.group === g.id).map((item) => {
+              const active = match.item?.id === item.id;
               const isOpen = Boolean(open[item.id]);
               const childBadge = item.children?.find((c) => badges[c.id]);
               const subId = `ml-sb-sub-${item.id}`;
+              const count = item.id === "missions" && notStarted > 0 ? notStarted : null;
               return (
-                <li key={item.id} className={cx("ml-sb-item", active && "is-active", item.id === "pricing" && !pro && "ml-sb-item--upgrade")}>
+                <li key={item.id} className={cx("ml-sb-item", active && "is-active", isOpen && "is-open")}>
                   <div className="ml-sb-row">
                     <Link
                       to={item.to}
@@ -122,6 +106,12 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
                     >
                       <Icon name={item.icon} size={18} />
                       <span className="ml-sb-label">{item.label}</span>
+                      {count !== null && (
+                        <b className="ml-sb-count num" title={`${count} missions not started yet`}>
+                          {count}
+                          <span className="ml-sr"> missions not started</span>
+                        </b>
+                      )}
                       {collapsed && childBadge && <span className="ml-dot" aria-hidden="true" />}
                     </Link>
                     {item.children && !collapsed && (
@@ -133,7 +123,7 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
                         aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
                         onClick={() => setOpen((o) => ({ ...o, [item.id]: !isOpen }))}
                       >
-                        <Icon name="chevron-down" size={16} />
+                        <Icon name="chevron-right" size={14} />
                         {!isOpen && childBadge && <span className="ml-dot" aria-hidden="true" />}
                       </button>
                     )}
@@ -142,7 +132,7 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
                     <ul id={subId} className="ml-sb-sub" hidden={!isOpen}>
                       {item.children.map((c) => (
                         <li key={c.id}>
-                          <Link to={c.to} className="ml-sb-sublink" aria-current={match.item?.id === item.id && match.child?.id === c.id ? "page" : undefined} onClick={onNavigate}>
+                          <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined} onClick={onNavigate}>
                             <span>{c.label}</span>
                             {badges[c.id] && (
                               <>
@@ -164,7 +154,7 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
                         <ul>
                           {item.children.map((c) => (
                             <li key={c.id}>
-                              <Link to={c.to} className="ml-sb-sublink" aria-current={match.child?.id === c.id && active ? "page" : undefined}>
+                              <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined}>
                                 <span>{c.label}</span>
                                 {badges[c.id] && <span className="ml-dot" aria-hidden="true" />}
                               </Link>
@@ -184,12 +174,68 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
   );
 }
 
-function AccountMenu({ collapsed, onSignOut }: { collapsed: boolean; onSignOut: () => void }) {
+/** "Upgrade to Pro" for Free users; plan management for Pro users. */
+function ProCard({ onNavigate }: { onNavigate?: () => void }) {
+  const { pro } = usePlan();
+  const { path } = useRouter();
+  const to = pro ? "/settings/billing" : "/pricing";
+  return (
+    <Link to={to} className={cx("ml-sb-pro", path === to && "is-current")} onClick={onNavigate} aria-label={pro ? "Manage your Pro plan" : "Upgrade to Pro: advanced scenarios and analytics"}>
+      <strong>{pro ? "MARKET//LAB Pro" : "Upgrade to Pro"}</strong>
+      <small>{pro ? "Your plan is active. Billing and renewal." : "Advanced scenarios & analytics"}</small>
+      <span className="ml-sb-pro-action">
+        {pro ? "Manage plan" : "Explore Pro"}
+        <Icon name="arrow-right" size={15} />
+      </span>
+    </Link>
+  );
+}
+
+function NotificationsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const lab = useLab();
+  const { today, achievements, streak } = useProgress(lab);
+  const recent = achievements
+    .filter((a) => a.status.unlocked && a.status.at)
+    .sort((a, b) => b.status.at! - a.status.at!)
+    .slice(0, 3);
+  const dailyDone = Boolean(lab.dailies[today]);
+  const items: { icon: string; title: string; text: string; to: string }[] = [];
+  if (!dailyDone) items.push({ icon: "target", title: "Your daily challenge is ready", text: "A fresh opportunity to sharpen your process.", to: "/missions/daily" });
+  if (streak.atRisk) items.push({ icon: "flame", title: `Keep your ${streak.current}-day streak`, text: "Complete anything today: a lesson, a check or a mission.", to: "/progress/streaks" });
+  for (const a of recent) items.push({ icon: "trophy", title: `Achievement unlocked: ${a.title}`, text: `${a.description} · ${formatDate(a.status.at!, lab.settings.timeZone, { day: "numeric", month: "short" })}`, to: "/progress/achievements" });
+
+  return (
+    <Dialog open={open} onClose={onClose} title="Notifications" description={items.length ? "You're building momentum." : "Nothing new right now."}>
+      {items.length > 0 && (
+        <ul className="ml-notes">
+          {items.map((n) => (
+            <li key={n.title}>
+              <Link to={n.to} className="ml-note-item" onClick={onClose}>
+                <Icon name={n.icon} size={22} />
+                <span>
+                  <strong>{n.title}</strong>
+                  <span>{n.text}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link to="/settings/notifications" className="ml-text-link ml-small" onClick={onClose}>
+        Notification settings
+      </Link>
+    </Dialog>
+  );
+}
+
+function AccountRow({ onSignOut, onNavigate }: { onSignOut: () => void; onNavigate?: () => void }) {
   const lab = useLab();
   const host = useHost();
   const { pro } = usePlan();
   const { path } = useRouter();
+  const { rank } = useProgress(lab);
   const [open, setOpen] = useState(false);
+  const [bell, setBell] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const name = host.user?.name || lab.profile.displayName || "Trader";
@@ -215,23 +261,27 @@ function AccountMenu({ collapsed, onSignOut }: { collapsed: boolean; onSignOut: 
   }, [open]);
 
   return (
-    <div className="ml-sb-footer" ref={ref}>
-      <button type="button" className="ml-sb-account" aria-expanded={open} aria-controls={menuId} onClick={() => setOpen(!open)} aria-label={collapsed ? `Account: ${name}, ${pro ? "Pro" : "Free"} plan` : undefined}>
-        <Avatar name={name} avatar={lab.profile.avatar} url={host.user?.avatarUrl} size={30} />
-        <span className="ml-sb-user">
-          <b>{name}</b>
-          <small>{pro ? "Pro plan" : "Free plan"}</small>
-        </span>
-        <Icon name="dots" size={18} className="ml-sb-account-dots" />
+    <div className="ml-sb-accountrow" ref={ref}>
+      <button type="button" className="ml-sb-account" aria-expanded={open} aria-controls={menuId} title="Your account" onClick={() => setOpen((o) => !o)}>
+        <strong>{name}</strong>
+        <small>
+          {pro ? "Pro" : "Free"} plan · {rank.title}
+        </small>
+      </button>
+      <Link to="/settings/profile" className={cx("ml-sb-iconbtn", path.startsWith("/settings") && "is-on")} aria-label="Settings" title="Settings" onClick={onNavigate}>
+        <Icon name="gear" size={19} />
+      </Link>
+      <button type="button" className="ml-sb-iconbtn" aria-label="Notifications" title="Notifications" onClick={() => setBell(true)}>
+        <Icon name="bell" size={19} />
       </button>
       <div id={menuId} className="ml-sb-menu" hidden={!open}>
-        <Link to="/settings/profile" className="ml-sb-menu-item">
+        <Link to="/settings/profile" className="ml-sb-menu-item" onClick={onNavigate}>
           <Icon name="user" size={16} /> Profile
         </Link>
-        <Link to="/settings/preferences" className="ml-sb-menu-item">
+        <Link to="/settings/preferences" className="ml-sb-menu-item" onClick={onNavigate}>
           <Icon name="globe" size={16} /> Preferences
         </Link>
-        <Link to="/settings/billing" className="ml-sb-menu-item">
+        <Link to="/settings/billing" className="ml-sb-menu-item" onClick={onNavigate}>
           <Icon name="card" size={16} /> {pro ? "Manage plan" : "Billing"}
         </Link>
         <hr />
@@ -246,24 +296,19 @@ function AccountMenu({ collapsed, onSignOut }: { collapsed: boolean; onSignOut: 
           <Icon name="logout" size={16} /> Sign out
         </button>
       </div>
+      <NotificationsDialog open={bell} onClose={() => setBell(false)} />
     </div>
   );
 }
 
-export function Sidebar({ collapsed, canCollapse, brand, onSignOut }: { collapsed: boolean; canCollapse: boolean; brand?: ReactNode; onSignOut: () => void }) {
+export function Sidebar({ collapsed, canCollapse, brand, onSignOut, onNavigate, inDrawer }: { collapsed: boolean; canCollapse: boolean; brand?: ReactNode; onSignOut: () => void; onNavigate?: () => void; inDrawer?: boolean }) {
   const lab = useLab();
   const store = useStore();
   const badges = useBadges();
   return (
-    <aside className={cx("ml-sidebar", collapsed && "is-collapsed")} aria-label="Sidebar">
-      <div className="ml-sb-brand">
-        <Link to="/dashboard" className="ml-sb-logo" aria-label="MARKET//LAB dashboard">
-          <span className="ml-sb-mark">{brand ?? <LabMark />}</span>
-          <span className="ml-sb-name">
-            <Wordmark />
-            <small>Trading Skill Academy</small>
-          </span>
-        </Link>
+    <aside className={cx("ml-sidebar", collapsed && "is-collapsed", inDrawer && "is-drawer")} aria-label="Sidebar">
+      <div className="ml-sb-head">
+        <Brand brand={brand} />
         {canCollapse && (
           <button
             type="button"
@@ -273,13 +318,16 @@ export function Sidebar({ collapsed, canCollapse, brand, onSignOut }: { collapse
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={() => store.setSettings({ sidebarCollapsed: !lab.settings.sidebarCollapsed })}
           >
-            <Icon name="panel" size={18} />
+            <Icon name="menu" size={15} />
           </button>
         )}
       </div>
-      <ProgressWidget collapsed={collapsed} />
-      <NavTree collapsed={collapsed} badges={badges} />
-      <AccountMenu collapsed={collapsed} onSignOut={onSignOut} />
+      {!collapsed && <LevelBox />}
+      <NavTree collapsed={collapsed} badges={badges} onNavigate={onNavigate} />
+      <div className="ml-sb-bottom">
+        <ProCard onNavigate={onNavigate} />
+        <AccountRow onSignOut={onSignOut} onNavigate={onNavigate} />
+      </div>
     </aside>
   );
 }
@@ -287,72 +335,51 @@ export function Sidebar({ collapsed, canCollapse, brand, onSignOut }: { collapse
 export function Topbar({ mobile, onMenu }: { mobile: boolean; onMenu: () => void }) {
   const lab = useLab();
   const { path } = useRouter();
-  const { streak, xpToday, level } = useProgress(lab);
+  const { streak, xpToday } = useProgress(lab);
   const match = resolveNav(path);
   const goal = lab.profile.goals.dailyXp;
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 4);
-    on();
-    window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
-  }, []);
 
   return (
-    <header className={cx("ml-topbar", scrolled && "is-scrolled")}>
-      {mobile ? (
-        <>
-          <button type="button" className="ml-iconbtn ml-iconbtn--md ml-iconbtn--tertiary" aria-label="Open navigation" onClick={onMenu}>
-            <Icon name="menu" />
-          </button>
-          <Link to="/dashboard" className="ml-topbar-brand" aria-label="MARKET//LAB dashboard">
-            <LabMark />
-            <Wordmark />
-          </Link>
-        </>
-      ) : (
-        <nav className="ml-crumbs" aria-label="Breadcrumb">
-          <ol>
-            {match.item ? (
-              <>
+    <header className="ml-topbar">
+      {mobile && (
+        <button type="button" className="ml-topbar-menu" aria-label="Open navigation" onClick={onMenu}>
+          <Icon name="menu" size={20} />
+        </button>
+      )}
+      <nav className="ml-crumbs" aria-label="Breadcrumb">
+        <ol>
+          {match.item ? (
+            <>
+              <li>
+                <Link to={match.item.to} aria-current={!match.child ? "page" : undefined}>
+                  {match.item.label}
+                </Link>
+              </li>
+              {match.child && (
                 <li>
-                  <Link to={match.item.to} aria-current={!match.child ? "page" : undefined}>
-                    {match.item.label}
+                  <Link to={match.child.to} aria-current="page">
+                    {match.child.label}
                   </Link>
                 </li>
-                {match.child && (
-                  <li>
-                    <Link to={match.child.to} aria-current="page">
-                      {match.child.label}
-                    </Link>
-                  </li>
-                )}
-              </>
-            ) : (
-              <li>
-                <span aria-current="page">{path === "/profile" ? "Profile" : "MARKET//LAB"}</span>
-              </li>
-            )}
-          </ol>
-        </nav>
-      )}
+              )}
+            </>
+          ) : (
+            <li>
+              <span aria-current="page">{path === "/profile" ? "Profile" : "MARKET//LAB"}</span>
+            </li>
+          )}
+        </ol>
+      </nav>
       <div className="ml-topbar-right">
-        <Link to="/progress/streaks" className="ml-topchip" title={streak.atRisk ? "Practise today to keep your streak" : "Learning streak"} aria-label={`Learning streak: ${streak.current} ${streak.current === 1 ? "day" : "days"}`}>
-          <Icon name="flame" size={16} className={cx(streak.activeToday && "ml-flame-on")} />
+        <Link to="/progress/streaks" className="ml-streak" title={streak.atRisk ? "Practise today to keep your streak" : "Learning streak"}>
+          <Icon name="flame" size={16} />
           <span className="num">{streak.current}</span>
+          <span className="ml-streak-label">day streak</span>
         </Link>
-        <Link to="/dashboard" className="ml-topchip ml-hide-xs" title="Today's XP goal" aria-label={`Today's goal: ${xpToday} of ${goal} XP`}>
-          <MiniRing value={xpToday / goal} />
-          <span className="num">
-            {Math.min(xpToday, 9999)}
-            <small>/{goal} XP</small>
-          </span>
+        <Link to="/dashboard" className="ml-goalchip" title="Today's XP goal">
+          <span className="num">{Math.min(xpToday, 9999)}</span>
+          <span className="num">/ {goal} XP</span>
         </Link>
-        {mobile && (
-          <Link to="/progress/xp" className="ml-topchip" aria-label={`Level ${level.level}`}>
-            <span className="num">Lv {level.level}</span>
-          </Link>
-        )}
         <SimBadge compact={mobile} />
       </div>
     </header>
@@ -368,7 +395,7 @@ export function BottomNav() {
         const on = path === b.to || path.startsWith(`${b.to}/`) || (match.item ? b.covers.includes(match.item.id) : false);
         return (
           <Link key={b.id} to={b.to} className={cx("ml-bn-link", on && "is-on")} aria-current={on ? "page" : undefined}>
-            <Icon name={b.icon} size={20} />
+            <Icon name={b.icon} size={19} />
             <span>{b.label}</span>
           </Link>
         );
@@ -377,9 +404,8 @@ export function BottomNav() {
   );
 }
 
-/** Full-screen navigation for phones: every destination, two taps away at most. */
-export function NavDrawer({ open, onClose, onSignOut }: { open: boolean; onClose: () => void; onSignOut: () => void }) {
-  const badges = useBadges();
+/** Phones: the full sidebar slides in from the left (focus is trapped while it's open). */
+export function NavDrawer({ open, onClose, onSignOut, brand }: { open: boolean; onClose: () => void; onSignOut: () => void; brand?: ReactNode }) {
   const { path } = useRouter();
   const first = useRef(true);
   useEffect(() => {
@@ -391,15 +417,8 @@ export function NavDrawer({ open, onClose, onSignOut }: { open: boolean; onClose
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path]);
   return (
-    <Dialog open={open} onClose={onClose} title="Menu" variant="full">
-      <div className="ml-drawer">
-        <ProgressWidget collapsed={false} />
-        <NavTree collapsed={false} badges={badges} onNavigate={onClose} />
-        <Button variant="tertiary" iconLeft="logout" onClick={onSignOut}>
-          Sign out
-        </Button>
-        <p className="ml-fine">Simulation with virtual money. Not investment advice.</p>
-      </div>
+    <Dialog open={open} onClose={onClose} title="Menu" variant="drawer">
+      <Sidebar collapsed={false} canCollapse={false} brand={brand} onSignOut={onSignOut} onNavigate={onClose} inDrawer />
     </Dialog>
   );
 }

@@ -56,7 +56,7 @@ function Preview({ uid }: { uid: string }) {
 
 function AccentCard({ accent, selected, onSelect, recommended }: { accent: Accent; selected: boolean; onSelect: () => void; recommended?: boolean }) {
   const uid = useId().replace(/:/g, "");
-  const ratio = contrast(accent.hex, "#0A0E16");
+  const ratio = contrast(accent.hex, "#050505");
   return (
     <label className={cx("ml-accent-card", selected && "is-on")} style={accentVars(accent.hex)}>
       <input type="radio" name="ml-accent" checked={selected} onChange={onSelect} />
@@ -96,7 +96,7 @@ export function AccentPicker({ value, onChange }: { value: string; onChange: (id
   return (
     <div className="ml-accents" role="radiogroup" aria-label="Accent colour">
       {ACCENTS.map((a) => (
-        <AccentCard key={a.id} accent={a} selected={value === a.id} onSelect={() => onChange(a.id)} recommended={a.id === "lime"} />
+        <AccentCard key={a.id} accent={a} selected={value === a.id} onSelect={() => onChange(a.id)} recommended={a.id === "electric"} />
       ))}
     </div>
   );

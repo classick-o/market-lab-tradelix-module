@@ -192,8 +192,9 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
   const store = useStore();
   const host = useHost();
   const { navigate } = useRouter();
-  const mobile = useMediaQuery("(max-width: 767px)");
-  const tablet = useMediaQuery("(max-width: 1199px)");
+  // Breakpoints from the app design: rail at ≤960px, phone layout at ≤760px.
+  const mobile = useMediaQuery("(max-width: 760px)");
+  const tablet = useMediaQuery("(max-width: 960px)");
   const collapsed = tablet || lab.settings.sidebarCollapsed;
   const [drawer, setDrawer] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -225,7 +226,7 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
         <Footer />
       </div>
       {mobile && <BottomNav />}
-      {mobile && <NavDrawer open={drawer} onClose={() => setDrawer(false)} onSignOut={signOut} />}
+      {mobile && <NavDrawer open={drawer} onClose={() => setDrawer(false)} onSignOut={signOut} brand={brand} />}
       <AchievementWatcher />
       <Dialog
         open={signingOut}
@@ -257,7 +258,12 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
 function Footer() {
   return (
     <footer className="ml-footer">
-      <span>MARKET//LAB is an educational simulator. All orders are simulated with virtual money; nothing here is real trading or investment advice.</span>
+      <span>
+        Educational simulator. Virtual money only. Not investment advice.
+        <span className="ml-footer-brand" aria-hidden="true">
+          MARKET<span>//</span>LAB
+        </span>
+      </span>
     </footer>
   );
 }
@@ -274,7 +280,7 @@ function Root({ showNav, brand }: { showNav: boolean; brand?: ReactNode }) {
     return () => mq.removeEventListener("change", on);
   }, []);
   const reduced = lab.settings.reducedMotion === "on" || (lab.settings.reducedMotion === "system" && systemReduced);
-  const theme = THEMES[lab.settings.theme] ?? THEMES.navy;
+  const theme = THEMES[lab.settings.theme] ?? THEMES.black;
   const accentStyle = useMemo(() => accentVars(accentById(lab.settings.accent).hex, theme.bg), [lab.settings.accent, theme.bg]);
 
   const redirect = legacyRedirect(p) ?? (p === "/" && lab.profile.onboarded && !lab.signedOut ? "/dashboard" : null);

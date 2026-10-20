@@ -13,7 +13,8 @@ export interface Accent {
 }
 
 export const ACCENTS: Accent[] = [
-  { id: "lime", name: "Signal Lime", hex: "#C8F25A", note: "The MARKET//LAB default: energetic, and clearly distinct from the green used for gains." },
+  { id: "electric", name: "Electric", hex: "#55A8FF", note: "The MARKET//LAB default from the app design: crisp on black, distinct from gains and losses." },
+  { id: "lime", name: "Signal Lime", hex: "#C8F25A", note: "Energetic and modern. The accent of the first specification." },
   { id: "mono", name: "Mono", hex: "#F5F5F5", note: "Pure black and white. The most restrained option." },
   { id: "tradelix", name: "Tradelix Blue", hex: "#1F6FEB", note: "Matches the Tradelix brand, so the module feels native inside it." },
   { id: "champagne", name: "Champagne", hex: "#D9C4A0", note: "Warm and desaturated. The quiet-luxury option." },
@@ -23,12 +24,13 @@ export const ACCENTS: Accent[] = [
   { id: "coral", name: "Coral", hex: "#FF7A59", note: "Bold and distinctive.", caution: "Close to loss and danger red." },
 ];
 
-export const DEFAULT_ACCENT = "lime";
+export const DEFAULT_ACCENT = "electric";
 
 /** Background themes. Both are dark; "navy" is the default. */
-export const THEMES: Record<"navy" | "charcoal", { name: string; bg: string; note: string }> = {
-  navy: { name: "Deep navy", bg: "#0A0E16", note: "Cool, deep blue-black. The default." },
-  charcoal: { name: "Charcoal", bg: "#0B0B0C", note: "Neutral near-black, the original Market Lab look." },
+export const THEMES: Record<"black" | "charcoal" | "navy", { name: string; bg: string; note: string }> = {
+  black: { name: "Black", bg: "#050505", note: "Pure black with near-black panels. The default." },
+  charcoal: { name: "Charcoal", bg: "#131416", note: "Soft graphite surfaces." },
+  navy: { name: "Deep navy", bg: "#111723", note: "Cool, deep blue-black." },
 };
 
 function channel(c: number): number {
@@ -68,21 +70,21 @@ export function accentById(id: string | undefined): Accent {
 }
 
 /** The accent, lightened just enough to reach 4.5:1 on the background, for small text and hairlines. */
-export function foregroundFor(hex: string, background = "#080808"): string {
+export function foregroundFor(hex: string, background = "#050505"): string {
   let fg = hex;
   for (let amount = 0.05; contrast(fg, background) < 4.5 && amount <= 1; amount += 0.05) fg = mix(hex, 255, amount);
   return fg;
 }
 
 /** CSS custom properties for an accent, applied on .ml-root (or on a preview container). */
-export function accentVars(hex: string, background = "#0A0E16"): CSSProperties {
+export function accentVars(hex: string, background = "#050505"): CSSProperties {
   const light = luminance(hex) > 0.5;
   return {
     "--ml-accent": hex,
     "--ml-accent-hover": light ? mix(hex, 255, 0.35) : mix(hex, 255, 0.12),
     "--ml-accent-ink": inkFor(hex),
     "--ml-accent-fg": foregroundFor(hex, background),
-    "--ml-accent-soft": rgba(hex, 0.12),
-    "--ml-accent-line": rgba(hex, 0.45),
+    "--ml-accent-soft": rgba(hex, 0.075),
+    "--ml-accent-line": rgba(hex, 0.3),
   } as CSSProperties;
 }

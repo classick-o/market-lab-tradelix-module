@@ -114,7 +114,7 @@ export interface Settings {
   speed: number;
   reducedMotion: "system" | "on" | "off";
   accent?: string;
-  theme: "navy" | "charcoal";
+  theme: "black" | "charcoal" | "navy";
   language: "en";
   /** IANA time zone, or "auto" for the device's. */
   timeZone: string;
@@ -159,7 +159,7 @@ export interface LabData {
 }
 
 const DATA_VERSION = 1;
-const PALETTE_VERSION = 2;
+const PALETTE_VERSION = 3;
 
 function uid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -170,8 +170,8 @@ function defaultSettings(): Settings {
   return {
     speed: 6,
     reducedMotion: "system",
-    accent: "lime",
-    theme: "navy",
+    accent: "electric",
+    theme: "black",
     language: "en",
     timeZone: "auto",
     chart: { volume: true, grid: true, sma20: false, sma50: false, timeframe: "1h" },
@@ -227,9 +227,9 @@ function migrate(saved: Partial<LabData>): LabData {
     privacy: { ...f.settings.privacy, ...saved.settings?.privacy },
   };
   if ((saved.settings?.paletteVersion ?? 1) < PALETTE_VERSION) {
-    // The palette moved from monochrome to navy + lime; move saved settings along once.
-    settings.accent = "lime";
-    settings.theme = "navy";
+    // The palette changed (monochrome → navy + lime → the black + Electric app design); move saved settings along once.
+    settings.accent = "electric";
+    settings.theme = "black";
     settings.paletteVersion = PALETTE_VERSION;
   }
   return {
