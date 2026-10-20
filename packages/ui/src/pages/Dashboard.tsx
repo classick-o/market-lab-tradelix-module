@@ -332,12 +332,6 @@ export function DashboardPage() {
               )}
             </div>
             <div className="ml-continue-chart" aria-hidden="true">
-              <div className="ml-chart-top">
-                <span>
-                  LABX <span className="ml-muted">/ vUSD</span>
-                </span>
-                <span className="ml-synthetic">Synthetic data</span>
-              </div>
               <CandleStrip mini />
               <div className="ml-level-line is-target">
                 <span>Take profit</span>

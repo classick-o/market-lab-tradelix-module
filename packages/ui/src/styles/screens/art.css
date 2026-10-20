@@ -12,8 +12,9 @@
   opacity: 0.9;
 }
 .ml-continue-chart .ml-candlestrip.is-mini {
+  inset: 6px 0 10px;
   width: 100%;
-  height: calc(100% - 47px);
+  height: calc(100% - 16px);
 }
 .ml-cs-grid {
   stroke: var(--ml-grid);

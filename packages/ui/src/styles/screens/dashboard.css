@@ -364,19 +364,6 @@
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%);
   mask-image: linear-gradient(90deg, transparent, #000 10%);
 }
-.ml-chart-top {
-  display: flex;
-  justify-content: space-between;
-  padding-left: 8px;
-  font-size: 11px;
-  color: #bdbdc2;
-}
-.ml-synthetic {
-  font-size: 10px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: #77787d;
-}
 .ml-level-line {
   position: absolute;
   left: 7px;
@@ -1229,7 +1216,6 @@
   .ml-continue-copy > .ml-btn .ml-icon {
     margin-left: 6px;
   }
-  .ml-continue-chart .ml-synthetic,
   .ml-level-line span {
     display: none;
   }

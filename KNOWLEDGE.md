@@ -36,7 +36,7 @@ Arată un singur pas, primul care se potrivește, în ordinea:
 3. următorul pas dintr-un learning path început; dacă nu există unul, primul path cu pași rămași;
 4. dacă toate path-urile sunt gata, o trimitere spre scenariile Arena.
 
-Cardul nu are rând de etichetă deasupra titlului (de tipul „Arena session · LABX”).
+Cardul nu are rând de etichetă deasupra titlului (de tipul „Arena session · LABX”). Graficul din dreapta e doar decorativ: fără simbol, fără monedă și fără eticheta „Synthetic data”; rămân lumânările și nivelurile take profit, entry și stop loss.
 
 - În cod: `packages/ui/src/pages/Dashboard.tsx`.
 
