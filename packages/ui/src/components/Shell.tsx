@@ -7,7 +7,7 @@ import { formatDate } from "../format";
 import { useProgress } from "../progress";
 import { Link, useRouter } from "../router";
 import { useLab, useStore } from "../store";
-import { Dialog, Icon, SimBadge, cx } from "./ui";
+import { Dialog, Icon, cx } from "./ui";
 
 /** Brand: "MARKET//LAB" with the slashes in the accent; "ML" monogram when the sidebar is a rail. */
 function Brand({ brand }: { brand?: ReactNode }) {
@@ -334,56 +334,16 @@ export function Sidebar({ collapsed, canCollapse, brand, onSignOut, onNavigate, 
   );
 }
 
-export function Topbar({ mobile, onMenu }: { mobile: boolean; onMenu: () => void }) {
-  const lab = useLab();
-  const { path } = useRouter();
-  const { streak, xpToday } = useProgress(lab);
-  const match = resolveNav(path);
-  const goal = lab.profile.goals.dailyXp;
-
+/** Phone top bar: the menu button that opens the drawer, and the brand. Desktop has no top bar. */
+export function Topbar({ onMenu }: { onMenu: () => void }) {
   return (
     <header className="ml-topbar">
-      {mobile && (
-        <button type="button" className="ml-topbar-menu" aria-label="Open navigation" onClick={onMenu}>
-          <Icon name="menu" size={20} />
-        </button>
-      )}
-      <nav className="ml-crumbs" aria-label="Breadcrumb">
-        <ol>
-          {match.item ? (
-            <>
-              <li>
-                <Link to={match.item.to} aria-current={!match.child ? "page" : undefined}>
-                  {match.item.label}
-                </Link>
-              </li>
-              {match.child && (
-                <li>
-                  <Link to={match.child.to} aria-current="page">
-                    {match.child.label}
-                  </Link>
-                </li>
-              )}
-            </>
-          ) : (
-            <li>
-              <span aria-current="page">{path === "/profile" ? "Profile" : "MARKET//LAB"}</span>
-            </li>
-          )}
-        </ol>
-      </nav>
-      <div className="ml-topbar-right">
-        <Link to="/progress/streaks" className="ml-streak" title={streak.atRisk ? "Practise today to keep your streak" : "Learning streak"}>
-          <Icon name="flame" size={16} />
-          <span className="num">{streak.current}</span>
-          <span className="ml-streak-label">day streak</span>
-        </Link>
-        <Link to="/dashboard" className="ml-goalchip" title="Today's XP goal">
-          <span className="num">{Math.min(xpToday, 9999)}</span>
-          <span className="num">/ {goal} XP</span>
-        </Link>
-        <SimBadge compact={mobile} />
-      </div>
+      <button type="button" className="ml-topbar-menu" aria-label="Open navigation" onClick={onMenu}>
+        <Icon name="menu" size={20} />
+      </button>
+      <Link to="/dashboard" className="ml-topbar-brand" aria-label="MARKET//LAB dashboard">
+        MARKET<span aria-hidden="true">//</span>LAB
+      </Link>
     </header>
   );
 }

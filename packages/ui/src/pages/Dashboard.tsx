@@ -129,7 +129,7 @@ export function DashboardPage() {
     .sort((a, b) => b.completedAt - a.completedAt)[0];
   const lastSession = lastArena ? (lab.sessions[lastArena.sessionId] as ArenaSession | undefined) : undefined;
   const lastRds = lastArena ? resultRds(lab, lastArena) : null;
-  const feed = activityFeed(lab, 4, LOOKUP);
+  const feed = activityFeed(lab, 5, LOOKUP);
   const dailyDone = Boolean(lab.dailies[today]);
 
   return (
@@ -258,9 +258,6 @@ export function DashboardPage() {
                   const m = getMission(activeMission.missionId);
                   return (
                     <>
-                      <div className="ml-path-label">
-                        Mission in progress <span>{m.id}</span>
-                      </div>
                       <h2>{m.title}</h2>
                       <div className="ml-continue-meta">
                         <span>
@@ -280,9 +277,6 @@ export function DashboardPage() {
                 })()
               ) : activeArena ? (
                 <>
-                  <div className="ml-path-label">
-                    Arena session <span>LABX</span>
-                  </div>
                   <h2>{getArenaScenario(activeArena.regime).title}</h2>
                   <div className="ml-continue-meta">
                     <span>
@@ -303,12 +297,6 @@ export function DashboardPage() {
                   const info = stepInfo(started.p, started.pr.nextIndex!);
                   return (
                     <>
-                      <div className="ml-path-label">
-                        {started.p.title}{" "}
-                        <span className="num">
-                          {String(started.pr.nextIndex! + 1).padStart(2, "0")} / {String(started.p.steps.length).padStart(2, "0")}
-                        </span>
-                      </div>
                       <h2>{info.title}</h2>
                       <div className="ml-continue-meta">
                         <span>
@@ -318,6 +306,10 @@ export function DashboardPage() {
                         <span>
                           <Icon name="clock" size={14} />
                           {info.minutes} min
+                        </span>
+                        <span className="num">
+                          <Icon name="route" size={14} />
+                          {started.p.title} · {started.pr.nextIndex! + 1} of {started.p.steps.length}
                         </span>
                       </div>
                       <Button variant="primary" iconRight="arrow-right" onClick={() => (info.to ? navigate(info.to) : navigate(`/play/${store.startMission(info.missionId!)}`))}>

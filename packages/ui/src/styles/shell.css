@@ -837,59 +837,14 @@
   background: none;
   color: var(--ml-text-2);
 }
-.ml-crumbs ol {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 13px;
-}
-.ml-crumbs li {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #7a7c83;
-}
-.ml-crumbs li + li::before {
-  content: "/";
-  color: #494b50;
-}
-.ml-crumbs a:hover {
+.ml-topbar-brand {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.4px;
   color: var(--ml-text);
 }
-.ml-crumbs [aria-current="page"] {
-  color: #c7c8cc;
-  font-weight: 450;
-}
-.ml-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-left: auto;
-  font-size: 12px;
-}
-.ml-streak {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.ml-topbar-brand span {
   color: var(--ml-accent);
-}
-.ml-streak-label {
-  margin-left: 1px;
-  color: #85878c;
-}
-.ml-goalchip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #d8d8da;
-}
-.ml-goalchip > span:last-child {
-  color: #7a7d84;
-}
-.ml-streak:hover .ml-streak-label,
-.ml-goalchip:hover > span:last-child {
-  color: var(--ml-text);
 }
 
 /* ── Section tabs ───────────────────────────────────────────────────── */
@@ -1064,26 +1019,8 @@
     gap: 9px;
     font-size: 12.5px;
   }
-  .ml-topbar-right {
-    gap: 12px;
-  }
-  .ml-streak-label {
-    display: none;
-  }
 }
 @media (max-width: 760px) {
-  .ml-crumbs li:first-child:not(:last-child) {
-    display: none;
-  }
-  .ml-crumbs li + li::before {
-    display: none;
-  }
-  .ml-goalchip {
-    display: none;
-  }
-  .ml-topbar-right {
-    gap: 12px;
-  }
   .ml-toasts {
     bottom: calc(var(--ml-bottomnav-h) + 18px) !important;
   }

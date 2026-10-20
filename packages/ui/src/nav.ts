@@ -81,7 +81,7 @@ export const NAV: NavItem[] = [
   },
   {
     id: "progress",
-    label: "Progress & Achievements",
+    label: "Achievements",
     to: "/progress",
     icon: "trophy",
     group: "learning",

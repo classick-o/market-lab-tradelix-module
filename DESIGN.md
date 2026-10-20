@@ -12,7 +12,7 @@ Direcția vine din designul generat în Figma Make („Dark Theme App Design”)
   Verde-salvia și roșu-cărămiziu apar doar la rezultate simulate și la lumânări, mereu cu semn (+/−), deci culoarea nu e singurul indiciu.
 - **O singură acțiune evidențiată pe ecran.** Pe Dashboard: cardul „Continue learning” și misiunea recomandată au animație de intrare și reacție la hover; restul cardurilor sunt statice. Pe Missions și Learn, același rol îl au spotlight-ul și cardul „feature”.
 - **„The Reveal”** rămâne interacțiunea-semnătură din player: viitorul pieței stă sub un văl hașurat, iar după decizie vălul se retrage.
-- **Orientarea:** sidebar-ul arată mereu unde ești, bara de sus are breadcrumbs, iar fiecare modul are tab-uri de secțiune sub titlu (mereu vizibile, ca în design).
+- **Orientarea:** sidebar-ul arată mereu unde ești, iar fiecare modul are tab-uri de secțiune sub titlu (mereu vizibile). Pe desktop nu există bară de sus: fără breadcrumbs, streak sau insigna „Simulation” (avertismentul despre simulare rămâne în footer și pe ecranele de misiune). Pe telefon, bara de sus are doar butonul de meniu și logo-ul.
 
 ## Tokeni
 
@@ -20,7 +20,7 @@ Toți tokenii sunt în [`packages/ui/src/styles/tokens.css`](packages/ui/src/sty
 
 | Grup | Tokeni |
 |---|---|
-| Suprafețe | `--ml-bg` #000, `--ml-bg-2` #030303 (sidebar, bara de sus), `--ml-surface` #050505 (carduri, inputuri), `--ml-surface-2` #0A0A0A, `--ml-surface-hover` #0F0F0F, `--ml-surface-active` #161616 |
+| Suprafețe | `--ml-bg` #000, `--ml-bg-2` #030303 (sidebar, bara de sus pe telefon), `--ml-surface` #050505 (carduri, inputuri), `--ml-surface-2` #0A0A0A, `--ml-surface-hover` #0F0F0F, `--ml-surface-active` #161616 |
 | Linii | `--ml-border` #252525, `--ml-border-strong` #343538, `--ml-border-input` #35363A, `--ml-hairline` |
 | Text | `--ml-text` #E9E9E9, `--ml-text-2` #929499, `--ml-text-3` #7D8086. Griurile cele mai închise din design (#62656C etc.) au fost ridicate unde pică sub 4,5:1 pe text mic. |
 | Accent | `--ml-accent` (implicit Electric #55A8FF), `-hover`, `-ink`, `-fg`, `-soft`, `-line`, `-muted` (accent amestecat cu gri, pentru text secundar), `-deep` (accent aproape negru, pentru fundaluri). Se alege din Preferences → Accent colour. |
@@ -29,7 +29,7 @@ Toți tokenii sunt în [`packages/ui/src/styles/tokens.css`](packages/ui/src/sty
 | Grafic | `--ml-candle-up` #86B7A4, `--ml-candle-down` #D77662, `--ml-grid`, `--ml-volume-*`, `--ml-indicator-1/2` |
 | Tipografie | Inter (400–700); body 13px, h3 14px, h1 26–29px (550, −0.8px); etichete uppercase de 11px cu spațiere 0.45px; cifre tabulare (`.num`). |
 | Raze | 4px butoane și inputuri, 6px câmpuri de căutare, 9px carduri, 3px tag-uri. |
-| Layout | Sidebar 236px (209px sub 1190px), rail de 72px (sub 960px); bara de sus 65px; bara de jos pe mobil 64px; gutter 29px (37px peste 1550px); conținut maxim 1580px. |
+| Layout | Sidebar 236px (209px sub 1190px), rail de 72px (sub 960px); bara de sus doar pe telefon, 57px; bara de jos pe mobil 64px; gutter 29px (37px peste 1550px); conținut maxim 1580px. |
 | Teme | `black` (implicit), `charcoal` și `navy`, prin `data-theme` pe `.ml-root`. |
 
 ### Puncte de întrerupere
@@ -51,7 +51,7 @@ styles/base.css            reset, tipografie, focus
 styles/components.css      butoane, tag-uri, câmpuri, dialoguri, tabele, toast
 styles/chart.css           graficul și overlay-urile lui
 styles/layout.css          antetul paginii și componente vechi comune
-styles/shell.css           sidebar, bara de sus, drawer, bara de jos
+styles/shell.css           sidebar, bara de sus (telefon), drawer, bara de jos
 styles/pages.css           carduri, tile-uri, filtre
 styles/screens/shared.css  bara de căutare și filtre (Missions, Lessons, Concepts)
 styles/screens/art.css     lumânări sintetice, ilustrații, lumânările de dificultate

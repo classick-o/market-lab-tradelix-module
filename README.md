@@ -46,7 +46,7 @@ Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 6 destinații 
 | Trading Arena | Simulator · Scenarios · Virtual Portfolio · Risk Calculator |
 | Trade Journal | Session History · Decision Journal · Trade Replay · Alternative Decisions · Performance Analytics |
 | Learn | Learning Paths · Lessons · Concept Library · Glossary · Knowledge Checks |
-| Progress & Achievements | Skill Profile · Levels & XP · Achievements · Learning Streaks · Milestones |
+| Achievements | Skill Profile · Levels & XP · Achievements · Learning Streaks · Milestones |
 
 Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentru Pro) și rândul de cont, cu iconițe pentru Settings (Profile · Preferences · Notifications · Privacy & Security · Billing) și notificări.
 
@@ -100,7 +100,7 @@ Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentr
   - 5 trasee plus o secvență personalizată;
   - Concept Library cu 40 de concepte și un glosar cu 90 de termeni;
   - verificări de cunoștințe din 94 de întrebări (grilă, scenarii, exerciții numerice), cu explicații.
-- **Progress & Achievements:**
+- **Achievements:**
   - profil radar și istoricul pe skill;
   - niveluri, ranguri și istoricul XP;
   - 29 de realizări (niciuna nu depinde de profit);
@@ -176,7 +176,7 @@ Dacă aplicația-mamă e în Angular, cea mai mare parte se mută direct:
 | Componentele din `packages/ui` | Se rescriu ca componente Angular, păstrând markup-ul și clasele. Sunt mici și fără logică proprie: logica stă în pachetele de mai sus și în `store.ts` / `progress.ts`, care pot deveni un serviciu Angular. |
 | Routerul propriu (`router.tsx`) | Se înlocuiește cu Angular Router; rutele sunt listate în `nav.ts`. |
 
-Ordinea recomandată: pachetele de logică și CSS-ul, apoi un serviciu care ține starea (echivalentul `store.ts`), apoi ecranele, începând cu shell-ul (sidebar, bara de sus) și Dashboard.
+Ordinea recomandată: pachetele de logică și CSS-ul, apoi un serviciu care ține starea (echivalentul `store.ts`), apoi ecranele, începând cu shell-ul (sidebar, bara de sus de pe mobil) și Dashboard.
 
 ## Cum adaugi conținut
 
