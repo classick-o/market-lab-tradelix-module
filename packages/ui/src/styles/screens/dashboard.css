@@ -1302,3 +1302,53 @@
     height: 16px;
   }
 }
+
+/* ── Card art (images and the .ml-art helper live in art.css) ────────── */
+
+.ml-dash-hero {
+  --ml-art-opacity: 0.6;
+  min-height: 100px;
+  padding-top: 6px;
+}
+.ml-dash-hero::before {
+  inset: -30px 0 -10px 30%;
+  border-radius: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%), linear-gradient(180deg, #000 50%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 45%), linear-gradient(180deg, #000 50%, transparent);
+  mask-composite: intersect;
+}
+.ml-stat-card.ml-art--peak {
+  --ml-art-opacity: 0.45;
+  --ml-art-fade: 30%;
+}
+.ml-stat-card.ml-art--range {
+  --ml-art-opacity: 0.5;
+  --ml-art-pos: right 85%;
+  --ml-art-fade: 15%;
+}
+.ml-stat-card.ml-art--candles {
+  --ml-art-opacity: 0.2;
+  --ml-art-fade: 50%;
+}
+.ml-continue-card.ml-art--laptop {
+  --ml-art-opacity: 0.24;
+  --ml-art-fade: 30%;
+}
+.ml-recommended.ml-art--candles {
+  --ml-art-opacity: 0.16;
+  --ml-art-fade: 45%;
+}
+.ml-pro-banner.ml-art--range {
+  --ml-art-opacity: 0.55;
+  --ml-art-pos: right 85%;
+  --ml-art-fade: 15%;
+}
+@media (max-width: 760px) {
+  .ml-dash-hero {
+    min-height: 0;
+  }
+  .ml-dash-hero::before {
+    inset: -24px 0 -8px 20%;
+  }
+}

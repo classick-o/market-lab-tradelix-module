@@ -51,3 +51,44 @@
 .ml-diffcandles svg.is-lit {
   color: var(--ml-accent);
 }
+
+/* ── Photographic card backgrounds (generated art in assets/art) ──────
+ * Kept quiet on purpose: low opacity, faded towards the text side, and
+ * always behind the content. Tune per card with the --ml-art-* variables. */
+.ml-art {
+  position: relative;
+  isolation: isolate;
+}
+.ml-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--ml-art-img) var(--ml-art-pos, right center) / cover no-repeat;
+  opacity: var(--ml-art-opacity, 0.32);
+  -webkit-mask-image: linear-gradient(90deg, transparent var(--ml-art-fade, 25%), #000 88%);
+  mask-image: linear-gradient(90deg, transparent var(--ml-art-fade, 25%), #000 88%);
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+@media (hover: hover) {
+  .ml-art:hover::before {
+    opacity: calc(var(--ml-art-opacity, 0.32) + 0.08);
+  }
+}
+.ml-art--peak {
+  --ml-art-img: url("../../assets/art/peak.webp");
+}
+.ml-art--range {
+  --ml-art-img: url("../../assets/art/night-range.webp");
+}
+.ml-art--candles {
+  --ml-art-img: url("../../assets/art/candles-glow.webp");
+}
+.ml-art--laptop {
+  --ml-art-img: url("../../assets/art/laptop-chart.webp");
+}
+.ml-art--mountains {
+  --ml-art-img: url("../../assets/art/hero-mountains.webp");
+}

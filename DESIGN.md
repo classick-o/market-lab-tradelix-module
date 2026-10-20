@@ -86,6 +86,12 @@ Toate clasele au prefixul `ml-`, deci CSS-ul poate fi copiat ca atare într-o al
   - Missions: spotlight cu biletul de risc al misiunii (procentul și suma reale din regulile ei), bara de filtre, carduri de misiune;
   - Learn: path-ul în curs cu orbite și plachetă, nota „Up next”, carduri de path, listă de pași, carduri de lecții și de concepte.
 
+## Imagini pe carduri
+
+Cinci fotografii generate cu 3D AI Studio (Nano Banana 2.1), în [`packages/ui/src/assets/art/`](packages/ui/src/assets/art), WebP, 85 KB în total: munți noaptea cu lumânări în cer (antetul Dashboard), un vârf (Your progress), un lanț muntos (Learning streak, bannerul Pro), lumânări luminoase (Current skill level, misiunea recomandată), un laptop cu grafic (Continue learning).
+
+Se pun cu clasa `ml-art` plus o variantă (`ml-art--peak`, `--range`, `--candles`, `--laptop`, `--mountains`), definite în `styles/screens/art.css`. Imaginea stă într-un `::before` în spatele conținutului, cu opacitate mică (0,16–0,6) și estompată spre stânga, unde e textul. Pe fiecare card se reglează prin variabile: `--ml-art-opacity`, `--ml-art-pos`, `--ml-art-fade`.
+
 ## Mișcare
 
 - **Intrare:** cardurile principale apar cu o deplasare de 12px (0,6–0,75 s), decalat.

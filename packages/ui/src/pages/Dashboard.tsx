@@ -134,7 +134,7 @@ export function DashboardPage() {
 
   return (
     <div className="ml-page ml-dash">
-      <header className="ml-page-head">
+      <header className="ml-page-head ml-dash-hero ml-art ml-art--mountains">
         <span className="ml-eyebrow">{longDate(tz)}</span>
         <h1>
           {greeting()}
@@ -156,7 +156,7 @@ export function DashboardPage() {
       )}
 
       <section className="ml-stats" aria-label="Your progress at a glance">
-        <div className="ml-stat-card">
+        <div className="ml-stat-card ml-art ml-art--peak">
           <div className="ml-sc-label">
             Your progress
             <Icon name="bolt" size={15} />
@@ -203,7 +203,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="ml-stat-card">
+        <div className="ml-stat-card ml-art ml-art--range">
           <div className="ml-sc-label">
             Learning streak
             <Icon name="flame" size={15} />
@@ -225,7 +225,7 @@ export function DashboardPage() {
           </ol>
         </div>
 
-        <div className="ml-stat-card">
+        <div className="ml-stat-card ml-art ml-art--candles">
           <div className="ml-sc-label">
             Current skill level
             <Icon name="chart" size={15} />
@@ -250,7 +250,7 @@ export function DashboardPage() {
 
       <div className="ml-dash-columns">
         <div className="ml-dash-main">
-          <section className="ml-continue-card" aria-label="Continue learning">
+          <section className="ml-continue-card ml-art ml-art--laptop" aria-label="Continue learning">
             <div className="ml-continue-copy">
               <div className="ml-eyebrow ml-continue-eyebrow">Continue learning</div>
               {activeMission ? (
@@ -360,7 +360,7 @@ export function DashboardPage() {
           </section>
 
           {primary && (
-            <section className="ml-card ml-panel-flush ml-recommended" aria-label="Recommended next mission">
+            <section className="ml-card ml-panel-flush ml-recommended ml-art ml-art--candles" aria-label="Recommended next mission">
               <div className="ml-section-heading">
                 <h3>Recommended next mission</h3>
                 <Link to="/missions/all" className="ml-text-arrow">
@@ -570,7 +570,7 @@ export function DashboardPage() {
           </section>
 
           {!pro && (
-            <Link to="/pricing" className="ml-pro-banner">
+            <Link to="/pricing" className="ml-pro-banner ml-art ml-art--range">
               <span className="ml-pro-banner-icon">
                 <Icon name="star" size={23} />
               </span>

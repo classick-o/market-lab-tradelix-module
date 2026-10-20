@@ -172,7 +172,7 @@ Dacă aplicația-mamă e în Angular, cea mai mare parte se mută direct:
 | Ce | Cum se mută |
 |---|---|
 | `packages/engine`, `scenario-gen`, `evaluation`, `learning`, `missions`, `academy` | Direct. Sunt TypeScript pur, fără React și fără DOM: motorul, scorurile, XP-ul, recomandările și tot conținutul. |
-| Stilurile (`packages/ui/src/styles.css` și `styles/`) | Direct, ca stylesheet global. Sunt CSS simplu cu variabile `--ml-*`, toate clasele au prefixul `ml-`, iar tema se pune pe un element `.ml-root` (`data-theme`, plus variabilele de accent). Fișierele din `styles/screens/` corespund ecranelor, deci pot fi atașate și pe componentă. |
+| Stilurile (`packages/ui/src/styles.css` și `styles/`) | Direct, ca stylesheet global. Sunt CSS simplu cu variabile `--ml-*`, toate clasele au prefixul `ml-`, iar tema se pune pe un element `.ml-root` (`data-theme`, plus variabilele de accent). Fișierele din `styles/screens/` corespund ecranelor, deci pot fi atașate și pe componentă. Imaginile din `src/assets/art/` se copiază lângă ele (CSS-ul le referă relativ, `../../assets/art/`). |
 | Componentele din `packages/ui` | Se rescriu ca componente Angular, păstrând markup-ul și clasele. Sunt mici și fără logică proprie: logica stă în pachetele de mai sus și în `store.ts` / `progress.ts`, care pot deveni un serviciu Angular. |
 | Routerul propriu (`router.tsx`) | Se înlocuiește cu Angular Router; rutele sunt listate în `nav.ts`. |
 
