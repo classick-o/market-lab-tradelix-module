@@ -348,6 +348,7 @@
   display: none;
 }
 .ml-sb-sublink {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -365,10 +366,41 @@
   color: var(--ml-text);
   background: color-mix(in srgb, var(--ml-surface) 92%, white);
 }
+/* Active sub-tab: a short glowing bar acts as a light source; its glow washes
+   the background and lights the tab's outline, fading out to the right. */
 .ml-sb-sublink[aria-current="page"] {
   color: var(--ml-text);
-  box-shadow: inset 2px 0 0 var(--ml-accent);
-  background: color-mix(in srgb, var(--ml-accent) 5%, transparent);
+  background: radial-gradient(85% 160% at 0% 50%, color-mix(in srgb, var(--ml-accent) 13%, transparent), transparent 70%);
+}
+.ml-sb-sublink[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 55%;
+  border-radius: 2px;
+  background: var(--ml-accent);
+  box-shadow:
+    0 0 5px 1px color-mix(in srgb, var(--ml-accent) 70%, transparent),
+    0 0 14px 3px color-mix(in srgb, var(--ml-accent) 30%, transparent);
+  transform: translateY(-50%);
+}
+.ml-sb-sublink[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 38%, transparent), color-mix(in srgb, var(--ml-accent) 9%, transparent) 40%, transparent 85%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
 }
 .ml-dot {
   width: 6px;
