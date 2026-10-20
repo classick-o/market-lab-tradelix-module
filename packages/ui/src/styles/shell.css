@@ -236,7 +236,7 @@
   gap: 12px;
   flex: 1;
   min-width: 0;
-  padding: 10px 34px 10px 12px;
+  padding: 7px 34px 7px 12px;
   border-radius: 4px;
   color: #929499;
   font-size: 13px;
@@ -1042,7 +1042,7 @@
   padding-top: 4px;
 }
 .ml-dialog--drawer .ml-sb-link {
-  padding-block: 12px;
+  padding-block: 9px;
   font-size: 14px;
 }
 .ml-dialog--drawer .ml-sb-sublink {
@@ -1052,7 +1052,7 @@
 
 @media (min-width: 1550px) {
   .ml-sb-link {
-    padding-block: 12px;
+    padding-block: 8px;
     font-size: 14px;
   }
 }
