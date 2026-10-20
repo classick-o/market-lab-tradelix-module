@@ -219,7 +219,7 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
     <div className={cx("ml-app", mobile && "is-mobile")} data-sidebar={collapsed ? "collapsed" : "expanded"}>
       {!mobile && <Sidebar collapsed={collapsed} canCollapse={!tablet} brand={brand} onSignOut={signOut} />}
       <div className="ml-app-main">
-        {mobile && <Topbar onMenu={() => setDrawer(true)} />}
+        <Topbar mobile={mobile} onMenu={() => setDrawer(true)} />
         <main id="ml-main" className="ml-main">
           {children}
         </main>

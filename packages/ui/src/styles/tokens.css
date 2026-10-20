@@ -131,7 +131,7 @@
   --ml-ease-expressive: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   /* ── Layout ───────────────────────────────────────────────────── */
-  --ml-header-h: 0px; /* desktop has no top bar; phones set it below */
+  --ml-header-h: 65px;
   --ml-sb-w: 236px;
   --ml-sb-rail: 72px;
   --ml-bottomnav-h: 64px;
@@ -151,6 +151,11 @@
   .ml-root {
     --ml-sb-w: 209px;
     --ml-gutter: 21px;
+  }
+}
+@media (max-width: 960px) {
+  .ml-root {
+    --ml-header-h: 59px;
   }
 }
 @media (max-width: 760px) {

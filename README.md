@@ -2,7 +2,7 @@
 
 Modulul de învățare a trading-ului pentru Tradelix. Utilizatorul învață prin lecții scurte, misiuni și o piață simulată, cu bani virtuali. Primește scoruri separate pentru **calitatea deciziei**, **disciplina de risc** și **rezultatul simulat**: un trade profitabil nu înseamnă automat o decizie bună.
 
-Interfața e în engleză. Planul complet e în [PLAN_DEZVOLTARE.md](PLAN_DEZVOLTARE.md), iar sistemul de design (tokeni, componente, navigație, QA) e în [DESIGN.md](DESIGN.md).
+Interfața e în engleză. Planul complet e în [PLAN_DEZVOLTARE.md](PLAN_DEZVOLTARE.md), sistemul de design (tokeni, componente, navigație, QA) e în [DESIGN.md](DESIGN.md), iar regulile de funcționare ale fiecărui ecran sunt în [KNOWLEDGE.md](KNOWLEDGE.md).
 
 ## Pornire
 
@@ -176,7 +176,7 @@ Dacă aplicația-mamă e în Angular, cea mai mare parte se mută direct:
 | Componentele din `packages/ui` | Se rescriu ca componente Angular, păstrând markup-ul și clasele. Sunt mici și fără logică proprie: logica stă în pachetele de mai sus și în `store.ts` / `progress.ts`, care pot deveni un serviciu Angular. |
 | Routerul propriu (`router.tsx`) | Se înlocuiește cu Angular Router; rutele sunt listate în `nav.ts`. |
 
-Ordinea recomandată: pachetele de logică și CSS-ul, apoi un serviciu care ține starea (echivalentul `store.ts`), apoi ecranele, începând cu shell-ul (sidebar, bara de sus de pe mobil) și Dashboard.
+Ordinea recomandată: pachetele de logică și CSS-ul, apoi un serviciu care ține starea (echivalentul `store.ts`), apoi ecranele, începând cu shell-ul (sidebar, bara de sus) și Dashboard.
 
 ## Cum adaugi conținut
 

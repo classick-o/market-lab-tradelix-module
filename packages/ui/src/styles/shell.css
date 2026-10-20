@@ -846,6 +846,36 @@
 .ml-topbar-brand span {
   color: var(--ml-accent);
 }
+.ml-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  font-size: 12px;
+}
+.ml-streak {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ml-accent);
+}
+.ml-streak-label {
+  margin-left: 1px;
+  color: #85878c;
+}
+.ml-goalchip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #d8d8da;
+}
+.ml-goalchip > span:last-child {
+  color: #7a7d84;
+}
+.ml-streak:hover .ml-streak-label,
+.ml-goalchip:hover > span:last-child {
+  color: var(--ml-text);
+}
 
 /* ── Section tabs ───────────────────────────────────────────────────── */
 
@@ -1019,8 +1049,14 @@
     gap: 9px;
     font-size: 12.5px;
   }
+  .ml-topbar-right {
+    gap: 12px;
+  }
 }
 @media (max-width: 760px) {
+  .ml-goalchip {
+    display: none;
+  }
   .ml-toasts {
     bottom: calc(var(--ml-bottomnav-h) + 18px) !important;
   }

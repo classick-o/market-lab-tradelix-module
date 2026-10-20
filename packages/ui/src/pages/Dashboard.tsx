@@ -30,6 +30,9 @@ function longDate(tz: string): string {
 
 const SKILL_BARS: Record<string, number> = { novice: 2, developing: 3, proficient: 4, advanced: 5 };
 
+/** Recent activity shows only the latest five items (KNOWLEDGE.md, Dashboard). */
+const RECENT_ACTIVITY_LIMIT = 5;
+
 function stepInfo(path: LearningPath, index: number) {
   const step = path.steps[index];
   if (step.kind === "lesson") {
@@ -129,7 +132,7 @@ export function DashboardPage() {
     .sort((a, b) => b.completedAt - a.completedAt)[0];
   const lastSession = lastArena ? (lab.sessions[lastArena.sessionId] as ArenaSession | undefined) : undefined;
   const lastRds = lastArena ? resultRds(lab, lastArena) : null;
-  const feed = activityFeed(lab, 5, LOOKUP);
+  const feed = activityFeed(lab, RECENT_ACTIVITY_LIMIT, LOOKUP);
   const dailyDone = Boolean(lab.dailies[today]);
 
   return (

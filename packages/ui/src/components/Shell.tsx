@@ -334,16 +334,35 @@ export function Sidebar({ collapsed, canCollapse, brand, onSignOut, onNavigate, 
   );
 }
 
-/** Phone top bar: the menu button that opens the drawer, and the brand. Desktop has no top bar. */
-export function Topbar({ onMenu }: { onMenu: () => void }) {
+/** Top bar: learning streak and today's XP. Phones also get the menu button and the brand. No breadcrumb (see KNOWLEDGE.md). */
+export function Topbar({ mobile, onMenu }: { mobile: boolean; onMenu: () => void }) {
+  const lab = useLab();
+  const { streak, xpToday } = useProgress(lab);
+  const goal = lab.profile.goals.dailyXp;
+
   return (
     <header className="ml-topbar">
-      <button type="button" className="ml-topbar-menu" aria-label="Open navigation" onClick={onMenu}>
-        <Icon name="menu" size={20} />
-      </button>
-      <Link to="/dashboard" className="ml-topbar-brand" aria-label="MARKET//LAB dashboard">
-        MARKET<span aria-hidden="true">//</span>LAB
-      </Link>
+      {mobile && (
+        <>
+          <button type="button" className="ml-topbar-menu" aria-label="Open navigation" onClick={onMenu}>
+            <Icon name="menu" size={20} />
+          </button>
+          <Link to="/dashboard" className="ml-topbar-brand" aria-label="MARKET//LAB dashboard">
+            MARKET<span aria-hidden="true">//</span>LAB
+          </Link>
+        </>
+      )}
+      <div className="ml-topbar-right">
+        <Link to="/progress/streaks" className="ml-streak" title={streak.atRisk ? "Practise today to keep your streak" : "Learning streak"}>
+          <Icon name="flame" size={16} />
+          <span className="num">{streak.current}</span>
+          <span className="ml-streak-label">day streak</span>
+        </Link>
+        <Link to="/dashboard" className="ml-goalchip" title="Today's XP goal">
+          <span className="num">{Math.min(xpToday, 9999)}</span>
+          <span className="num">/ {goal} XP</span>
+        </Link>
+      </div>
     </header>
   );
 }
