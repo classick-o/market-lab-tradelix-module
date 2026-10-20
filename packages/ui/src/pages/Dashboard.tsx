@@ -225,7 +225,7 @@ export function DashboardPage() {
           </ol>
         </div>
 
-        <div className="ml-stat-card ml-art ml-art--candles">
+        <div className="ml-stat-card">
           <div className="ml-sc-label">
             Current skill level
             <Icon name="chart" size={15} />

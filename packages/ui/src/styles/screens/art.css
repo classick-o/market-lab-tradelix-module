@@ -83,9 +83,6 @@
 .ml-art--range {
   --ml-art-img: url("../../assets/art/night-range.webp");
 }
-.ml-art--candles {
-  --ml-art-img: url("../../assets/art/candles-glow.webp");
-}
 .ml-art--mountains {
   --ml-art-img: url("../../assets/art/hero-mountains.webp");
 }

@@ -1327,10 +1327,6 @@
   --ml-art-pos: right 85%;
   --ml-art-fade: 15%;
 }
-.ml-stat-card.ml-art--candles {
-  --ml-art-opacity: 0.2;
-  --ml-art-fade: 50%;
-}
 .ml-pro-banner.ml-art--range {
   --ml-art-opacity: 0.55;
   --ml-art-pos: right 85%;
