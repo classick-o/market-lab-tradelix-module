@@ -459,7 +459,7 @@
   gap: 7px;
   width: 100%;
   margin-bottom: 18px;
-  padding: 14px 14px 15px;
+  padding: 16px 14px 15px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--ml-accent) 30%, transparent);
   border-radius: var(--ml-r-lg);
@@ -497,8 +497,9 @@
   transform: translateX(-130%);
   pointer-events: none;
 }
+/* The crown row only shows on the rail (see the end of this block). */
 .ml-sb-pro-head {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: space-between;
   width: 100%;
