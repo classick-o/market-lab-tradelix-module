@@ -272,9 +272,12 @@
   color: #fff;
   background: color-mix(in srgb, var(--ml-surface) 92%, white);
 }
+/* Active tab: same light as the active sub-tab (see .ml-sb-sublink), a little stronger. */
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link {
   color: var(--ml-accent);
-  background: color-mix(in srgb, var(--ml-accent) 7.5%, transparent);
+  background:
+    radial-gradient(80% 170% at 0% 50%, color-mix(in srgb, var(--ml-accent) 15%, transparent), transparent 72%),
+    color-mix(in srgb, var(--ml-accent) 2.5%, transparent);
 }
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link > .ml-icon {
   color: var(--ml-accent);
@@ -282,11 +285,32 @@
 .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::before {
   content: "";
   position: absolute;
-  left: -15px;
-  top: 9px;
-  bottom: 9px;
+  top: 50%;
+  left: 0;
   width: 2px;
+  height: 50%;
+  border-radius: 2px;
   background: var(--ml-accent);
+  box-shadow:
+    0 0 6px 1px color-mix(in srgb, var(--ml-accent) 70%, transparent),
+    0 0 16px 3px color-mix(in srgb, var(--ml-accent) 32%, transparent);
+  transform: translateY(-50%);
+}
+.ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ml-accent) 42%, transparent), color-mix(in srgb, var(--ml-accent) 10%, transparent) 40%, transparent 85%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
 }
 .ml-sb-label {
   min-width: 0;
@@ -430,9 +454,6 @@
   position: absolute;
   top: 9px;
   right: 9px;
-}
-.ml-sidebar.is-collapsed .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::before {
-  left: -12px;
 }
 .ml-sb-flyout {
   position: absolute;
@@ -1048,9 +1069,6 @@
   min-height: 38px;
   font-size: 13.5px;
 }
-.ml-dialog--drawer .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::before {
-  left: -15px;
-}
 
 @media (min-width: 1550px) {
   .ml-sb-link {
@@ -1065,9 +1083,6 @@
   .ml-sb-link {
     gap: 9px;
     font-size: 12.5px;
-  }
-  .ml-sb-item.is-active > .ml-sb-row > .ml-sb-link::before {
-    left: -12px;
   }
   .ml-topbar-right {
     gap: 12px;
