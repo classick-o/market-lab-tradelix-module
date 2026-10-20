@@ -1,0 +1,567 @@
+/* Missions: spotlight with risk ticket, toolbar, mission deck, safety note. */
+
+/* ── Spotlight ──────────────────────────────────────────────────────── */
+
+.ml-spotlight {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  min-height: 260px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 21%, transparent);
+  border-radius: var(--ml-r-lg);
+  background: linear-gradient(115deg, color-mix(in srgb, var(--ml-accent) 3%, transparent), transparent 70%), var(--ml-surface);
+}
+.ml-spotlight-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 28px;
+}
+.ml-spotlight-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ml-accent-fg);
+}
+.ml-spotlight-copy h2 {
+  margin: 16px 0 10px;
+  font-size: 34px;
+  font-weight: 550;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+.ml-spotlight-copy > p {
+  max-width: 380px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #929aa7;
+}
+.ml-spotlight-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  row-gap: 8px;
+  margin: 18px 0 0;
+  font-size: 12px;
+  color: #9da9bb;
+}
+.ml-spotlight-meta > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ml-spotlight-copy > p.ml-spotlight-why {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  max-width: 460px;
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8f9095;
+}
+.ml-spotlight-why .ml-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--ml-accent-fg);
+}
+.ml-spotlight-why strong {
+  margin-right: 3px;
+  font-weight: 450;
+  color: var(--ml-accent-muted);
+}
+.ml-spotlight-copy > .ml-actions {
+  margin-top: 23px;
+}
+.ml-spotlight-copy .ml-btn--primary .ml-icon {
+  margin-left: 16px;
+  transition: transform 0.3s;
+}
+.ml-spotlight-visual {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.ml-spotlight-chart {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  color: color-mix(in srgb, var(--ml-accent) 32%, transparent);
+  transform: scale(1.4);
+  pointer-events: none;
+}
+.ml-spotlight-chart .ml-illustration {
+  color: inherit;
+}
+.ml-risk-ticket {
+  z-index: 1;
+  width: 195px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 25%, transparent);
+  border-radius: var(--ml-r-lg);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ml-accent) 9%, #050505), #06090e);
+  box-shadow: 0 20px 50px #0008;
+  transform: rotate(5deg);
+}
+.ml-risk-ticket > span {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8197b3;
+}
+.ml-risk-ticket > strong {
+  display: block;
+  margin: 12px 0 20px;
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -1.8px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--ml-accent) 70%, #fff);
+}
+.ml-risk-ticket > strong small {
+  margin-left: 4px;
+  font-size: 19px;
+  letter-spacing: 0;
+  color: color-mix(in srgb, var(--ml-accent) 55%, #555);
+}
+.ml-risk-ticket > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ffffff0d;
+  font-size: 11px;
+  color: #7d8ea3;
+}
+.ml-risk-ticket b {
+  font-weight: 400;
+  color: #b2c0d4;
+  white-space: nowrap;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────── */
+
+.ml-mission-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.ml-mission-search {
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+  gap: 10px;
+  max-width: 450px;
+  min-width: 0;
+  padding-left: 13px;
+  border: 1px solid var(--ml-border);
+  border-radius: 6px;
+  background: var(--ml-surface);
+  color: #747e8c;
+}
+.ml-mission-search:focus-within {
+  border-color: var(--ml-accent-line);
+}
+.ml-mission-search input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 10px 0 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ml-text);
+}
+.ml-mission-search input::placeholder {
+  color: #6f747c;
+}
+.ml-mission-select select {
+  height: 42px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--ml-border);
+  border-radius: 6px;
+  background: var(--ml-surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23929499' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 11px center;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ml-text);
+  appearance: none;
+  cursor: pointer;
+}
+.ml-mission-select select:hover {
+  border-color: var(--ml-border-strong);
+}
+.ml-mission-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #7d8086;
+  white-space: nowrap;
+}
+
+/* ── Mission deck ───────────────────────────────────────────────────── */
+
+.ml-mission-deck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+.ml-mtile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+  transition:
+    border-color 0.3s,
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+.ml-mtile-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 17px 20px;
+  font-size: 11px;
+  color: #6f7a88;
+}
+.ml-mtile-head > span:first-child {
+  font-weight: 550;
+  letter-spacing: 0.5px;
+}
+.ml-mtile-cat {
+  padding-left: 11px;
+  border-left: 1px solid #ffffff20;
+  color: var(--ml-accent-fg);
+}
+.ml-mtile-reward {
+  margin-left: auto;
+  color: #b2bdcb;
+  white-space: nowrap;
+}
+.ml-mtile-body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 18px;
+  padding: 17px 20px 28px;
+}
+.ml-mtile-body > div {
+  min-width: 0;
+}
+.ml-mtile-symbol {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 65px;
+  height: 70px;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 25%, transparent);
+  border-radius: 8px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ml-accent) 10%, transparent), transparent);
+  color: var(--ml-accent);
+}
+.ml-mtile-symbol i {
+  position: absolute;
+  bottom: 8px;
+  width: 17px;
+  height: 2px;
+  background: var(--ml-accent);
+  opacity: 0.4;
+}
+.ml-mtile h3 {
+  margin: 0 0 9px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.ml-mtile h3 a {
+  color: #dee3eb;
+  text-decoration: none;
+}
+.ml-mtile h3 a:hover {
+  color: var(--ml-accent-fg);
+}
+.ml-mtile p {
+  max-width: 320px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #8a93a0;
+}
+.ml-mtile p.ml-mtile-lock {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #8b8f96;
+}
+.ml-mtile-lock .ml-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ml-mtile-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  row-gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #ffffff0b;
+  background: #ffffff02;
+  font-size: 12px;
+  color: #8b95a2;
+}
+.ml-mtile-level,
+.ml-mtile-time {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ml-mtile-foot .ml-status {
+  height: 20px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.ml-mtile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--ml-accent) 45%, #ddd);
+  cursor: pointer;
+}
+.ml-mtile-cta .ml-icon {
+  transition: transform 0.3s;
+}
+.ml-mtile-cta:hover {
+  color: var(--ml-accent-fg);
+}
+.ml-mtile.is-locked .ml-mtile-symbol {
+  opacity: 0.7;
+}
+
+/* ── Safety note ────────────────────────────────────────────────────── */
+
+.ml-safety {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #747f8e;
+}
+.ml-safety .ml-icon {
+  flex-shrink: 0;
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+
+@media (hover: hover) {
+  .ml-mtile:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--ml-accent) 45%, transparent);
+    box-shadow: 0 10px 25px #0006;
+  }
+  .ml-mtile-cta:hover .ml-icon,
+  .ml-spotlight-copy .ml-btn--primary:hover .ml-icon {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ml-spotlight {
+    animation: ml-attention-arrive 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .ml-mtile {
+    animation: ml-attention-arrive 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .ml-mtile:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  .ml-mtile:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  .ml-mtile:nth-child(n + 4) {
+    animation-delay: 0.18s;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1190px) {
+  .ml-spotlight-copy h2 {
+    font-size: 30px;
+  }
+  .ml-mtile h3 {
+    font-size: 19px;
+  }
+  .ml-mtile-body {
+    gap: 14px;
+    padding-inline: 16px;
+  }
+  .ml-mtile-head,
+  .ml-mtile-foot {
+    padding-inline: 16px;
+  }
+  .ml-mtile-foot {
+    gap: 12px;
+  }
+  .ml-mtile-symbol {
+    width: 56px;
+    height: 62px;
+  }
+}
+@media (max-width: 960px) {
+  .ml-mission-deck {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .ml-spotlight {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    min-height: 280px;
+  }
+  .ml-spotlight-copy {
+    padding: 22px 0 22px 19px;
+  }
+  .ml-spotlight-copy h2 {
+    font-size: 26px;
+  }
+  .ml-spotlight-copy > p,
+  .ml-spotlight-copy > p.ml-spotlight-why {
+    font-size: 12px;
+  }
+  .ml-spotlight-meta {
+    gap: 11px;
+    font-size: 11px;
+  }
+  .ml-spotlight-eyebrow {
+    font-size: 10px;
+  }
+  .ml-spotlight-visual {
+    overflow: hidden;
+  }
+  .ml-risk-ticket {
+    width: 137px;
+    padding: 15px;
+    transform: rotate(5deg) translateX(13px);
+  }
+  .ml-risk-ticket > strong {
+    font-size: 32px;
+  }
+  .ml-risk-ticket > span,
+  .ml-risk-ticket > div {
+    font-size: 9px;
+    gap: 6px;
+  }
+  .ml-mission-count {
+    display: none;
+  }
+  .ml-mission-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .ml-mission-select {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .ml-mission-select select {
+    width: 100%;
+    font-size: 11px;
+  }
+  .ml-mtile-body {
+    padding-bottom: 22px;
+  }
+  .ml-safety {
+    align-items: flex-start;
+  }
+  .ml-safety .ml-icon {
+    margin-top: 3px;
+  }
+}
+@media (max-width: 480px) {
+  .ml-spotlight {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .ml-spotlight-copy {
+    padding: 22px 18px 18px;
+  }
+  .ml-spotlight-visual {
+    padding: 0 18px 20px;
+    overflow: visible;
+  }
+  .ml-spotlight-chart {
+    display: none;
+  }
+  .ml-risk-ticket {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 14px;
+    width: 100%;
+    padding: 13px 14px;
+    transform: none;
+    box-shadow: none;
+  }
+  .ml-risk-ticket > span {
+    grid-column: 1 / -1;
+  }
+  .ml-risk-ticket > strong {
+    margin: 0;
+    font-size: 26px;
+  }
+  .ml-risk-ticket > strong small {
+    font-size: 14px;
+  }
+  .ml-risk-ticket > div {
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    padding: 0 0 0 12px;
+    border-top: 0;
+    border-left: 1px solid #ffffff0d;
+    font-size: 10px;
+  }
+  .ml-mission-select select {
+    padding-right: 24px;
+    background-position: right 8px center;
+  }
+  .ml-mtile h3 {
+    font-size: 18px;
+  }
+  .ml-mtile-symbol {
+    width: 48px;
+    height: 54px;
+  }
+  .ml-mtile-symbol .ml-icon {
+    width: 24px;
+    height: 24px;
+  }
+}

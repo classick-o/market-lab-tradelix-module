@@ -23,9 +23,10 @@ import {
 import { ERROR_TAGS, type SkillId } from "@market-lab/evaluation";
 import { LEVEL_LABEL, SKILLS, SKILL_BY_ID, XP_RULES, confidenceOf, levelOf, missingPrerequisites, recommend, type Recommendation } from "@market-lab/learning";
 import { LEARNING_PATH, MISSIONS, getMission, missionMeta, type MissionDef } from "@market-lab/missions";
+import { DifficultyCandles, LearningIllustration, missionGlyph } from "../components/Art";
 import { Card, FilterChips, MiniRing, PageHead, Pnl, SubNav } from "../components/Page";
 import { useToast } from "../components/Toast";
-import { Button, Empty, Icon, InlineError, Meter, Note, Tag, TextField, cx } from "../components/ui";
+import { Button, Empty, Icon, InlineError, Meter, Note, TextField, cx } from "../components/ui";
 import { DIFFICULTY_LABEL, formatDate, formatDayKey, formatWeekRange, plural, relativeTime } from "../format";
 import { resultRds, useProgress } from "../progress";
 import { Link, useRouter } from "../router";
@@ -41,10 +42,8 @@ const SLOT_TITLE: Record<Recommendation["slot"], string> = {
 
 function Dots({ n }: { n: number }) {
   return (
-    <span className="ml-dots" aria-label={`Difficulty ${n} of 5`}>
-      {[1, 2, 3, 4, 5].map((d) => (
-        <i key={d} className={cx(d <= n && "is-on")} />
-      ))}
+    <span className="ml-dots" role="img" aria-label={`Difficulty ${n} of 5`}>
+      <DifficultyCandles level={n} />
     </span>
   );
 }
@@ -55,6 +54,142 @@ function attemptsOf(lab: LabData, missionId: string) {
 
 function bestOf(lab: LabData, missionId: string): number | null {
   return attemptsOf(lab, missionId).reduce<number | null>((b, r) => (r.dqs !== null && (b === null || r.dqs > b) ? r.dqs : b), null);
+}
+
+/** Whole vUSD with thousands separators ("10,000"). */
+function wholeVusd(cents: number): string {
+  return Math.round(cents / 100).toLocaleString("en-US");
+}
+
+/** The design's "spotlight": a recommended mission with its risk budget on a ticket. */
+function MissionSpotlight({ mission: m, reason, onStart, resume, eyebrow = "Recommended for you", note }: { mission: MissionDef; reason?: string; onStart: () => void; resume: boolean; eyebrow?: string; note?: string }) {
+  const { navigate } = useRouter();
+  const topic = missionTopics(m.id)[0];
+  const pct = m.rules.maxRiskPct ?? 1;
+  return (
+    <section className="ml-spotlight" aria-label={eyebrow}>
+      <div className="ml-spotlight-copy">
+        <span className="ml-spotlight-eyebrow">{eyebrow}</span>
+        <h2>{m.title}</h2>
+        <p>{m.tagline}</p>
+        <div className="ml-spotlight-meta">
+          <span>
+            <Icon name={missionGlyph(topic)} size={14} />
+            {topic ? TOPIC_BY_ID[topic].name : SKILL_BY_ID[m.skillPrimary].name}
+          </span>
+          <span>
+            <Icon name="clock" size={14} />
+            {m.estMinutes} min
+          </span>
+          {note && <span>{note}</span>}
+          <span className="ml-accent-text num">+{XP_RULES.missionByDifficulty[m.difficulty]} XP</span>
+        </div>
+        {reason && (
+          <p className="ml-spotlight-why">
+            <Icon name="bolt" size={13} />
+            <span>
+              <strong>Why this mission?</strong> {reason}
+            </span>
+          </p>
+        )}
+        <div className="ml-actions">
+          <Button variant="primary" iconRight="arrow-right" onClick={onStart}>
+            {resume ? "Resume mission" : "Start mission"}
+          </Button>
+          <Button variant="tertiary" onClick={() => navigate(`/mission/${m.id}`)}>
+            Details
+          </Button>
+        </div>
+      </div>
+      <div className="ml-spotlight-visual">
+        <div className="ml-spotlight-chart" aria-hidden="true">
+          <LearningIllustration variant={1} />
+        </div>
+        <div className="ml-risk-ticket" role="group" aria-label="Risk budget for this mission">
+          <span>Risk budget</span>
+          <strong className="num">
+            {pct.toFixed(2)}
+            <small>%</small>
+          </strong>
+          <div>
+            <span>Account</span>
+            <b className="num">{wholeVusd(m.equity)} vUSD</b>
+          </div>
+          <div>
+            <span>Max. loss</span>
+            <b className="num">{wholeVusd((m.equity * pct) / 100)} vUSD</b>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** A mission in the deck: id, topic, reward, symbol, objective, difficulty candles and the call to action. */
+function MissionTile({ mission: m, lab }: { mission: MissionDef; lab: LabData }) {
+  const store = useStore();
+  const { navigate } = useRouter();
+  const attempts = attemptsOf(lab, m.id);
+  const best = bestOf(lab, m.id);
+  const missing = missingPrerequisites(missionMeta(m), lab.skills);
+  const st = store.activeSessionFor(m.id) ? "active" : attempts.length ? "done" : "new";
+  const topic = missionTopics(m.id)[0];
+  const cta = st === "active" ? "Resume" : st === "done" ? "Play again" : missing.length ? "Try anyway" : "Start mission";
+  return (
+    <article className={cx("ml-mtile", missing.length > 0 && "is-locked")}>
+      <div className="ml-mtile-head">
+        <span className="num">{m.id}</span>
+        <span className="ml-mtile-cat">{topic ? TOPIC_BY_ID[topic].name : SKILL_BY_ID[m.skillPrimary].name}</span>
+        <span className="ml-mtile-reward num">+{XP_RULES.missionByDifficulty[m.difficulty]} XP</span>
+      </div>
+      <div className="ml-mtile-body">
+        <span className="ml-mtile-symbol" aria-hidden="true">
+          <Icon name={missionGlyph(topic)} size={30} />
+          <i />
+        </span>
+        <div>
+          <h3>
+            <Link to={`/mission/${m.id}`}>{m.title}</Link>
+          </h3>
+          <p>{m.objective}</p>
+          {missing.length > 0 && (
+            <p className="ml-mtile-lock">
+              <Icon name="lock" size={13} />
+              Unlocks when {missing.map((p) => `${SKILL_BY_ID[p.skill].name} reaches ${LEVEL_LABEL[p.level]}`).join(" and ")}. You can still try it.
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="ml-mtile-foot">
+        <span className="ml-mtile-level">
+          <DifficultyCandles level={m.difficulty} />
+          {DIFFICULTY_LABEL[m.difficulty]}
+        </span>
+        <span className="ml-mtile-time">
+          <Icon name="clock" size={13} />
+          {m.estMinutes} min
+        </span>
+        {st !== "new" && (
+          <span className={cx("ml-status", `ml-status--${st}`)}>
+            {st === "active" ? "In progress" : `Best ${best ?? "—"}${attempts.length > 1 ? ` · ${plural(attempts.length, "attempt")}` : ""}`}
+          </span>
+        )}
+        <button type="button" className="ml-mtile-cta" onClick={() => navigate(`/play/${store.startMission(m.id)}`)} aria-label={`${cta}: ${m.title}`}>
+          {cta}
+          <Icon name="arrow-right" size={16} />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function SafetyNote() {
+  return (
+    <p className="ml-safety">
+      <Icon name="shield" size={14} />
+      Synthetic markets. Virtual money. Scored on decisions, not profit.
+    </p>
+  );
 }
 
 // ─── For You ────────────────────────────────────────────────────────────────
@@ -106,31 +241,10 @@ export function ForYouPage() {
         </Card>
       )}
 
+      {primary && <MissionSpotlight mission={primary} reason={rec.primary!.reason} resume={Boolean(store.activeSessionFor(primary.id))} onStart={() => start(primary.id)} />}
+
       <div className="ml-split">
         <div className="ml-stack-5">
-          {primary && (
-            <Card eyebrow="Recommended for you" className="ml-card--feature">
-              <div className="ml-reco">
-                <div className="ml-reco-main">
-                  <h2 className="ml-reco-title">{primary.title}</h2>
-                  <p className="ml-muted">{primary.tagline}</p>
-                  <p className="ml-meta">
-                    {SKILL_BY_ID[primary.skillPrimary].name} · <Dots n={primary.difficulty} /> {DIFFICULTY_LABEL[primary.difficulty]} · about {primary.estMinutes} min
-                  </p>
-                  <p className="ml-why">{rec.primary!.reason}</p>
-                </div>
-                <div className="ml-actions">
-                  <Button variant="primary" iconRight="arrow-right" onClick={() => start(primary.id)}>
-                    {store.activeSessionFor(primary.id) ? "Resume" : "Start mission"}
-                  </Button>
-                  <Button variant="tertiary" onClick={() => navigate(`/mission/${primary.id}`)}>
-                    Details
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-
           {rec.slots.length > 0 && (
             <Card title="Also for you">
               <ul className="ml-rows">
@@ -202,7 +316,7 @@ export function ForYouPage() {
                     <span className="ml-row-main">
                       <b>{m.title}</b>
                       <span className="ml-muted">
-                        <Dots n={m.difficulty} /> {m.estMinutes} min
+                        <Dots n={m.difficulty} /> {DIFFICULTY_LABEL[m.difficulty]} · {m.estMinutes} min
                       </span>
                     </span>
                     <Icon name="chevron-right" size={16} />
@@ -233,6 +347,7 @@ export function ForYouPage() {
           )}
         </aside>
       </div>
+      <SafetyNote />
     </div>
   );
 }
@@ -267,6 +382,8 @@ export function AllMissionsPage() {
   });
   const counts = { all: ordered.length, new: ordered.filter((m) => statusOf(m) === "new").length, active: ordered.filter((m) => statusOf(m) === "active").length, done: ordered.filter((m) => statusOf(m) === "done").length };
   const filtered = q !== "" || topic !== "all" || difficulty !== "all" || duration !== "any" || status !== "all";
+  const rec = recommend({ missions: MISSIONS.map(missionMeta), skills: lab.skills, history: missionHistory(lab), path: LEARNING_PATH, now: Date.now() });
+  const primary = rec.primary?.missionId ? getMission(rec.primary.missionId) : null;
   const reset = () => {
     setQuery("");
     setTopic("all");
@@ -280,14 +397,16 @@ export function AllMissionsPage() {
       <PageHead title="All Missions" sub="Three to six minutes each, one skill at a time. Every replay uses a different market, so answers can't be memorised." />
       <SubNav module="missions" />
 
-      <div className="ml-toolbar">
-        <label className="ml-search">
-          <Icon name="search" size={16} />
+      {primary && !filtered && <MissionSpotlight mission={primary} resume={Boolean(store.activeSessionFor(primary.id))} onStart={() => navigate(`/play/${store.startMission(primary.id)}`)} />}
+
+      <div className="ml-mission-toolbar">
+        <label className="ml-mission-search">
+          <Icon name="search" size={17} />
           <span className="ml-sr">Search missions</span>
-          <input type="search" placeholder="Search missions" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input type="search" placeholder="Search missions or skills" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
-        <label className="ml-select">
-          <span>Topic</span>
+        <label className="ml-mission-select">
+          <span className="ml-sr">Topic</span>
           <select value={topic} onChange={(e) => setTopic(e.target.value as TopicId | "all")}>
             <option value="all">All topics</option>
             {TOPICS.map((t) => (
@@ -297,10 +416,10 @@ export function AllMissionsPage() {
             ))}
           </select>
         </label>
-        <label className="ml-select">
-          <span>Difficulty</span>
+        <label className="ml-mission-select">
+          <span className="ml-sr">Difficulty</span>
           <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-            <option value="all">Any</option>
+            <option value="all">Any difficulty</option>
             {[1, 2, 3, 4, 5].map((d) => (
               <option key={d} value={d}>
                 {DIFFICULTY_LABEL[d]}
@@ -308,8 +427,8 @@ export function AllMissionsPage() {
             ))}
           </select>
         </label>
-        <label className="ml-select">
-          <span>Duration</span>
+        <label className="ml-mission-select">
+          <span className="ml-sr">Duration</span>
           <select value={duration} onChange={(e) => setDuration(e.target.value as Duration)}>
             <option value="any">Any length</option>
             <option value="short">Up to 3 min</option>
@@ -317,6 +436,9 @@ export function AllMissionsPage() {
             <option value="long">6 min or more</option>
           </select>
         </label>
+        <span className="ml-mission-count num" aria-live="polite">
+          {plural(shown.length, "mission")}
+        </span>
       </div>
       <div className="ml-row ml-row--between">
         <FilterChips
@@ -330,17 +452,11 @@ export function AllMissionsPage() {
             { value: "done", label: "Completed", count: counts.done },
           ]}
         />
-        <span className="ml-muted ml-small" aria-live="polite">
-          {plural(shown.length, "mission")}
-          {filtered && (
-            <>
-              {" · "}
-              <button type="button" className="ml-text-btn ml-inline" onClick={reset}>
-                Clear filters
-              </button>
-            </>
-          )}
-        </span>
+        {filtered && (
+          <button type="button" className="ml-text-btn ml-inline ml-small" onClick={reset}>
+            Clear filters
+          </button>
+        )}
       </div>
 
       {shown.length === 0 ? (
@@ -365,62 +481,13 @@ export function AllMissionsPage() {
             : "Try a broader search or remove a filter."}
         </Empty>
       ) : (
-        <ol className="ml-mission-list">
-          {shown.map((m) => {
-            const attempts = attemptsOf(lab, m.id);
-            const best = bestOf(lab, m.id);
-            const missing = missingPrerequisites(missionMeta(m), lab.skills);
-            const st = statusOf(m);
-            const n = LEARNING_PATH.indexOf(m.id) + 1;
-            return (
-              <li key={m.id} className={cx("ml-mission", missing.length > 0 && "is-locked")}>
-                <span className="ml-index-n num">{String(n).padStart(2, "0")}</span>
-                <div className="ml-mission-main">
-                  <div className="ml-mission-tags">
-                    {missionTopics(m.id).map((t, i) => (
-                      <Tag key={t} variant={i === 0 ? "default" : "outline"}>
-                        {TOPIC_BY_ID[t].name}
-                      </Tag>
-                    ))}
-                  </div>
-                  <h2>
-                    <Link to={`/mission/${m.id}`}>{m.title}</Link>
-                  </h2>
-                  <p className="ml-muted">{m.objective}</p>
-                  <p className="ml-meta">
-                    <Dots n={m.difficulty} /> {DIFFICULTY_LABEL[m.difficulty]} · about {m.estMinutes} min · +{XP_RULES.missionByDifficulty[m.difficulty]} XP
-                  </p>
-                  {missing.length > 0 ? (
-                    <p className="ml-later">
-                      <Icon name="lock" size={14} />
-                      Advanced: unlocks when {missing.map((p) => `${SKILL_BY_ID[p.skill].name} reaches ${LEVEL_LABEL[p.level]}`).join(" and ")}. You can still try it.
-                    </p>
-                  ) : (
-                    m.prerequisites.length > 0 && (
-                      <p className="ml-fine">
-                        <Icon name="check" size={14} /> Prerequisites met: {m.prerequisites.map((p) => `${SKILL_BY_ID[p.skill].name} ${LEVEL_LABEL[p.level]}`).join(", ")}
-                      </p>
-                    )
-                  )}
-                </div>
-                <div className="ml-mission-side">
-                  <span className={cx("ml-status", `ml-status--${st}`)}>{st === "active" ? "In progress" : st === "done" ? `Best ${best ?? "—"}` : "Not started"}</span>
-                  {attempts.length > 0 && <span className="ml-fine">{plural(attempts.length, "attempt")}</span>}
-                  <Button
-                    size="sm"
-                    variant={st === "active" || (st === "new" && !missing.length) ? "primary" : "secondary"}
-                    iconRight="arrow-right"
-                    onClick={() => navigate(`/play/${store.startMission(m.id)}`)}
-                    aria-label={`${st === "active" ? "Resume" : st === "done" ? "Play again" : missing.length ? "Try anyway" : "Start"}: ${m.title}`}
-                  >
-                    {st === "active" ? "Resume" : st === "done" ? "Play again" : missing.length ? "Try anyway" : "Start"}
-                  </Button>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <div className="ml-mission-deck">
+          {shown.map((m) => (
+            <MissionTile key={m.id} mission={m} lab={lab} />
+          ))}
+        </div>
       )}
+      <SafetyNote />
       <p className="ml-fine">In development: Order Types and Portfolio Exposure missions, Volatility Shift, The News Shock and Revenge Trade.</p>
     </div>
   );
@@ -784,24 +851,15 @@ export function WeeklyPage() {
     <div className="ml-page">
       <PageHead eyebrow={`${formatWeekRange(wc.days)} · ${plural(daysLeft, "day")} left`} title="Weekly Challenges" sub="Four objectives a week, including one multi-step scenario. Finish all four for a bonus." />
       <SubNav module="missions" />
+      <MissionSpotlight
+        mission={featured}
+        eyebrow="Scenario of the week"
+        note={`Multi-step · ${featured.checkpoints.filter((c) => !c.onlyVia).length}+ decision points`}
+        resume={Boolean(store.activeSessionFor(featured.id))}
+        onStart={() => navigate(`/play/${store.startMission(featured.id)}`)}
+      />
       <div className="ml-split">
         <div className="ml-stack-5">
-          <Card eyebrow="Scenario of the week" className="ml-card--feature">
-            <div className="ml-reco">
-              <div className="ml-reco-main">
-                <h2 className="ml-reco-title">{featured.title}</h2>
-                <p className="ml-muted">{featured.objective}</p>
-                <p className="ml-meta">
-                  Multi-step scenario · <Dots n={featured.difficulty} /> {DIFFICULTY_LABEL[featured.difficulty]} · {featured.checkpoints.filter((c) => !c.onlyVia).length}+ decision points · about {featured.estMinutes} min
-                </p>
-              </div>
-              <div className="ml-actions">
-                <Button variant="primary" iconRight="arrow-right" onClick={() => navigate(`/play/${store.startMission(featured.id)}`)}>
-                  {store.activeSessionFor(featured.id) ? "Resume" : "Start"}
-                </Button>
-              </div>
-            </div>
-          </Card>
           <Card title="This week's objectives">
             <ul className="ml-objectives">
               {progress.map(({ objective, current, done }) => (
