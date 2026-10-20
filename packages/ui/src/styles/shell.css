@@ -216,30 +216,10 @@
 .ml-sidebar.is-collapsed .ml-sb-nav {
   margin-top: 24px;
 }
-.ml-sb-group > ul {
+.ml-sb-list {
   display: flex;
   flex-direction: column;
   gap: 3px;
-}
-.ml-sb-group-label {
-  margin: 0 0 8px !important;
-  padding-left: 12px;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #74787e;
-}
-.ml-sidebar.is-collapsed .ml-sb-group-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-}
-.ml-sidebar.is-collapsed .ml-sb-group + .ml-sb-group {
-  padding-top: 14px;
-  border-top: 1px solid var(--ml-border);
 }
 .ml-sb-item {
   position: relative;

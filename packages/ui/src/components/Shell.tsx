@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { dailyChallenge, QUESTIONS } from "@market-lab/academy";
 import { MISSIONS } from "@market-lab/missions";
-import { BOTTOM_NAV, NAV, NAV_GROUPS, resolveNav } from "../nav";
+import { BOTTOM_NAV, NAV, resolveNav } from "../nav";
 import { useHost, usePlan } from "../host";
 import { formatDate } from "../format";
 import { useProgress } from "../progress";
@@ -82,94 +82,89 @@ function NavTree({ collapsed, badges, onNavigate }: { collapsed: boolean; badges
 
   return (
     <nav className="ml-sb-nav" aria-label="Market Lab">
-      {NAV_GROUPS.filter((g) => g.id !== "account").map((g) => (
-        <div key={g.id} className="ml-sb-group">
-          <p className="ml-sb-group-label">{g.label}</p>
-          <ul>
-            {NAV.filter((n) => n.group === g.id).map((item) => {
-              const active = match.item?.id === item.id;
-              const isOpen = Boolean(open[item.id]);
-              const childBadge = item.children?.find((c) => badges[c.id]);
-              const subId = `ml-sb-sub-${item.id}`;
-              const count = item.id === "missions" && notStarted > 0 ? notStarted : null;
-              return (
-                <li key={item.id} className={cx("ml-sb-item", active && "is-active", isOpen && "is-open")}>
-                  <div className="ml-sb-row">
-                    <Link
-                      to={item.to}
-                      className="ml-sb-link"
-                      aria-current={active && !match.child ? "page" : undefined}
-                      onClick={() => {
-                        if (item.children) setOpen((o) => ({ ...o, [item.id]: true }));
-                        onNavigate?.();
-                      }}
-                    >
-                      <Icon name={item.icon} size={18} />
-                      <span className="ml-sb-label">{item.label}</span>
-                      {count !== null && (
-                        <b className="ml-sb-count num" title={`${count} missions not started yet`}>
-                          {count}
-                          <span className="ml-sr"> missions not started</span>
-                        </b>
-                      )}
-                      {collapsed && childBadge && <span className="ml-dot" aria-hidden="true" />}
-                    </Link>
-                    {item.children && !collapsed && (
-                      <button
-                        type="button"
-                        className="ml-sb-toggle"
-                        aria-expanded={isOpen}
-                        aria-controls={subId}
-                        aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
-                        onClick={() => setOpen((o) => ({ ...o, [item.id]: !isOpen }))}
-                      >
-                        <Icon name="chevron-right" size={14} />
-                        {!isOpen && childBadge && <span className="ml-dot" aria-hidden="true" />}
-                      </button>
-                    )}
-                  </div>
-                  {item.children && !collapsed && (
-                    <ul id={subId} className="ml-sb-sub" hidden={!isOpen}>
+      <ul className="ml-sb-list">
+        {NAV.filter((n) => n.group !== "account").map((item) => {
+          const active = match.item?.id === item.id;
+          const isOpen = Boolean(open[item.id]);
+          const childBadge = item.children?.find((c) => badges[c.id]);
+          const subId = `ml-sb-sub-${item.id}`;
+          const count = item.id === "missions" && notStarted > 0 ? notStarted : null;
+          return (
+            <li key={item.id} className={cx("ml-sb-item", active && "is-active", isOpen && "is-open")}>
+              <div className="ml-sb-row">
+                <Link
+                  to={item.to}
+                  className="ml-sb-link"
+                  aria-current={active && !match.child ? "page" : undefined}
+                  onClick={() => {
+                    if (item.children) setOpen((o) => ({ ...o, [item.id]: true }));
+                    onNavigate?.();
+                  }}
+                >
+                  <Icon name={item.icon} size={18} />
+                  <span className="ml-sb-label">{item.label}</span>
+                  {count !== null && (
+                    <b className="ml-sb-count num" title={`${count} missions not started yet`}>
+                      {count}
+                      <span className="ml-sr"> missions not started</span>
+                    </b>
+                  )}
+                  {collapsed && childBadge && <span className="ml-dot" aria-hidden="true" />}
+                </Link>
+                {item.children && !collapsed && (
+                  <button
+                    type="button"
+                    className="ml-sb-toggle"
+                    aria-expanded={isOpen}
+                    aria-controls={subId}
+                    aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
+                    onClick={() => setOpen((o) => ({ ...o, [item.id]: !isOpen }))}
+                  >
+                    <Icon name="chevron-right" size={14} />
+                    {!isOpen && childBadge && <span className="ml-dot" aria-hidden="true" />}
+                  </button>
+                )}
+              </div>
+              {item.children && !collapsed && (
+                <ul id={subId} className="ml-sb-sub" hidden={!isOpen}>
+                  {item.children.map((c) => (
+                    <li key={c.id}>
+                      <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined} onClick={onNavigate}>
+                        <span>{c.label}</span>
+                        {badges[c.id] && (
+                          <>
+                            <span className="ml-dot" aria-hidden="true" />
+                            <span className="ml-sr"> ({badges[c.id]})</span>
+                          </>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {collapsed && (
+                <div className="ml-sb-flyout">
+                  <span className="ml-sb-flyout-title" aria-hidden="true">
+                    {item.label}
+                  </span>
+                  {item.children && (
+                    <ul>
                       {item.children.map((c) => (
                         <li key={c.id}>
-                          <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined} onClick={onNavigate}>
+                          <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined}>
                             <span>{c.label}</span>
-                            {badges[c.id] && (
-                              <>
-                                <span className="ml-dot" aria-hidden="true" />
-                                <span className="ml-sr"> ({badges[c.id]})</span>
-                              </>
-                            )}
+                            {badges[c.id] && <span className="ml-dot" aria-hidden="true" />}
                           </Link>
                         </li>
                       ))}
                     </ul>
                   )}
-                  {collapsed && (
-                    <div className="ml-sb-flyout">
-                      <span className="ml-sb-flyout-title" aria-hidden="true">
-                        {item.label}
-                      </span>
-                      {item.children && (
-                        <ul>
-                          {item.children.map((c) => (
-                            <li key={c.id}>
-                              <Link to={c.to} className="ml-sb-sublink" aria-current={active && match.child?.id === c.id ? "page" : undefined}>
-                                <span>{c.label}</span>
-                                {badges[c.id] && <span className="ml-dot" aria-hidden="true" />}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

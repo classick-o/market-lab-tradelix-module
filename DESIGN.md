@@ -67,7 +67,7 @@ Toate clasele au prefixul `ml-`, deci CSS-ul poate fi copiat ca atare într-o al
 - **Sidebar** ([`Shell.tsx`](packages/ui/src/components/Shell.tsx)):
   - brandul MARKET//LAB, cu „//” în accent;
   - caseta de nivel (nivel, rang, progres XP), link spre Levels & XP;
-  - două grupuri cu titlu, Workspace și Learning; părintele e link, iar chevron-ul separat deschide submeniul (`aria-expanded`);
+  - o singură listă de 6 destinații, fără titluri de grup; părintele e link, iar chevron-ul separat deschide submeniul (`aria-expanded`);
   - elementul activ: text în accent, fundal de 7,5% accent și o bară de 2px la stânga, plus `aria-current="page"`;
   - jos: cardul Pro (Upgrade sau Manage plan) și rândul de cont (nume, plan, rang), cu iconițe pentru Settings și notificări.
 - **Colapsat (rail):** doar iconițe, flyout-uri cu secțiunile la hover sau focus; cardul Pro devine „PRO”.

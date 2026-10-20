@@ -37,18 +37,18 @@ Demo-ul rulează la https://classick-o.github.io/market-lab-tradelix-module/. La
 
 ## Navigația
 
-Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 3 grupuri și 8 destinații:
+Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 6 destinații într-o singură listă, fără titluri de grup:
 
-| Grup | Destinație | Secțiuni |
-|---|---|---|
-| Workspace | Dashboard | – |
-| | Missions | For You · All Missions · Daily Challenges · Weekly Challenges · Assessments |
-| | Trading Arena | Simulator · Scenarios · Virtual Portfolio · Risk Calculator |
-| | Trade Journal | Session History · Decision Journal · Trade Replay · Alternative Decisions · Performance Analytics |
-| Learning | Learn | Learning Paths · Lessons · Concept Library · Glossary · Knowledge Checks |
-| | Progress & Achievements | Skill Profile · Levels & XP · Achievements · Learning Streaks · Milestones |
-| Account | Upgrade to Pro (devine „Manage plan” pentru Pro) | – |
-| | Settings | Profile · Preferences · Notifications · Privacy & Security · Billing |
+| Destinație | Secțiuni |
+|---|---|
+| Dashboard | – |
+| Missions | For You · All Missions · Daily Challenges · Weekly Challenges · Assessments |
+| Trading Arena | Simulator · Scenarios · Virtual Portfolio · Risk Calculator |
+| Trade Journal | Session History · Decision Journal · Trade Replay · Alternative Decisions · Performance Analytics |
+| Learn | Learning Paths · Lessons · Concept Library · Glossary · Knowledge Checks |
+| Progress & Achievements | Skill Profile · Levels & XP · Achievements · Learning Streaks · Milestones |
+
+Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentru Pro) și rândul de cont, cu iconițe pentru Settings (Profile · Preferences · Notifications · Privacy & Security · Billing) și notificări.
 
 - **Comportament:**
   - Sus în sidebar sunt logo-ul și widget-ul de progres (nivel, rang, bară XP, colapsabil).
