@@ -180,12 +180,19 @@ function ProCard({ onNavigate }: { onNavigate?: () => void }) {
   const { path } = useRouter();
   const to = pro ? "/settings/billing" : "/pricing";
   return (
-    <Link to={to} className={cx("ml-sb-pro", path === to && "is-current")} onClick={onNavigate} aria-label={pro ? "Manage your Pro plan" : "Upgrade to Pro: advanced scenarios and analytics"}>
+    <Link to={to} className={cx("ml-sb-pro", pro && "is-pro", path === to && "is-current")} onClick={onNavigate} aria-label={pro ? "Manage your Pro plan" : "Upgrade to Pro: advanced scenarios and analytics"}>
+      <span className="ml-sb-pro-art" aria-hidden="true" />
+      <span className="ml-sb-pro-head" aria-hidden="true">
+        <span className="ml-sb-pro-crown">
+          <Icon name="crown" size={16} />
+        </span>
+        <span className="ml-sb-pro-chip">{pro ? "Active" : "PRO"}</span>
+      </span>
       <strong>{pro ? "MARKET//LAB Pro" : "Upgrade to Pro"}</strong>
-      <small>{pro ? "Your plan is active. Billing and renewal." : "Advanced scenarios & analytics"}</small>
+      <small>{pro ? "Your plan is active. Billing and renewal." : "Advanced scenarios, deeper paths and full analytics."}</small>
       <span className="ml-sb-pro-action">
-        {pro ? "Manage plan" : "Explore Pro"}
-        <Icon name="arrow-right" size={15} />
+        {pro ? "Manage plan" : "See plans"}
+        <Icon name="arrow-right" size={14} />
       </span>
     </Link>
   );
