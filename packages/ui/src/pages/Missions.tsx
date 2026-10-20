@@ -399,13 +399,13 @@ export function AllMissionsPage() {
 
       {primary && !filtered && <MissionSpotlight mission={primary} resume={Boolean(store.activeSessionFor(primary.id))} onStart={() => navigate(`/play/${store.startMission(primary.id)}`)} />}
 
-      <div className="ml-mission-toolbar">
-        <label className="ml-mission-search">
+      <div className="ml-findbar">
+        <label className="ml-findbar-search">
           <Icon name="search" size={17} />
           <span className="ml-sr">Search missions</span>
           <input type="search" placeholder="Search missions or skills" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
-        <label className="ml-mission-select">
+        <label className="ml-findbar-select">
           <span className="ml-sr">Topic</span>
           <select value={topic} onChange={(e) => setTopic(e.target.value as TopicId | "all")}>
             <option value="all">All topics</option>
@@ -416,7 +416,7 @@ export function AllMissionsPage() {
             ))}
           </select>
         </label>
-        <label className="ml-mission-select">
+        <label className="ml-findbar-select">
           <span className="ml-sr">Difficulty</span>
           <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
             <option value="all">Any difficulty</option>
@@ -427,7 +427,7 @@ export function AllMissionsPage() {
             ))}
           </select>
         </label>
-        <label className="ml-mission-select">
+        <label className="ml-findbar-select">
           <span className="ml-sr">Duration</span>
           <select value={duration} onChange={(e) => setDuration(e.target.value as Duration)}>
             <option value="any">Any length</option>
@@ -436,7 +436,7 @@ export function AllMissionsPage() {
             <option value="long">6 min or more</option>
           </select>
         </label>
-        <span className="ml-mission-count num" aria-live="polite">
+        <span className="ml-findbar-count num" aria-live="polite">
           {plural(shown.length, "mission")}
         </span>
       </div>

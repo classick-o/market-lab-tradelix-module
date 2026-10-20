@@ -1,0 +1,772 @@
+/* Learn: featured path, up-next note, path tiles, path detail, lesson tiles, concept tiles. */
+
+/* Tones for artwork: accent, accent/violet blend, violet. */
+.ml-tone-0 {
+  color: var(--ml-accent-muted);
+}
+.ml-tone-1,
+.ml-tone-3 {
+  color: color-mix(in srgb, var(--ml-accent) 45%, var(--ml-accent-2));
+}
+.ml-tone-2 {
+  color: var(--ml-accent-2);
+}
+
+.ml-learn-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: #8c8d93;
+}
+
+/* ── Featured path + up next ────────────────────────────────────────── */
+
+.ml-learn-feature-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) minmax(230px, 1fr);
+  gap: 18px;
+}
+.ml-learn-feature {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 21%, transparent);
+  border-radius: var(--ml-r-lg);
+  background: linear-gradient(110deg, color-mix(in srgb, var(--ml-accent) 2%, transparent), transparent), var(--ml-surface);
+}
+.ml-learn-feature-copy {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 26px;
+}
+.ml-learn-feature-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--ml-accent-fg);
+}
+.ml-learn-feature h2 {
+  margin: 17px 0 10px;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -1.2px;
+  line-height: 1.16;
+}
+.ml-learn-feature-copy > p {
+  max-width: 420px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #87888d;
+}
+.ml-feature-progress {
+  width: 100%;
+  max-width: 230px;
+  margin: 23px 0 18px;
+}
+.ml-feature-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+  font-size: 12px;
+  color: #87888d;
+}
+.ml-feature-progress strong {
+  font-weight: 500;
+  color: var(--ml-accent-fg);
+}
+.ml-feature-progress small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #7a7b80;
+}
+.ml-learn-feature-copy .ml-btn .ml-icon {
+  margin-left: 14px;
+  transition: transform 0.3s;
+}
+.ml-next-lesson {
+  display: block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #7a7b80;
+}
+.ml-learn-feature-art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--ml-accent) 4.7%, transparent), transparent 65%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%);
+  mask-image: linear-gradient(90deg, transparent, #000 12%);
+}
+.ml-orbit {
+  position: absolute;
+  width: 210px;
+  height: 210px;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 9%, transparent);
+  border-radius: 50%;
+  transform: rotate(-28deg) scaleY(0.62);
+}
+.ml-orbit.is-two {
+  width: 295px;
+  height: 295px;
+  transform: rotate(32deg) scaleY(0.62);
+}
+.ml-orbit.is-three {
+  width: 380px;
+  height: 380px;
+  border-color: color-mix(in srgb, var(--ml-accent) 4.7%, transparent);
+}
+.ml-plaque {
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 150px;
+  border: 1px solid color-mix(in srgb, var(--ml-accent) 21%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ml-accent) 7%, transparent), color-mix(in srgb, var(--ml-accent) 0.8%, transparent));
+  box-shadow:
+    12px 14px 0 -3px #080808,
+    12px 14px 0 -2px color-mix(in srgb, var(--ml-accent) 9.4%, transparent),
+    0 20px 60px #0008;
+  color: var(--ml-accent);
+  transform: rotate(-9deg);
+}
+.ml-plaque .ml-icon {
+  filter: drop-shadow(0 0 20px color-mix(in srgb, var(--ml-accent) 8%, transparent));
+}
+.ml-art-coordinate {
+  position: absolute;
+  top: 25px;
+  right: 22px;
+  font-size: 12px;
+  color: var(--ml-accent-muted);
+}
+.ml-card.ml-learning-note {
+  position: relative;
+  gap: 0;
+  padding: 24px;
+}
+.ml-note-bookmark {
+  position: absolute;
+  top: 45px;
+  right: 21px;
+  color: var(--ml-accent);
+  transform: rotate(-9deg);
+}
+.ml-learning-note h3 {
+  margin: 30px 44px 10px 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+.ml-learning-note > p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #85868b;
+}
+.ml-lesson-summary {
+  display: flex;
+  gap: 20px;
+  margin: 24px 0;
+  font-size: 12px;
+  color: #a0a1a6;
+}
+.ml-lesson-summary > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ml-learning-note > .ml-btn {
+  justify-content: space-between;
+  width: 100%;
+  margin-top: auto;
+}
+.ml-learning-note > p + .ml-btn {
+  margin-top: 24px;
+}
+
+/* ── Path tiles ─────────────────────────────────────────────────────── */
+
+.ml-learn-section-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 12px;
+}
+.ml-learn-section-title h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.ml-learn-section-title > span {
+  font-size: 12px;
+  color: #a5a6ab;
+  white-space: nowrap;
+}
+.ml-path-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-path-grid > li {
+  display: flex;
+  min-width: 0;
+}
+.ml-path-tile {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+  text-decoration: none;
+  transition:
+    border-color 0.35s,
+    transform 0.35s,
+    box-shadow 0.35s;
+}
+.ml-path-tile-art {
+  position: relative;
+  display: block;
+  height: 140px;
+  border-bottom: 1px solid #ffffff0c;
+  background: radial-gradient(ellipse at 60% 70%, color-mix(in srgb, currentColor 7%, transparent), transparent 75%);
+}
+.ml-path-tile-art .ml-illustration {
+  height: 100%;
+  padding-top: 18px;
+  color: inherit;
+  transition: transform 0.5s;
+}
+.ml-path-category {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 3px;
+  background: #0008;
+  font-size: 11px;
+}
+.ml-path-pro {
+  position: absolute;
+  top: 15px;
+  right: 12px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--ml-accent-muted);
+}
+.ml-path-tile-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px;
+}
+.ml-path-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  row-gap: 5px;
+  font-size: 11px;
+  color: #7c7e84;
+}
+.ml-path-meta > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ml-path-title {
+  margin: 13px 0 6px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+  color: #dbdcdf;
+}
+.ml-path-desc {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #86888e;
+}
+.ml-path-tile-progress {
+  display: block;
+  margin-top: auto;
+  padding-top: 20px;
+}
+.ml-path-tile-progress .ml-bar > i {
+  background: currentColor;
+}
+.ml-path-tile-progress > span:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #7b7d83;
+}
+.ml-path-tile-progress strong {
+  font-weight: 400;
+  color: #adaeb3;
+}
+.ml-path-tile-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 17px;
+  padding-top: 14px;
+  border-top: 1px solid #ffffff0b;
+}
+.ml-path-tile-action strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #bdbec3;
+}
+.ml-path-tile-action .ml-icon {
+  transition: transform 0.3s;
+}
+
+/* ── Path detail ────────────────────────────────────────────────────── */
+
+.ml-card.ml-path-detail {
+  gap: 0;
+  padding: 25px;
+}
+.ml-path-detail-heading {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 30px;
+}
+.ml-path-detail-heading .ml-feature-progress {
+  margin-top: 0;
+}
+.ml-path-detail-heading .ml-learn-kicker {
+  margin-bottom: 10px;
+}
+.ml-path-detail-heading .ml-illustration {
+  height: 170px;
+  color: var(--ml-accent);
+}
+.ml-path-step-list {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-path-step-list button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  padding: 18px 5px;
+  border: 0;
+  border-top: 1px solid #ffffff0d;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.ml-path-step-list button:hover:not(:disabled) {
+  background: #ffffff03;
+}
+.ml-path-step-list button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.ml-path-step-number {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ffffff1a;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #8e9096;
+}
+.is-done > .ml-path-step-number {
+  border-color: color-mix(in srgb, var(--ml-pos) 20%, transparent);
+  background: color-mix(in srgb, var(--ml-pos) 4%, transparent);
+  color: var(--ml-pos);
+}
+.is-next > .ml-path-step-number {
+  border-color: var(--ml-accent-line);
+  color: var(--ml-accent-fg);
+}
+.ml-path-step-main {
+  min-width: 0;
+}
+.ml-path-step-main strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.ml-path-step-main small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #7a7f86;
+}
+.ml-step-state {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ml-accent-muted);
+  white-space: nowrap;
+}
+.ml-path-step-list button > .ml-icon {
+  flex-shrink: 0;
+  color: var(--ml-accent-muted);
+}
+
+/* ── Lesson tiles ───────────────────────────────────────────────────── */
+
+.ml-lesson-deck {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-lesson-deck > li {
+  display: flex;
+  min-width: 0;
+}
+.ml-lesson-tile {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.ml-lesson-visual {
+  position: relative;
+  display: block;
+  height: 150px;
+  border-bottom: 1px solid #ffffff0c;
+  background: radial-gradient(ellipse, color-mix(in srgb, currentColor 5%, transparent), transparent);
+}
+.ml-lesson-visual .ml-illustration {
+  height: 100%;
+  color: inherit;
+  transition: transform 0.5s;
+}
+.ml-lesson-flag {
+  position: absolute;
+  top: 11px;
+  left: 12px;
+}
+.ml-lesson-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid #ffffff12;
+  border-radius: 3px;
+  background: #000a;
+  font-size: 11px;
+  color: var(--ml-pos);
+}
+.ml-lesson-duration {
+  position: absolute;
+  right: 12px;
+  bottom: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border: 1px solid #ffffff12;
+  border-radius: 3px;
+  background: #000a;
+  font-size: 11px;
+  color: #aaabb0;
+}
+.ml-lesson-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+}
+.ml-lesson-title {
+  margin: 11px 0 8px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.25px;
+  line-height: 1.35;
+}
+.ml-lesson-summary-text {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #85878d;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ml-lesson-go {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 12px;
+  color: #878a90;
+}
+.ml-lesson-go .ml-icon {
+  transition: transform 0.3s;
+}
+.ml-lesson-tile.is-done .ml-lesson-title {
+  color: #c6c8cc;
+}
+
+/* ── Concept tiles ──────────────────────────────────────────────────── */
+
+.ml-concept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-concept-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+  transition: border-color 0.3s;
+}
+.ml-concept-tile:hover {
+  border-color: color-mix(in srgb, var(--ml-accent) 31%, transparent);
+}
+.ml-concept-number {
+  position: absolute;
+  top: 20px;
+  right: 23px;
+  font-size: 36px;
+  font-weight: 500;
+  color: #ffffff0c;
+}
+.ml-concept-tile > .ml-icon {
+  margin-bottom: 18px;
+  color: var(--ml-accent);
+}
+.ml-concept-tile h3 {
+  margin: 8px 0 0;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+}
+.ml-concept-tile p {
+  max-width: 320px;
+  margin: 12px 0 22px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #87898f;
+}
+.ml-concept-tile .ml-text-arrow {
+  margin-top: auto;
+  color: var(--ml-accent-fg);
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+
+@media (hover: hover) {
+  .ml-path-tile:hover,
+  .ml-lesson-tile:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--ml-accent) 31%, transparent);
+    box-shadow: 0 10px 24px #0006;
+  }
+  .ml-path-tile:hover .ml-illustration,
+  .ml-lesson-tile:hover .ml-illustration {
+    transform: scale(1.04);
+  }
+  .ml-path-tile:hover .ml-path-tile-action .ml-icon,
+  .ml-lesson-tile:hover .ml-lesson-go .ml-icon,
+  .ml-learn-feature-copy .ml-btn:hover .ml-icon {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ml-learn-feature,
+  .ml-learning-note,
+  .ml-path-tile,
+  .ml-lesson-tile {
+    animation: ml-attention-arrive 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .ml-learning-note {
+    animation-delay: 0.08s;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+
+@media (min-width: 1550px) {
+  .ml-learn-feature-copy {
+    padding: 32px;
+  }
+  .ml-learn-feature h2 {
+    font-size: 36px;
+  }
+  .ml-path-title {
+    font-size: 18px;
+  }
+  .ml-path-desc {
+    font-size: 13px;
+  }
+  .ml-path-tile-art {
+    height: 165px;
+  }
+}
+@media (max-width: 1190px) {
+  .ml-path-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ml-learn-feature h2 {
+    font-size: 28px;
+  }
+  .ml-learn-feature-copy {
+    padding: 23px;
+  }
+  .ml-learn-feature-row {
+    grid-template-columns: minmax(0, 2fr) minmax(210px, 1fr);
+  }
+  .ml-card.ml-learning-note {
+    padding: 22px 18px;
+  }
+  .ml-learning-note h3 {
+    font-size: 20px;
+  }
+  .ml-plaque {
+    width: 105px;
+    height: 130px;
+  }
+  .ml-plaque .ml-icon {
+    width: 66px;
+    height: 66px;
+  }
+  .ml-lesson-deck,
+  .ml-concept-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 960px) {
+  .ml-learn-feature-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .ml-learn-feature {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    min-height: 275px;
+  }
+  .ml-learn-feature-copy {
+    padding: 22px 0 22px 20px;
+  }
+  .ml-learn-feature h2 {
+    font-size: 25px;
+  }
+  .ml-learn-feature-copy > p {
+    font-size: 12px;
+  }
+  .ml-plaque {
+    width: 87px;
+    height: 114px;
+  }
+  .ml-plaque .ml-icon {
+    width: 58px;
+    height: 58px;
+  }
+  .ml-learning-note h3 {
+    margin-top: 22px;
+  }
+  .ml-path-grid {
+    gap: 11px;
+  }
+  .ml-path-tile-art {
+    height: 115px;
+  }
+  .ml-path-tile-copy {
+    padding: 13px 11px;
+  }
+  .ml-path-title {
+    font-size: 14px;
+  }
+  .ml-lesson-deck,
+  .ml-concept-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-path-detail-heading {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .ml-path-detail-heading .ml-illustration {
+    display: none;
+  }
+  .ml-card.ml-path-detail {
+    padding: 20px 16px;
+  }
+  .ml-path-step-list button {
+    gap: 12px;
+  }
+}
+@media (max-width: 480px) {
+  .ml-learn-feature {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-learn-feature-art {
+    display: none;
+  }
+  .ml-learn-feature-copy {
+    padding: 22px 18px;
+  }
+  .ml-path-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-step-state {
+    display: none;
+  }
+}
+
+/* Concept detail view: the find bar stacks in the list column. */
+.ml-library-list .ml-findbar-search {
+  flex: none;
+  max-width: none;
+}
+.ml-library-list .ml-findbar-select select {
+  width: 100%;
+}

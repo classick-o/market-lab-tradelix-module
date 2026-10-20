@@ -6,6 +6,8 @@
 @import "./styles/layout.css";
 @import "./styles/shell.css";
 @import "./styles/pages.css";
+@import "./styles/screens/shared.css";
 @import "./styles/screens/art.css";
 @import "./styles/screens/dashboard.css";
 @import "./styles/screens/missions.css";
+@import "./styles/screens/learn.css";

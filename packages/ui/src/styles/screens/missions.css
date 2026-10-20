@@ -148,70 +148,6 @@
   white-space: nowrap;
 }
 
-/* ── Toolbar ────────────────────────────────────────────────────────── */
-
-.ml-mission-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
-}
-.ml-mission-search {
-  display: flex;
-  flex: 1 1 260px;
-  align-items: center;
-  gap: 10px;
-  max-width: 450px;
-  min-width: 0;
-  padding-left: 13px;
-  border: 1px solid var(--ml-border);
-  border-radius: 6px;
-  background: var(--ml-surface);
-  color: #747e8c;
-}
-.ml-mission-search:focus-within {
-  border-color: var(--ml-accent-line);
-}
-.ml-mission-search input {
-  width: 100%;
-  min-width: 0;
-  height: 40px;
-  padding: 0 10px 0 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font: inherit;
-  font-size: 13px;
-  color: var(--ml-text);
-}
-.ml-mission-search input::placeholder {
-  color: #6f747c;
-}
-.ml-mission-select select {
-  height: 42px;
-  padding: 0 32px 0 12px;
-  border: 1px solid var(--ml-border);
-  border-radius: 6px;
-  background: var(--ml-surface)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23929499' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
-    no-repeat right 11px center;
-  font: inherit;
-  font-size: 12px;
-  color: var(--ml-text);
-  appearance: none;
-  cursor: pointer;
-}
-.ml-mission-select select:hover {
-  border-color: var(--ml-border-strong);
-}
-.ml-mission-count {
-  margin-left: auto;
-  font-size: 12px;
-  color: #7d8086;
-  white-space: nowrap;
-}
-
 /* ── Mission deck ───────────────────────────────────────────────────── */
 
 .ml-mission-deck {
@@ -480,21 +416,6 @@
     font-size: 9px;
     gap: 6px;
   }
-  .ml-mission-count {
-    display: none;
-  }
-  .ml-mission-search {
-    flex-basis: 100%;
-    max-width: none;
-  }
-  .ml-mission-select {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-  .ml-mission-select select {
-    width: 100%;
-    font-size: 11px;
-  }
   .ml-mtile-body {
     padding-bottom: 22px;
   }
@@ -548,10 +469,6 @@
     border-top: 0;
     border-left: 1px solid #ffffff0d;
     font-size: 10px;
-  }
-  .ml-mission-select select {
-    padding-right: 24px;
-    background-position: right 8px center;
   }
   .ml-mtile h3 {
     font-size: 18px;

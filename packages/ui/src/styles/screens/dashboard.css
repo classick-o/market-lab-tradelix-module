@@ -50,6 +50,7 @@
   color: var(--ml-text-3);
 }
 .ml-bar {
+  display: block;
   height: 4px;
   border-radius: 2px;
   background: #191919;

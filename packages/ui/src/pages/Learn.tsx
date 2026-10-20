@@ -16,8 +16,9 @@ import {
   type PathStep,
   type TopicId,
 } from "@market-lab/academy";
-import { LEVEL_LABEL, SKILL_BY_ID, levelOf } from "@market-lab/learning";
+import { LEVEL_LABEL, SKILL_BY_ID, XP_RULES, levelOf } from "@market-lab/learning";
 import { MISSIONS, getMission } from "@market-lab/missions";
+import { LearningIllustration } from "../components/Art";
 import { Card, FilterChips, PageHead, ProBadge, SubNav } from "../components/Page";
 import { Button, Empty, Icon, Meter, cx } from "../components/ui";
 import { plural } from "../format";
@@ -34,6 +35,34 @@ function stepLabel(s: PathStep): string {
 function stepIcon(s: PathStep): string {
   return s.kind === "lesson" ? "book" : s.kind === "mission" ? "flag" : "quiz";
 }
+
+function stepKind(s: PathStep): string {
+  return s.kind === "lesson" ? "Lesson" : s.kind === "mission" ? "Mission" : "Knowledge check";
+}
+
+function stepMinutes(s: PathStep): number {
+  return s.kind === "lesson" ? (getLesson(s.id)?.minutes ?? 5) : s.kind === "mission" ? getMission(s.id).estMinutes : 4;
+}
+
+function stepXp(s: PathStep): number {
+  return s.kind === "lesson" ? XP_RULES.lesson : s.kind === "mission" ? XP_RULES.missionByDifficulty[getMission(s.id).difficulty] : XP_RULES.checkPass;
+}
+
+function stepCta(s: PathStep): string {
+  return s.kind === "lesson" ? "Open lesson" : s.kind === "mission" ? "Start mission" : "Take the check";
+}
+
+/** Artwork and icon for each path, after the design's path tiles. */
+const PATH_ART: Record<string, { icon: string; variant: number }> = {
+  beginner: { icon: "book", variant: 0 },
+  risk: { icon: "shield", variant: 1 },
+  technical: { icon: "chart", variant: 2 },
+  intermediate: { icon: "layers", variant: 2 },
+  psychology: { icon: "brain", variant: 3 },
+};
+const pathArt = (id: string) => PATH_ART[id] ?? { icon: "route", variant: 0 };
+const LEVEL_NAME = { all: "All levels", beginner: "Beginner", intermediate: "Intermediate" } as const;
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 function useStepNav() {
   const store = useStore();
@@ -80,10 +109,141 @@ export function PathsPage() {
   const personal = personalPath(lab, (s) => stepDone(s, snapshot) !== null);
   const pp = pathProgress(personal, snapshot);
 
+  const all = LEARNING_PATHS.map((p) => ({ p, pr: pathProgress(p, snapshot), locked: p.tier === "pro" && !pro }));
+  const open = all.filter((x) => !x.locked);
+  // Featured: the path you're in the middle of, else the first one with steps left.
+  const featured = open.find((x) => x.pr.completed > 0 && x.pr.nextIndex !== null) ?? open.find((x) => x.pr.nextIndex !== null) ?? open[0];
+  const others = all.filter((x) => x !== featured);
+  const next = featured.pr.nextIndex !== null ? featured.p.steps[featured.pr.nextIndex] : null;
+  const art = pathArt(featured.p.id);
+
   return (
     <div className="ml-page">
       <PageHead title="Learning Paths" sub="Ordered sequences of lessons, missions and checks. Each concept is practised right after it's explained." />
       <SubNav module="learn" />
+
+      <div className="ml-learn-feature-row">
+        <section className="ml-learn-feature" aria-label={featured.p.title}>
+          <div className="ml-learn-feature-copy">
+            <span className="ml-learn-feature-tag">
+              <Icon name={art.icon} size={13} />
+              {featured.pr.completed > 0 ? "Continue your path" : "Start here"}
+            </span>
+            <h2>{featured.p.title}</h2>
+            <p>{featured.p.description}</p>
+            <div className="ml-feature-progress">
+              <div>
+                <span>Your progress</span>
+                <strong className="num">
+                  {featured.pr.completed} <small>/ {plural(featured.pr.total, "step")}</small>
+                </strong>
+              </div>
+              <div className="ml-bar ml-bar--thin" role="meter" aria-label={`${featured.p.title} progress`} aria-valuemin={0} aria-valuemax={featured.pr.total} aria-valuenow={featured.pr.completed}>
+                <i style={{ width: `${featured.pr.pct * 100}%` }} />
+              </div>
+            </div>
+            {next ? (
+              <>
+                <Button variant="primary" iconRight="arrow-right" onClick={() => go(next)}>
+                  {featured.pr.completed > 0 ? "Continue learning" : "Start the path"}
+                </Button>
+                <small className="ml-next-lesson">
+                  Up next: {stepLabel(next)} · {stepMinutes(next)} min
+                </small>
+              </>
+            ) : (
+              <Button variant="secondary" iconRight="arrow-right" onClick={() => navigate(`/learn/paths/${featured.p.id}`)}>
+                Review the path
+              </Button>
+            )}
+          </div>
+          <div className="ml-learn-feature-art" aria-hidden="true">
+            <span className="ml-orbit" />
+            <span className="ml-orbit is-two" />
+            <span className="ml-orbit is-three" />
+            <span className="ml-plaque">
+              <Icon name={art.icon} size={82} />
+            </span>
+            <span className="ml-art-coordinate num">
+              {pad2(Math.min(featured.pr.total, (featured.pr.nextIndex ?? featured.pr.total - 1) + 1))} / {pad2(featured.pr.total)}
+            </span>
+          </div>
+        </section>
+
+        <aside className="ml-card ml-learning-note" aria-label="Up next">
+          <span className="ml-learn-kicker">{next ? "Up next" : "Path complete"}</span>
+          <span className="ml-note-bookmark" aria-hidden="true">
+            <Icon name={next ? stepIcon(next) : "check-circle"} size={25} />
+          </span>
+          <h3>{next ? stepLabel(next) : "Every step done"}</h3>
+          <p>{next ? `${stepKind(next)} · step ${featured.pr.nextIndex! + 1} of ${featured.pr.total} in ${featured.p.title}` : "Revisit a lesson, or pick another path below."}</p>
+          {next && (
+            <div className="ml-lesson-summary">
+              <span>
+                <Icon name="clock" size={14} />
+                {stepMinutes(next)} min
+              </span>
+              <span>
+                <Icon name="bolt" size={14} />
+                <span className="num">{stepXp(next)} XP</span>
+              </span>
+            </div>
+          )}
+          <Button variant="secondary" iconRight="arrow-right" onClick={() => (next ? go(next) : navigate("/learn/lessons"))}>
+            {next ? stepCta(next) : "Browse lessons"}
+          </Button>
+        </aside>
+      </div>
+
+      <div className="ml-learn-section-title">
+        <h2>{others.length === all.length ? "Learning paths" : "More learning paths"}</h2>
+        <span className="num">{plural(all.length, "path")}</span>
+      </div>
+      <ul className="ml-path-grid">
+        {others.map(({ p, pr, locked }, i) => {
+          const a = pathArt(p.id);
+          const minutes = p.steps.reduce((s, st) => s + stepMinutes(st), 0);
+          return (
+            <li key={p.id}>
+              <Link to={locked ? "/pricing" : `/learn/paths/${p.id}`} className={cx("ml-path-tile", `ml-tone-${i % 4}`, locked && "is-locked")}>
+                <span className="ml-path-tile-art">
+                  <span className="ml-path-category">{LEVEL_NAME[p.level]}</span>
+                  {p.tier === "pro" && <span className="ml-path-pro">PRO</span>}
+                  <LearningIllustration variant={a.variant} />
+                </span>
+                <span className="ml-path-tile-copy">
+                  <span className="ml-path-meta">
+                    <span>
+                      <Icon name={a.icon} size={13} />
+                      {plural(p.steps.length, "step")}
+                    </span>
+                    <span>
+                      <Icon name="clock" size={12} />
+                      {minutes} min
+                    </span>
+                  </span>
+                  <span className="ml-path-title">{p.title}</span>
+                  <span className="ml-path-desc">{p.description}</span>
+                  <span className="ml-path-tile-progress">
+                    <span className="ml-bar ml-bar--thin" aria-hidden="true">
+                      <i style={{ width: `${pr.pct * 100}%` }} />
+                    </span>
+                    <span>
+                      {pr.completed ? `${pr.completed} of ${pr.total} completed` : "A fresh place to start"}
+                      <strong className="num">{pr.completed ? `${Math.round(pr.pct * 100)}%` : "—"}</strong>
+                    </span>
+                  </span>
+                  <span className="ml-path-tile-action">
+                    <strong>{locked ? "Explore Pro" : pr.completedAt ? "Review path" : pr.completed ? "Continue path" : "Explore path"}</strong>
+                    <Icon name={locked ? "lock" : "arrow-right"} size={16} />
+                  </span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
       <Card eyebrow="Personalised" title={personal.title} className="ml-card--feature">
         <p className="ml-muted">{personal.description}</p>
         <ol className="ml-path-strip">
@@ -97,35 +257,6 @@ export function PathsPage() {
           ))}
         </ol>
       </Card>
-      <ul className="ml-paths">
-        {LEARNING_PATHS.map((p) => {
-          const pr = pathProgress(p, snapshot);
-          const locked = p.tier === "pro" && !pro;
-          return (
-            <li key={p.id} className={cx("ml-pathcard", locked && "is-locked")}>
-              <div className="ml-pathcard-head">
-                <span className="ml-eyebrow">
-                  {p.level === "all" ? "All levels" : p.level === "beginner" ? "Beginner" : "Intermediate"} · {plural(p.steps.length, "step")}
-                </span>
-                {p.tier === "pro" && <ProBadge />}
-              </div>
-              <h2>
-                <Link to={`/learn/paths/${p.id}`}>{p.title}</Link>
-              </h2>
-              <p className="ml-muted">{p.description}</p>
-              <Meter value={pr.pct} label={`${p.title} progress`} />
-              <div className="ml-row ml-row--between">
-                <span className="ml-small ml-muted num">
-                  {pr.completed} of {pr.total} done{pr.completedAt ? " · completed" : ""}
-                </span>
-                <Button size="sm" variant={pr.completed > 0 && !pr.completedAt ? "primary" : "secondary"} iconRight={locked ? undefined : "arrow-right"} iconLeft={locked ? "lock" : undefined} onClick={() => navigate(locked ? "/pricing" : `/learn/paths/${p.id}`)}>
-                  {locked ? "Pro" : pr.completedAt ? "Review" : pr.completed > 0 ? "Continue" : "Start"}
-                </Button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 }
@@ -140,12 +271,13 @@ export function PathDetailPage({ pathId }: { pathId: string }) {
   if (!path) return <Empty title="Path not found" action={<Link to="/learn/paths" className="ml-text-link">All paths</Link>} />;
   const pr = pathProgress(path, snapshot);
   const locked = path.tier === "pro" && !pro;
+  const minutes = path.steps.reduce((s, st) => s + stepMinutes(st), 0);
 
   return (
     <div className="ml-page">
       <PageHead
         back={{ to: "/learn/paths", label: "Learning Paths" }}
-        eyebrow={`${plural(path.steps.length, "step")} · ${pr.completed} done`}
+        eyebrow={`${LEVEL_NAME[path.level]} · ${plural(path.steps.length, "step")} · about ${minutes} min`}
         title={path.title}
         sub={path.description}
         actions={
@@ -160,39 +292,57 @@ export function PathDetailPage({ pathId }: { pathId: string }) {
           ) : undefined
         }
       />
-      <Meter value={pr.pct} label="Path progress" />
-      <div className="ml-split">
-        <Card title="Steps">
-          <ol className="ml-steps-path">
-            {path.steps.map((s, i) => {
-              const done = pr.done[i] !== null;
-              const lessonLocked = s.kind === "lesson" && getLesson(s.id)?.tier === "pro" && !pro;
-              return (
-                <li key={`${s.kind}${s.id}`} className={cx(done && "is-done", pr.nextIndex === i && "is-next")}>
-                  <span className="ml-step-dot num" aria-hidden="true">
-                    {done ? <Icon name="check" size={14} /> : i + 1}
+      <section className="ml-card ml-path-detail">
+        <div className="ml-path-detail-heading">
+          <div>
+            <div className="ml-feature-progress">
+              <div>
+                <span>Your progress</span>
+                <strong className="num">
+                  {pr.completed} <small>/ {plural(pr.total, "step")}</small>
+                </strong>
+              </div>
+              <Meter value={pr.pct} label="Path progress" />
+            </div>
+            {path.outcomes.length > 0 && (
+              <>
+                <span className="ml-learn-kicker">You'll be able to</span>
+                <ul className="ml-list ml-list--check">
+                  {path.outcomes.map((o) => (
+                    <li key={o}>{o}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+          <LearningIllustration variant={pathArt(path.id).variant} />
+        </div>
+        <ol className="ml-path-step-list">
+          {path.steps.map((s, i) => {
+            const done = pr.done[i] !== null;
+            const lessonLocked = s.kind === "lesson" && getLesson(s.id)?.tier === "pro" && !pro;
+            const isNext = pr.nextIndex === i;
+            return (
+              <li key={`${s.kind}${s.id}`}>
+                <button type="button" className={cx(done && "is-done", isNext && "is-next")} disabled={locked || lessonLocked} onClick={() => go(s)}>
+                  <span className="ml-path-step-number num" aria-hidden="true">
+                    {done ? <Icon name="check" size={16} /> : pad2(i + 1)}
                   </span>
-                  <div className="ml-steps-path-main">
-                    <span className="ml-eyebrow">{s.kind === "lesson" ? "Lesson" : s.kind === "mission" ? "Mission" : "Knowledge check"}</span>
-                    <b>{stepLabel(s)}</b>
-                    {done && <span className="ml-sr">completed</span>}
-                  </div>
-                  <Button size="sm" variant={pr.nextIndex === i ? "primary" : "tertiary"} disabled={locked || lessonLocked} onClick={() => go(s)}>
-                    {done ? "Revisit" : pr.nextIndex === i ? "Start" : "Open"}
-                  </Button>
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
-        <Card title="You'll be able to">
-          <ul className="ml-list ml-list--check">
-            {path.outcomes.map((o) => (
-              <li key={o}>{o}</li>
-            ))}
-          </ul>
-        </Card>
-      </div>
+                  <span className="ml-path-step-main">
+                    <strong>{stepLabel(s)}</strong>
+                    <small>
+                      {stepKind(s)} · {stepMinutes(s)} min
+                    </small>
+                  </span>
+                  <span className="ml-step-state">{locked || lessonLocked ? "Pro" : done ? "Review" : isNext ? "Up next" : "Open"}</span>
+                  <Icon name={locked || lessonLocked ? "lock" : "arrow-right"} size={16} />
+                  <span className="ml-sr">{done ? ", completed" : ""}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
     </div>
   );
 }
@@ -211,19 +361,24 @@ export function LessonsPage() {
     (l) => (topic === "all" || l.topic === topic) && (status === "all" || statusOf(l.id) === status) && (!q || `${l.title} ${l.summary}`.toLowerCase().includes(q)),
   );
   const done = LESSONS.filter((l) => statusOf(l.id) === "done").length;
+  const reset = () => {
+    setQuery("");
+    setTopic("all");
+    setStatus("all");
+  };
 
   return (
     <div className="ml-page">
       <PageHead title="Lessons" sub={`Short, practical lessons with illustrations, interactive examples and a quick check. ${done} of ${LESSONS.length} completed.`} />
       <SubNav module="learn" />
-      <div className="ml-toolbar">
-        <label className="ml-search">
-          <Icon name="search" size={16} />
+      <div className="ml-findbar">
+        <label className="ml-findbar-search">
+          <Icon name="search" size={17} />
           <span className="ml-sr">Search lessons</span>
-          <input type="search" placeholder="Search lessons" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input type="search" placeholder="Find a lesson…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
-        <label className="ml-select">
-          <span>Topic</span>
+        <label className="ml-findbar-select">
+          <span className="ml-sr">Topic</span>
           <select value={topic} onChange={(e) => setTopic(e.target.value as TopicId | "all")}>
             <option value="all">All topics</option>
             {TOPICS.map((t) => (
@@ -233,6 +388,9 @@ export function LessonsPage() {
             ))}
           </select>
         </label>
+        <span className="ml-findbar-count num" aria-live="polite">
+          {plural(shown.length, "lesson")}
+        </span>
       </div>
       <FilterChips
         label="Lesson status"
@@ -246,24 +404,47 @@ export function LessonsPage() {
         ]}
       />
       {shown.length === 0 ? (
-        <Empty icon="book" title="No lessons match" action={<Button variant="secondary" onClick={() => { setQuery(""); setTopic("all"); setStatus("all"); }}>Clear filters</Button>}>
-          Try a broader search.
+        <Empty icon="search" title="No matches yet" action={<Button variant="secondary" onClick={reset}>Clear filters</Button>}>
+          Try a broader term or clear your search.
         </Empty>
       ) : (
-        <ul className="ml-lesson-grid-list">
+        <ul className="ml-lesson-deck">
           {shown.map((l) => {
             const st = statusOf(l.id);
+            const ti = TOPICS.findIndex((t) => t.id === l.topic);
             return (
               <li key={l.id}>
-                <Link to={`/learn/lessons/${l.id}`} className={cx("ml-lesson-card", st === "done" && "is-done")}>
-                  <span className="ml-lesson-card-top">
-                    <span className="ml-eyebrow">{TOPIC_BY_ID[l.topic].name}</span>
-                    {l.tier === "pro" && !pro ? <ProBadge /> : st === "done" ? <Icon name="check-circle" size={16} className="ml-accent-text" /> : null}
+                <Link to={`/learn/lessons/${l.id}`} className={cx("ml-lesson-tile", st === "done" && "is-done")}>
+                  <span className={cx("ml-lesson-visual", `ml-tone-${ti % 3}`)}>
+                    <LearningIllustration variant={ti % 4} />
+                    {l.tier === "pro" && !pro ? (
+                      <span className="ml-lesson-flag">
+                        <ProBadge />
+                      </span>
+                    ) : st !== "new" ? (
+                      <span className="ml-lesson-flag ml-lesson-state">
+                        {st === "done" ? (
+                          <>
+                            <Icon name="check" size={12} /> Completed
+                          </>
+                        ) : (
+                          "In progress"
+                        )}
+                      </span>
+                    ) : null}
+                    <span className="ml-lesson-duration">
+                      <Icon name="clock" size={12} />
+                      {l.minutes} min
+                    </span>
                   </span>
-                  <b>{l.title}</b>
-                  <span className="ml-muted ml-small">{l.summary}</span>
-                  <span className="ml-meta">
-                    {l.level === "beginner" ? "Beginner" : "Intermediate"} · {l.minutes} min{st === "started" ? " · in progress" : ""}
+                  <span className="ml-lesson-copy">
+                    <span className="ml-learn-kicker">{TOPIC_BY_ID[l.topic].name}</span>
+                    <span className="ml-lesson-title">{l.title}</span>
+                    <span className="ml-lesson-summary-text">{l.summary}</span>
+                    <span className="ml-lesson-go">
+                      {l.level === "beginner" ? "Beginner" : "Intermediate"} · interactive lesson
+                      <Icon name="arrow-right" size={16} />
+                    </span>
                   </span>
                 </Link>
               </li>
@@ -284,6 +465,79 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
   const q = query.trim().toLowerCase();
   const shown = CONCEPTS.filter((c) => (cat === "all" || c.category === cat) && (!q || `${c.name} ${c.summary}`.toLowerCase().includes(q)));
   const counts = useMemo(() => Object.fromEntries(TOPICS.map((t) => [t.id, CONCEPTS.filter((c) => c.category === t.id).length])), []);
+  const filters = (
+    <>
+      <label className="ml-findbar-search">
+        <Icon name="search" size={17} />
+        <span className="ml-sr">Search concepts</span>
+        <input type="search" placeholder="Find a concept…" value={query} onChange={(e) => setQuery(e.target.value)} />
+      </label>
+      <label className="ml-findbar-select">
+        <span className="ml-sr">Category</span>
+        <select value={cat} onChange={(e) => setCat(e.target.value as TopicId | "all")}>
+          <option value="all">All categories ({CONCEPTS.length})</option>
+          {TOPICS.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name} ({counts[t.id]})
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
+  );
+
+  // Without a selected concept: the design's concept grid.
+  if (!conceptId) {
+    return (
+      <div className="ml-page">
+        <PageHead title="Concept Library" sub={`${CONCEPTS.length} core ideas, each with a definition, an example, related concepts and where to practise it.`} />
+        <SubNav module="learn" />
+        <div className="ml-findbar">
+          {filters}
+          <span className="ml-findbar-count num" aria-live="polite">
+            {plural(shown.length, "concept")}
+          </span>
+        </div>
+        {shown.length === 0 ? (
+          <Empty
+            icon="search"
+            title="No matches yet"
+            action={
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setQuery("");
+                  setCat("all");
+                }}
+              >
+                Clear search
+              </Button>
+            }
+          >
+            Try a broader term or clear your search.
+          </Empty>
+        ) : (
+          <ul className="ml-concept-grid">
+            {shown.map((c, i) => (
+              <li key={c.id} className="ml-concept-tile">
+                <span className="ml-concept-number num" aria-hidden="true">
+                  {pad2(i + 1)}
+                </span>
+                <Icon name={TOPIC_BY_ID[c.category].icon} size={26} />
+                <span className="ml-learn-kicker">{TOPIC_BY_ID[c.category].name}</span>
+                <h3>{c.name}</h3>
+                <p>{c.summary}</p>
+                <Link to={`/learn/concepts/${c.id}`} className="ml-text-arrow ml-accent-text">
+                  Read the concept <Icon name="arrow-right" size={15} />
+                  <span className="ml-sr">: {c.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="ml-page">
@@ -291,22 +545,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
       <SubNav module="learn" />
       <div className="ml-library">
         <div className={cx("ml-library-list", current && "has-detail")}>
-          <label className="ml-search">
-            <Icon name="search" size={16} />
-            <span className="ml-sr">Search concepts</span>
-            <input type="search" placeholder="Search concepts" value={query} onChange={(e) => setQuery(e.target.value)} />
-          </label>
-          <label className="ml-select">
-            <span>Category</span>
-            <select value={cat} onChange={(e) => setCat(e.target.value as TopicId | "all")}>
-              <option value="all">All categories ({CONCEPTS.length})</option>
-              {TOPICS.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({counts[t.id]})
-                </option>
-              ))}
-            </select>
-          </label>
+          {filters}
           {shown.length === 0 ? (
             <p className="ml-muted">No concepts match.</p>
           ) : (
@@ -325,7 +564,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
         <div className="ml-library-detail">
           {current ? (
             <article className="ml-card ml-concept">
-              <Link to="/learn/concepts" className="ml-back ml-show-sm">
+              <Link to="/learn/concepts" className="ml-back">
                 <Icon name="arrow-left" size={16} /> All concepts
               </Link>
               <span className="ml-eyebrow">{TOPIC_BY_ID[current.category].name}</span>
@@ -372,13 +611,9 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
                 </div>
               )}
             </article>
-          ) : conceptId ? (
+          ) : (
             <Empty icon="library" title="Concept not found" action={<Link to="/learn/concepts" className="ml-text-link">All concepts</Link>}>
               The link may be out of date. Pick a concept from the list.
-            </Empty>
-          ) : (
-            <Empty icon="library" title="Pick a concept">
-              Choose a concept from the list to read its definition, an example and where to practise it.
             </Empty>
           )}
         </div>
