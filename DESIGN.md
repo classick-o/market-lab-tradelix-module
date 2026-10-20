@@ -88,9 +88,9 @@ Toate clasele au prefixul `ml-`, deci CSS-ul poate fi copiat ca atare într-o al
 
 ## Imagini pe carduri
 
-Șase fotografii generate cu 3D AI Studio (Nano Banana 2.1), în [`packages/ui/src/assets/art/`](packages/ui/src/assets/art), WebP, 99 KB în total: munți noaptea cu lumânări în cer (antetul Dashboard), un vârf (Your progress), un lanț muntos (Learning streak, bannerul Pro), lumânări luminoase (Current skill level, misiunea recomandată), un laptop cu grafic (Continue learning). Cardul „Upgrade to Pro” din sidebar are imaginea lui (`pro-summit.webp`, un vârf cu auroră albastră), plus butonul „See plans” și o lumină care trece peste card de trei ori după încărcare; pe rail rămâne doar coroana.
+Cinci fotografii generate cu 3D AI Studio (Nano Banana 2.1), în [`packages/ui/src/assets/art/`](packages/ui/src/assets/art), WebP, 78 KB în total: munți noaptea cu lumânări în cer (antetul Dashboard), un vârf (Your progress), un lanț muntos (Learning streak, bannerul Pro), lumânări luminoase (Current skill level). „Continue learning” și misiunea recomandată rămân fără imagine, ca să nu concureze cu graficul și cu acțiunea principală. Cardul „Upgrade to Pro” din sidebar are imaginea lui (`pro-summit.webp`, un vârf cu auroră albastră), plus butonul „See plans” și o lumină care trece peste card de trei ori după încărcare; pe rail rămâne doar coroana.
 
-Se pun cu clasa `ml-art` plus o variantă (`ml-art--peak`, `--range`, `--candles`, `--laptop`, `--mountains`), definite în `styles/screens/art.css`. Imaginea stă într-un `::before` în spatele conținutului, cu opacitate mică (0,16–0,6) și estompată spre stânga, unde e textul. Pe fiecare card se reglează prin variabile: `--ml-art-opacity`, `--ml-art-pos`, `--ml-art-fade`.
+Se pun cu clasa `ml-art` plus o variantă (`ml-art--peak`, `--range`, `--candles`, `--mountains`), definite în `styles/screens/art.css`. Imaginea stă într-un `::before` în spatele conținutului, cu opacitate mică (0,2–0,6) și estompată spre stânga, unde e textul. Pe fiecare card se reglează prin variabile: `--ml-art-opacity`, `--ml-art-pos`, `--ml-art-fade`.
 
 ## Mișcare
 

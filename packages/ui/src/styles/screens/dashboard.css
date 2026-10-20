@@ -1331,14 +1331,6 @@
   --ml-art-opacity: 0.2;
   --ml-art-fade: 50%;
 }
-.ml-continue-card.ml-art--laptop {
-  --ml-art-opacity: 0.24;
-  --ml-art-fade: 30%;
-}
-.ml-recommended.ml-art--candles {
-  --ml-art-opacity: 0.16;
-  --ml-art-fade: 45%;
-}
 .ml-pro-banner.ml-art--range {
   --ml-art-opacity: 0.55;
   --ml-art-pos: right 85%;

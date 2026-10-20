@@ -86,9 +86,6 @@
 .ml-art--candles {
   --ml-art-img: url("../../assets/art/candles-glow.webp");
 }
-.ml-art--laptop {
-  --ml-art-img: url("../../assets/art/laptop-chart.webp");
-}
 .ml-art--mountains {
   --ml-art-img: url("../../assets/art/hero-mountains.webp");
 }

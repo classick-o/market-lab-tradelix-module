@@ -250,7 +250,7 @@ export function DashboardPage() {
 
       <div className="ml-dash-columns">
         <div className="ml-dash-main">
-          <section className="ml-continue-card ml-art ml-art--laptop" aria-label="Continue learning">
+          <section className="ml-continue-card" aria-label="Continue learning">
             <div className="ml-continue-copy">
               <div className="ml-eyebrow ml-continue-eyebrow">Continue learning</div>
               {activeMission ? (
@@ -360,7 +360,7 @@ export function DashboardPage() {
           </section>
 
           {primary && (
-            <section className="ml-card ml-panel-flush ml-recommended ml-art ml-art--candles" aria-label="Recommended next mission">
+            <section className="ml-card ml-panel-flush ml-recommended" aria-label="Recommended next mission">
               <div className="ml-section-heading">
                 <h3>Recommended next mission</h3>
                 <Link to="/missions/all" className="ml-text-arrow">
