@@ -2,7 +2,7 @@
 
 Modulul de învățare a trading-ului pentru Tradelix. Utilizatorul învață prin lecții scurte, misiuni și o piață simulată, cu bani virtuali. Primește scoruri separate pentru **calitatea deciziei**, **disciplina de risc** și **rezultatul simulat**: un trade profitabil nu înseamnă automat o decizie bună.
 
-Interfața e în engleză. Planul complet e în [PLAN_DEZVOLTARE.md](PLAN_DEZVOLTARE.md), sistemul de design (tokeni, componente, navigație, QA) e în [DESIGN.md](DESIGN.md), iar regulile de funcționare ale fiecărui ecran sunt în [KNOWLEDGE.md](KNOWLEDGE.md).
+Interfața e în engleză. Planul complet e în [PLAN_DEZVOLTARE.md](PLAN_DEZVOLTARE.md), sistemul de design (tokeni, componente, navigație, QA) e în [DESIGN.md](DESIGN.md), regulile de funcționare ale fiecărui ecran sunt în [KNOWLEDGE.md](KNOWLEDGE.md), iar planul sistemului de învățare (Learn) e în [PLAN_LEARN.md](PLAN_LEARN.md).
 
 ## Pornire
 
