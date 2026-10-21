@@ -17,9 +17,13 @@ Definiția completă a conținutului pentru sistemul de învățare din [PLAN_LE
 | [widgets.md](widgets.md) | Cele 13 widget-uri: cele 7 existente, cu modul task, și cele 6 noi |
 | [questions-markets-and-sizing.md](questions-markets-and-sizing.md) | Întrebările din Market Fundamentals, Order Types, Technical Analysis, Position Sizing, Portfolio Exposure: cele 46 existente și 11 noi |
 | [questions-risk-and-mind.md](questions-risk-and-mind.md) | Întrebările din Risk Management, Stop-Loss, Decision-Making, Psychology, Scenario Analysis: cele 48 existente și 8 noi |
+| [course/](course/README.md) | **Harta completă a cursului:** arhitectura, nivelurile 0–4, toate cele 340 de lecții, capabilitățile de simulator |
+| [research/](research/) | Cercetarea pe care se bazează harta (R1–R6), cu sursele |
 | [issues-and-decisions.md](issues-and-decisions.md) | Erorile de cod găsite, corecturile de conținut și deciziile de luat înainte de implementare |
 
-## Harta cursului
+## Harta cursului (prima variantă, 18 lecții)
+
+> **Înlocuită de [harta completă a cursului](course/README.md):** 5 niveluri, 44 de unități, 340 de lecții. Tabelul de mai jos arată doar cum au fost grupate primele 18 lecții scrise complet. Locul lor în cursul complet e în [course/README.md §9](course/README.md). Scripturile lor rămân valabile.
 
 | Unitate | Lecție (în ordinea cursului) | Min | Widget în faza Try | Misiune de final |
 |---|---|---|---|---|

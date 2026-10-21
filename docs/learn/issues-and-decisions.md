@@ -87,16 +87,40 @@ Fiecare are o recomandare. Unde nu decizi altfel, implementarea merge pe recoman
 | D1 | Poziția deschisă se evaluează la bid sau la mid? | (a) se rescrie q-mf-6 după motor (mid); (b) se schimbă motorul să evalueze long-urile la bid | **(a)**: graficul se desenează din mid, iar motorul e consecvent cu el |
 | D2 | Exemplul din L17 (50 de unități, „before costs”) | (a) rămâne 50, etichetat clar; (b) devine 48, cu costuri | **(b)**: din L08 riscul include costurile; 50 de unități ar depăși 1% (102.45) |
 | D3 | Politica legăturilor de glosar în text | (a) fiecare termen la prima apariție în lecție; (b) doar termenii noi pentru curs, plus cei recurenți de care depinde lecția | **(b)**, ca în U1: textul nu se umple de sublinieri |
-| D4 | Trailing stop: două întrebări noi îl testează, dar nicio lecție nu-l predă | (a) un beat scurt în L10 (stop-ul se mută doar în favoarea trade-ului, niciodată mai departe); (b) se scot întrebările și L10 din concept | **(a)**: e consecvent cu regula „never widen a stop” și completează L10 |
+| D4 | Trailing stop: două întrebări noi îl testează, dar nicio lecție nu-l predă | **Închisă de harta cursului:** lecția nouă 1.3.8 predă trailing stop-ul; conceptul `trailing-stop` trece de la L10 la 1.3.8 | — |
 | D5 | „Overconfidence” în q-psy-8 și q-psy-10 | (a) se înlocuiește cu „recency bias”, predat în L17 / L18; (b) L18 predă și overconfidence | **(a)** |
 | D6 | Durata L05 | 5 min (azi) sau 6 min (realist cu pașii noi) | **6 min** |
 | D7 | Task-ul din L06 | (a) două părți: banda, apoi stop-ul; (b) doar banda, cu stop-ul fix | **(a)**: doar așa acoperă obiectivul 3 |
 | D8 | Practica din L07 | (a) rămâne M02 (care nu arată medii mobile); (b) Arena, cu toggle-urile SMA 20 / SMA 50 | **(b)** |
 | D9 | Datele graficelor din Learn | (a) generate la rulare din seed; (b) înghețate în fișiere, prin `npm run content:generate`, ca la misiuni | **(b)**: o schimbare în generator nu mai poate strica un exercițiu |
-| D10 | A doua misiune de final pentru U1 (ordine și execuții) | (a) acum; (b) mai târziu, odată cu misiunile noi din PLAN_DEZVOLTARE | **(b)**: până atunci practica trimite la Arena și la misiunile din U3 |
-| D11 | Pauza din L13 („pause for your set time”): cât durează? | (a) o valoare fixă în lecție; (b) o alege utilizatorul în câmpurile de plan din L18 | **(b)**: lecția învață regula, utilizatorul își fixează timpul |
+| D10 | A doua misiune de final pentru U1 (ordine și execuții) | Harta propune misiunea „Order desk” pentru unitatea 1.3 | **Da, „Order desk”**, construită odată cu S1 (ordinele noi) |
+| D11 | Pauza din L13 („pause for your set time”): cât durează? | **Închisă de harta cursului:** utilizatorul își alege durata în lecția 1.7.7 | — |
 | D12 | Unde se salvează câmpurile de plan din L18 | (a) doar în recap; (b) în starea lecției, afișate în recap și în Practice | **(b)** |
 | D13 | M04 arată un card ATR înainte ca L16 să predea ATR | (a) tooltip de glosar pentru ATR în M04; (b) se mută cardul | **(a)** |
 | D14 | Reflecția din M05 („spread / commission / both”) | Răspunsul bun e „commission”: intrarea e deja la ask | Se verifică debrief-ul M05 și se corectează dacă acceptă „Both” |
 | D15 | M02: zgomotul e mereu al treilea segment și se numește „No clear structure” | Ordinea se amestecă, iar eticheta devine „Noise”, ca în L05 | De aplicat în misiune |
 | D16 | Un al doilea d3 pentru Order Types | Azi e unul singur, deci retake-ul îl repetă | Opțional, la extinderea băncii |
+
+## D. Decizii din harta completă a cursului
+
+Au apărut cât s-a scris [harta cursului](course/README.md). Fiecare are o recomandare.
+
+| # | Decizie | Opțiuni | Recomandare |
+|---|---|---|---|
+| D17 | Instrumente sintetice noi: LABY, LABZ, vEUR/vUSD, vUSD/vJPY, vUSD/vCHF, vEUR/vCHF, indicele LABIX și altele (corelații, perechi, forex, intermarket) | (a) se adaugă odată cu S9 și S10; (b) cursul rămâne pe LABX | **(a)**: fără ele, unitățile 2.11, 2.14, 3.6 și 3.13 nu se pot exersa |
+| D18 | Plafonul fără levier în lecțiile intraday: cu LABX ≈ 100, orice stop mai strâns de ≈ 1.00 atinge plafonul de 100 de unități (2.9.3) | (a) se păstrează și devine lecție despre tentația levierului; (b) un preț mai mic pentru LABX în lecțiile intraday | **(a)** |
+| D19 | Contractul de opțiuni LABX | Harta propune 1 contract = 10 unități (ca un trade să încapă în bugetul de risc de 1%), dobândă zero, fără comision | **10 unități, dobândă zero, dar cu comision** (principiul costurilor reale) |
+| D20 | Prețuri de opțiuni înainte de Nivelul 4 (3.8.7, 3.9.3) | (a) o versiune minimă de S12 (Black-Scholes și IV) construită odată cu Nivelul 3; (b) prețuri precalculate | **(a)** |
+| D21 | Definiția „riscul calculat corect” din etapa 1 → 2 | Pierderea la stop, cu costuri, rămâne în buget, iar mărimea e ≥ 90% din cea dată de `maxQtyForRisk` (cu excepția plafonului de capital) | **Da** |
+| D22 | Limita zilnică de pierdere (parte din S18) | (a) adusă la Nivelul 1, pentru etapa 1 → 2; (b) rămâne la Nivelul 2 | **(a)** |
+| D23 | Etapa 2 → 3: se adaugă și „disposition score într-o bandă țintă” (R5)? | (a) da, ca o condiție; (b) doar afișat ca KPI | **(b)**: e un indicator util, dar opac ca o condiție de trecere |
+| D24 | Termenii pentru pattern-urile rare (aproximativ 60 de lumânări, 30 de pattern-uri grafice) | (a) intră în recapitularea spațiată; (b) doar în Library | **(b)**: recapitularea rămâne pe ce contează |
+| D25 | 11 lecții de la Nivelul 2 durează 8 minute (PLAN_LEARN spune 5–7) | (a) se acceptă de la Nivelul 2 în sus; (b) se împart | **(a)** |
+| D26 | Ordinea în Nivelul 3: statistica și backtestingul (3.10–3.12) înaintea metodelor testate în laborator (3.4–3.5); futures și crypto (3.14) înaintea strategiilor sistematice (3.13) | (a) ordine recomandată, cu id-urile neschimbate; (b) renumerotare | **(a)**, aplicată deja în course/README §3 |
+| D27 | Cifrele produse de generator (de exemplu „fading-ul merge doar la surprize mici”, efectul celor care urmăresc Fibonacci) | Sunt parametri de design, nu fapte de piață | **Etichetate în UI ca parametri ai simulatorului** |
+| D28 | Pragurile convenite de aplicație: PBO (0,2 și 0,5), plateau ≥ 80%, edge ratio ≥ 1,2, lichidarea la cel puțin 2 × distanța stop-ului, pragurile capstone-urilor, haircut-ul de 50% pe edge-urile publicate | Propuse de hartă | **Calibrate pe seed-uri înainte de lansare**, apoi trecute în KNOWLEDGE.md |
+| D29 | Fapte de verificat înainte de publicare | Înlocuirea regulii PDT din SUA (2026), schemele de compensare (SIPC, UE, România), formulările ASF, eliminarea PFOF în UE, T+1 în UE, specificațiile CME, regulile actuale FTMO și Topstep, cazul My Forex Funds, toate marcajele [BK], [K], [S], [PK] din cercetare | **O trecere de verificare înainte de publicarea fiecărui nivel** |
+| D30 | Băncile de întrebări pentru unitățile noi | Doar Nivelurile 0–1 cer aproximativ 90 de întrebări noi; harta mută și întrebări existente între unități (de exemplu q-ta-12 și q-ta-13 de la L16 la 2.4.6) | Se scriu odată cu scriptul complet al fiecărei unități |
+| D31 | L16 după mutarea în 2.4 | B3 și B4 repetă lecția 2.4.6 | **B3 se scurtează, B4 rămâne ca exercițiu de reamintire** |
+| D32 | `carry-trade` (3.6.6, varianta FX) și `carry` (2.x și 3.13, strategia între clase de active) | (a) două concepte legate între ele; (b) unul singur | **(a)** |
+| D33 | Numărul de widget-uri și laboratoare noi (≈ 200 în toată harta) | (a) fiecare construit separat; (b) configurații ale câtorva „carcase” refolosibile: laborator, calculator, sorter, strategy lab | **(b)** |

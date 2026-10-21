@@ -72,6 +72,8 @@ Interfața rămâne în engleză; textele UI din acest plan sunt date în englez
 
 ### 3.1 Structura: Course → Unit → Lesson → Beat
 
+> **Actualizare (22.10.2026):** structura de mai jos, cu 5 unități și 18 lecții, a fost extinsă la cursul complet: Level → Unit → Lesson, cu 5 niveluri, 44 de unități și 340 de lecții. Vezi [docs/learn/course/README.md](docs/learn/course/README.md). Restul acestui plan (player, interacțiuni, Chart Kit, memoria învățării, etape) rămâne valabil pentru tot cursul.
+
 Cele 18 lecții se grupează în **5 unități**, în ordinea în care un începător are nevoie de ele. Metafora vizuală e o **expediție montană**, continuând imaginile deja folosite în Dashboard (vârful, lanțul muntos): fiecare unitate e o etapă a urcușului.
 
 | Unitate | Titlu (UI) | Etapă vizuală | Topicuri | Lecții | Verificări | Misiune de final |
