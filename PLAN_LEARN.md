@@ -746,10 +746,12 @@ Etapele E1 și E2 aduc cel mai mare salt vizibil și se pot livra separat. E5 ad
 
 ---
 
-## 17. Decizii deschise
+## 17. Decizii (luate pe 22.10.2026)
 
-1. **L16 (Volatility):** free, cum promite Pricing pentru risk management, sau Pro, cum e azi?
-2. **XP pentru lecții:** rămâne 25 la terminare, sau se împarte în 15 pentru terminare și 10 pentru 3/3 din prima? Recomandare: împărțirea, ca stăpânirea să conteze.
-3. **Modul implicit:** Learn mode (recomandat) sau Read mode pentru utilizatorii existenți?
-4. **Ce intră în Pro:** recapitularea spațiată și Library sunt gratuite (recomandat), iar Pro păstrează lecțiile și traseele avansate?
-5. **Pauzele de streak** din PLAN_DEZVOLTARE §11 (2 zile pe săptămână) se implementează odată cu E5?
+1. **Planuri (Free / Pro):** deocamdată tot conținutul Learn e funcțional pentru toată lumea. Gruparea pe planuri se stabilește la final, după ce sistemul e complet. Până atunci, etichetele „Pro” din tabelele acestui plan sunt doar informative.
+2. **XP pentru lecții:** se împarte în **15 XP** la terminare și **10 XP bonus** pentru 3/3 din prima încercare la checkul lecției.
+3. **Modul implicit:** **pașii interactivi** (Learn mode), pentru toți utilizatorii, inclusiv cei existenți. Read mode rămâne opțiune.
+4. **Recapitularea spațiată și Library** sunt gratuite.
+5. **Pauzele de streak** (2 zile pe săptămână, automate, se pot dezactiva) se implementează odată cu E5.
+
+Înainte de implementare, conținutul fiecărei lecții se definește complet în [docs/learn/](docs/learn/README.md).
