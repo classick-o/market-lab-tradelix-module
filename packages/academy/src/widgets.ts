@@ -81,7 +81,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetContract> = {
     outputs: { exposurePct: "position ÷ account × 100", leverageUsed: "position ÷ account", loss: "position × move%", lossPct: "loss ÷ account × 100, 1 decimal" },
   },
   "bias-spotter": {
-    title: "Name the bias",
+    title: "Sort the cards",
     controls: {},
     outputs: { solved: "cards answered correctly (0 to the number of cards)", firstTry: "cards right on the first try" },
   },

@@ -781,7 +781,7 @@ function BiasSpotter(p: TaskWidgetProps) {
       </div>
       {picked && (
         <Feedback tone={right ? "right" : "wrong"} title={right ? undefined : "Not this one."}>
-          <Rich text={right ? card.correct : card.rationales?.[picked] ?? "Read the situation again: what is the person telling themselves?"} />
+          <Rich text={right ? card.correct : card.rationales?.[picked] ?? "Not this one. Read the card again and look for what decides it."} />
         </Feedback>
       )}
       {right && (
