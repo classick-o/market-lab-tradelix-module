@@ -1,4 +1,4 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /*
  * Unit 3.8 · Company fundamentals and earnings: 3.8.1–3.8.9.
@@ -82,6 +82,7 @@ const L381: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.1",
+    bridge: "Unit 3.7 read central-bank days as surprises against the price, ending with gap sizing in 3.7.8. Now the same for companies. In 2.14.1 a share was a slice of a company; here you open its accounts: three statements tied together by one number.",
     hook: {
       prompt: "LABA reports record quarterly profit: net income of 60m vUSD. Yet its cash fell by 45m. What is the most likely reason?",
       control: {
@@ -217,6 +218,7 @@ const L381: Lesson = {
         "Operating cash flow adds back depreciation and subtracts rising receivables and inventory; FCF subtracts capex.",
         "Credit sales and capex can lift profit while free cash flow turns negative.",
       ],
+      next: "Next, 3.8.2: earnings quality, and the ratios that show what a reported profit is really worth.",
     },
   },
 };
@@ -241,6 +243,7 @@ const L382: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.2",
+    bridge: "In 3.8.1 profit and free cash flow parted ways. EPS, the headline number per share, inherits that gap, and the share count from 2.14.1 can shift it too. Here you test adjusted EPS against cash per share, dilution, buybacks and leverage.",
     hook: {
       prompt: "LABA and LABB both report adjusted EPS of 2.00. LABB pays staff mostly in new shares, so its share count grows 6% a year, and it spends heavily on equipment. Which earns more cash per share?",
       control: {
@@ -342,6 +345,7 @@ const L382: Lesson = {
         "A buyback lifts EPS with the same profit; that growth isn't the business growing.",
         "Leverage shows in net debt/EBITDA and interest coverage, not in a high ROE.",
       ],
+      next: "Next, 3.8.3: multiples, and what P/E and EV/EBITDA say the price already assumes.",
     },
   },
 };
@@ -369,6 +373,7 @@ const L383: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.3",
+    bridge: "In 3.8.2 you judged a profit's worth per share; now you set it against the price. In 3.6.1 long bonds fell most when yields rose. Here P/E and EV/EBITDA show what a price assumes, and why one rate rise hits some stocks harder.",
     hook: {
       prompt: "Discount rates rise from 8% to 9%. LABB grows fast, LABA slowly; both earn the same cash today. Which stock falls more, and by roughly how much?",
       control: {
@@ -498,6 +503,7 @@ const L383: Lesson = {
         "A low multiple can mean slow growth or a value trap, not a bargain.",
         "The closer growth sits to the discount rate, the more a rate rise hits the price.",
       ],
+      next: "Next, 3.8.4: the DCF, and running it in reverse to find the growth a price implies.",
     },
   },
 };
@@ -525,6 +531,7 @@ const L384: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.4",
+    bridge: "In 3.8.3 a multiple packed what the price assumes into one number. A DCF spells it out: 3.8.1's free cash flow, year by year, discounted like 3.6.1's bond prices. Here you build one, then reverse it to find the growth the price implies.",
     hook: {
       prompt: "A model values LABB at 1,968m vUSD with a 9% discount rate. Lower the rate to 8% and keep everything else the same. What is the new value?",
       control: {
@@ -652,6 +659,7 @@ const L384: Lesson = {
         "The terminal value is often most of the total; one point of WACC moves value 14–19%.",
         "Reverse the DCF: find the growth the price implies, then judge whether it's believable.",
       ],
+      next: "Next, 3.8.5: earnings season, where each report tests those expectations and a gap can skip your stop.",
     },
   },
 };
@@ -679,6 +687,7 @@ const L385: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.5",
+    bridge: "In 3.8.4 you found the growth a price implies; each report tests it. EPS (3.8.2) meets its consensus, and as in 2.10.1, price moves on the surprise. A gap can skip your stop (1.3.7), so here you read report day and size for the gap.",
     hook: {
       prompt: "LABB beats the EPS consensus, 2.05 against 2.00. After the close it drops 6%. What is the most likely reason?",
       control: {
@@ -807,6 +816,7 @@ const L385: Lesson = {
         "Holding through a report, size from the worst gap: units within 2R at that gap.",
         "After hours: thin liquidity, limit-only orders, no option hedges; stops fill at the open.",
       ],
+      next: "Next, 3.8.6: guidance, and the matrix of results and outlook that sorts the typical reactions.",
     },
   },
 };
@@ -834,6 +844,7 @@ const L386: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.6",
+    bridge: "In 3.8.5 a beat turned out to be the base case, and guidance helped decide the move. Here guidance gets its own axis: results against consensus, new guidance against old, in a 3×3 grid of typical gaps, plus companies that habitually guide low.",
     hook: {
       prompt: "LABA misses EPS by 3% but raises full-year guidance by 8%. Gap up, gap down, or a coin flip?",
       control: {
@@ -944,6 +955,7 @@ const L386: Lesson = {
         "Aligned cells lean clearly; mixed cells are wide coin flips: flag them uncertain.",
         "A habitual sandbagger's raise is expected, so a small raise can gap down.",
       ],
+      next: "Next, 3.8.7: the implied move options price before a report, and the IV crush after it.",
     },
   },
 };
@@ -971,6 +983,7 @@ const L387: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.7",
+    bridge: "In 3.8.6 you judged a report's likely direction; options price its size. In 2.4.6 you measured volatility from past prices, and 3.7.6 previewed the option straddle. Here implied volatility, the market's forecast, sets an implied move, and you see what the report does to it.",
     hook: {
       prompt: "LABB trades at 100.00. The at-the-money straddle for the expiry just after earnings costs 7.95. How big a move, up or down, is the market pricing?",
       control: {
@@ -1090,6 +1103,7 @@ const L387: Lesson = {
         "After the report, implied volatility collapses; a call can lose even when price rises.",
         "Compare realised and implied moves over many reports before calling options cheap or rich.",
       ],
+      next: "Next, 3.8.8: post-earnings drift, the weeks after the report, and whether that edge survives costs.",
     },
   },
 };
@@ -1117,6 +1131,7 @@ const L388: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.8",
+    bridge: "In 3.8.7 you priced the move through a report; here you follow the weeks after it. You standardise the surprise, as with economic data in 2.10.1, then test a famous drift after costs, judging the result with the confidence interval of 2.11.7.",
     hook: {
       prompt: "After big earnings surprises, prices tend to keep drifting the same way for weeks. Since the 1980s, has that drift grown, stayed the same, or shrunk?",
       control: {
@@ -1241,6 +1256,7 @@ const L388: Lesson = {
         "PEAD is grade B and strongly decayed: about zero in large caps since 2006.",
         "The drift survives where costs are highest; find the break-even cost before trading it.",
       ],
+      next: "Next, 3.8.9: corporate events, from buybacks and offerings to mergers, index changes and adjusted price history.",
     },
   },
 };
@@ -1268,6 +1284,7 @@ const L389: Lesson = {
   script: {
     unit: "3.8",
     courseId: "3.8.9",
+    bridge: "In 3.8.8 an edge survived only where costs ate it. Reports aren't the only company news. In 3.8.2 a buyback lifted EPS; in 2.14.1 dividends and splits changed the price, not the value. Here you read corporate events and adjust your price history.",
     hook: {
       prompt: "LABD agrees to be bought for 50.00 cash per share. It trades at 47.00. If the deal fails, it falls back to 35.00. What deal-success probability does 47.00 imply?",
       control: {
@@ -1399,6 +1416,7 @@ const L389: Lesson = {
         "A merger spread prices deal odds: p = (price − fail price) ÷ (offer − fail price).",
         "Adjust every price before a split or dividend, none after, or charts show fake gaps.",
       ],
+      next: "Next: the 3.8 checkpoint, then unit 3.9, Sentiment, positioning and seasonality, starting with 3.9.1: sentiment is a condition, not a trigger.",
     },
   },
 };
@@ -2487,5 +2505,18 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "Read a company and its report as a trader: how the three statements connect, earnings quality, and what multiples and a reverse DCF say the price assumes. Then the report as a risk event: surprise, guidance, gap, implied move and IV crush, the drift after it, and corporate actions. It follows 3.7 because a report is another scheduled surprise.",
+  outcomes: [
+    "Trace net income through the three statements and compute operating and free cash flow.",
+    "Judge earnings quality by cash per share, dilution and leverage, not by adjusted EPS.",
+    "Read what a multiple or a reverse DCF says the price assumes, and how rates move it.",
+    "Place a report in the results-and-guidance matrix, and size a position held through it for the gap.",
+    "Price the implied move, expect IV crush, and test post-earnings drift and corporate events after costs.",
+  ],
+  buildsOn: "Unit 2.10: price moves on the surprise against consensus. Shares, dividends and splits from 2.14.1, discounting from 3.6.1, gaps from 1.3.7, volatility from 2.4.6, confidence intervals from 2.11.7, and gap sizing from 3.7.8.",
+};
+
 /** Unit 3.8 · Company fundamentals and earnings (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_8: UnitContent = { lessons: [L381, L382, L383, L384, L385, L386, L387, L388, L389], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_3_8: UnitContent = { intro: INTRO, lessons: [L381, L382, L383, L384, L385, L386, L387, L388, L389], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };

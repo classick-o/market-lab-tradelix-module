@@ -1,4 +1,4 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent, UnitIntro } from "../../types";
 
 /** Unit 3.7 · Central banks and event trading (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 
@@ -138,6 +138,7 @@ const L371: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.1",
+    bridge: "In 3.6.8 correlations flipped when the dominant shock changed, and in 3.6.3 the central bank's reaction made the same data move assets differently. In 2.10.6 you read one decision against the price. Here you write that reaction down as a rule.",
     hook: {
       prompt: "The LCB's rule: 2.00 + inflation + 0.5 × (inflation − 2.00) − 0.5 × (unemployment − 4.50). Inflation is 3.00% and unemployment 4.50%. What rate does the rule prescribe?",
       control: {
@@ -293,6 +294,7 @@ const L371: Lesson = {
         "Estimate the weights from past decisions, then predict the next one. Weights drift, so re-check them.",
         "A new reaction function reprices every future meeting, so the 2-year yield moves, not just the next decision.",
       ],
+      next: "Next, 3.7.2: the market's own forecast, the hike probability hidden in a rate-futures price.",
     },
   },
 };
@@ -318,6 +320,7 @@ const L372: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.2",
+    bridge: "In 3.7.1 you predicted the LCB's next rate from its rule. The market keeps its own forecast, in rate futures. In 2.10.6 the probabilities were given to you; here you derive them from the LRF price, weighting the days before and after the meeting.",
     hook: {
       prompt: "Futures imply an average rate of 4.05% for a 30-day month with a meeting on day 16. The rate is 4.00% now. What is the chance of a 25 bp hike?",
       control: {
@@ -453,6 +456,7 @@ const L372: Lesson = {
         "Weight the days: with the meeting on day 16, a 4.05% average means a 40% hike chance.",
         "An implied probability is a price with risk premia. Your edge is only your view minus it.",
       ],
+      next: "Next, 3.7.3: the statement, the votes and the minutes, each scored against the tone the market had priced.",
     },
   },
 };
@@ -478,6 +482,7 @@ const L373: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.3",
+    bridge: "In 3.7.2 you read the hike probability the market priced, and 2.10.6 said hawkish and dovish only mean something against expectations. A decision day brings more than the rate: here you score the statement's edits, the votes and the minutes against the priced tone.",
     hook: {
       prompt: "The LCB holds rates, as expected. Two of nine members vote for a hike; the market expected a unanimous hold. Hawkish, dovish or neutral?",
       control: {
@@ -571,6 +576,7 @@ const L373: Lesson = {
         "Dissents show where the next move may go; count them against the vote the market expected.",
         "Price moves on tone minus priced tone: +1 against +2 priced is a dovish surprise.",
       ],
+      next: "Next, 3.7.4: the dot plot, the press conference and forward guidance, read against the priced path.",
     },
   },
 };
@@ -596,6 +602,7 @@ const L374: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.4",
+    bridge: "In 3.7.3 you scored the statement and votes against the priced tone. Then come the dot plot and the press conference 2.10.6 told you to watch. Here you read the dots against the priced path, plan the conference in advance, and sort forward guidance.",
     hook: {
       prompt: "Nineteen policymakers each plot a dot for the year-end rate. One of them moves a dot up by 25 bp. Can the median change?",
       control: {
@@ -729,6 +736,7 @@ const L374: Lesson = {
         "Dots move prices only where they differ from the priced path. Plan the press conference in advance.",
         "Guidance comes as a date, a threshold or a word; abandoned guidance reprices violently.",
       ],
+      next: "Next, 3.7.5: when the bank acts with its balance sheet, through QE, QT, yield caps, pegs and currency intervention.",
     },
   },
 };
@@ -754,6 +762,7 @@ const L375: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.5",
+    bridge: "In 3.7.4 the bank moved prices with words. Here it acts with its balance sheet. In 3.6.2 a long yield held expected rates plus a term premium; you see which part bond buying moves, then caps, pegs, interventions and the gaps they leave.",
     hook: {
       prompt: "LB10 yields 4.50%: a 3.60% expected path of policy rates plus a 0.90% term premium. The LCB announces large bond purchases. Which part falls most?",
       control: {
@@ -891,6 +900,7 @@ const L375: Lesson = {
         "Caps and pegs store pressure. When they go, price gaps: size for the break, not the calm.",
         "Intervention usually follows a ladder of warnings: watching, naming, options open, ready to act.",
       ],
+      next: "Next, 3.7.6: two popular event strategies, the straddle and the fade, tested on the same events after costs.",
     },
   },
 };
@@ -916,6 +926,7 @@ const L376: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.6",
+    bridge: "In 3.7.5 cap and peg exits came as gaps. Scheduled events jump too, and the straddle and the fade try to profit from it. In 2.10.7 you chose a news policy and in 2.10.8 traded the second move; here all face the same events.",
     hook: {
       prompt: "A buy stop 0.40 above price, a sell stop 0.40 below, linked as OCO. Can this straddle lose if the market moves a lot?",
       control: {
@@ -1077,6 +1088,7 @@ const L376: Lesson = {
         "Fades paid in the simulator only on small, mixed surprises. In real markets they rate D.",
         "Compare policies on the same events, after costs, against flat, with N and the interval.",
       ],
+      next: "Next, 3.7.7: the drift before announcements, how many events it takes to trust it, and reading positioning from reactions.",
     },
   },
 };
@@ -1102,6 +1114,7 @@ const L377: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.7",
+    bridge: "In 3.7.6 thirty events couldn't tell the second move from flat. Here you study the hours before a decision, where a drift was documented. As in 0.2.4, you count the events a small edge needs, and read positioning from reactions to news.",
     hook: {
       prompt: "In the original study, how much did a broad US stock index gain on average in the 24 hours before scheduled Fed announcements?",
       control: {
@@ -1230,6 +1243,7 @@ const L377: Lesson = {
         "A 0.10% drift with a 1.00% standard deviation needs about 400 events to reach t = 2.",
         "Falling on good news hints at a heavy, crowded market: a weak tell, grade D.",
       ],
+      next: "Next, 3.7.8: tail events, when liquidity vanishes and stops fill far past their level.",
     },
   },
 };
@@ -1255,6 +1269,7 @@ const L378: Lesson = {
   script: {
     unit: "3.7",
     courseId: "3.7.8",
+    bridge: "In 3.7.7 the risk was a small edge lost in noise. Here it's the rare day that breaks everything, as 3.7.5 warned for caps and pegs. Depth vanishes (3.2.2), so 1.4.4's sizing from the stop yields to sizing for the gap, and 2.14.6's protections matter.",
     hook: {
       prompt: "Your stop is 0.40 away. The market reopens 15% lower. Where does the stop fill?",
       control: {
@@ -1408,6 +1423,7 @@ const L378: Lesson = {
         "Size for the gap: 5 units at 1%, not 192. Know your loss with and without balance protection.",
         "Write tail rules in advance: a leverage cap, gap sizing, event exposure and broker protections.",
       ],
+      next: "Next: the 3.7 checkpoint, then unit 3.8, Company fundamentals and earnings, starting with 3.8.1: three statements, one company.",
     },
   },
 };
@@ -2342,7 +2358,21 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "A central-bank decision day, read as a chain of surprises against the price: the reaction function, implied probabilities, statement tone, dots, guidance and balance sheets. Then event strategies tested after costs, the drift before decisions, and tail events that skip stops. It comes after 3.6 because central banks move the rates, curves and regimes you just learned.",
+  outcomes: [
+    "Model a central bank's reaction function and predict its next decision from inflation and jobs data.",
+    "Turn a rate-futures price into an implied hike probability, weighting the days around the meeting.",
+    "Score a statement, a vote split or a dot plot against what the market had already priced.",
+    "Compare event policies on the same events, after costs, against flat, with N and an interval.",
+    "Size for the gap, not the stop, and write tail-risk rules before you need them.",
+  ],
+  buildsOn: "Unit 2.10: surprise against consensus (2.10.1), central-bank basics (2.10.6) and news policies (2.10.7–2.10.8). Rates, the curve and regimes from 3.6.1–3.6.3, depth from 3.2.2, sizing from 1.4.4, margin and protection from 2.14.6, sample size from 0.2.4.",
+};
+
 export const UNIT_3_7: UnitContent = {
+  intro: INTRO,
   lessons: [L371, L372, L373, L374, L375, L376, L377, L378],
   questions: QUESTIONS,
   terms: TERMS,
