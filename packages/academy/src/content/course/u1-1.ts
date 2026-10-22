@@ -1,4 +1,4 @@
-import type { CandleData, ChartSpec, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, ChartSpec, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /** One candle, in price units with 2 decimals. */
 const k = (o: number, h: number, l: number, c: number): CandleData => ({ o, h, l, c });
@@ -81,6 +81,7 @@ const L112: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.2",
+    bridge: "In 1.1.1 you saw that a buy pays the ask and a sale gets the bid. Here you use both in either order: buy first and sell later, or sell first and buy back later, so a fall can pay too.",
     hook: {
       prompt: "LABX is at 100.00 and you think it will fall. Can you make money from a fall?",
       control: {
@@ -229,6 +230,7 @@ const L112: Lesson = {
     ],
     check: ["q-1.1.2-1", "q-1.1.2-2", "q-1.1.2-3"],
     recap: {
+      next: "Next, 1.1.3: which of these prices a chart draws, and which one triggers your stop.",
       takeaways: [
         "A long gains when price rises, a short when it falls: P&L = units × (sell − buy).",
         "Longs open at the ask and close at the bid; shorts open at the bid and close at the ask.",
@@ -259,6 +261,7 @@ const L113: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.3",
+    bridge: "In 1.1.2 every long and short opened on one side of the spread and closed on the other. Here you see which price a chart plots, and why your stop can trigger while the chart stays below it.",
     hook: {
       prompt: "Your short has a stop at 101.00. The LABX chart, drawn from the mid, peaks at 100.97. Were you stopped out?",
       control: {
@@ -432,6 +435,7 @@ const L113: Lesson = {
     ],
     check: ["q-1.1.3-1", "q-1.1.3-2", "q-1.1.3-3"],
     recap: {
+      next: "Next, 1.1.4: commission, fees and the other costs that stack on top of the spread.",
       takeaways: [
         "Last is the latest trade, bid and ask are the quote, mid sits halfway. LABX charts plot the mid.",
         "A long's stop triggers on the bid, a short's on the ask: half a spread from the chart.",
@@ -462,6 +466,7 @@ const L114: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.4",
+    bridge: "In 1.1.3 a wider spread pushed the ask into a stop. The spread is only one cost, though. Here you calculate commission on each fill and stack every cost that stands between a gross and a net result.",
     hook: {
       prompt: "Broker A: zero commission, spread 0.30. Broker B: 0.05% commission, spread 0.10. You buy and sell 100 LABX at a mid of 100.00. Which is cheaper?",
       control: {
@@ -577,6 +582,7 @@ const L114: Lesson = {
     },
     check: ["q-1.1.4-1", "q-1.1.4-2", "q-1.1.4-3"],
     recap: {
+      next: "Next, 1.1.5: add those costs up for a round trip and find how far price must move just to break even.",
       takeaways: [
         "Commission = fill value × rate, rounded up to the cent, on every fill: 1.86 on 3,701.85.",
         "Spread, commission, slippage, financing and fees all sit between a gross and a net result.",
@@ -607,6 +613,7 @@ const L115: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.5",
+    bridge: "In 1.1.4 you priced each cost on its own: 1.86 of commission on one fill, the spread once per round trip. Here you add them up and find how far the mid must move before closing stops losing money.",
     hook: {
       prompt: "You bought 100 LABX at the ask, 100.05. How high must the mid go before selling breaks even, after both commissions?",
       control: {
@@ -683,7 +690,7 @@ const L115: Lesson = {
       {
         kind: "explain",
         title: "The cost wall",
-        text: "Short-term traders hit a wall of costs. In forex, a spread of 1 [[pip]] on a 5-pip target hands 20% of the gross gain to the spread alone, before commission and [[slippage]]. The smaller the target and the more often you trade, the bigger the bill. Unit 2.9 comes back to this.",
+        text: "Short-term traders hit a wall of costs. In forex, a spread of 1 [[pip]] (the usual price step) on a 5-pip target hands 20% of the gross gain to the spread alone, before commission and [[slippage]] (fills worse than quoted). The smaller the target and the more often you trade, the bigger the bill. Unit 2.9 comes back to this.",
       },
       {
         kind: "callout",
@@ -754,6 +761,7 @@ const L115: Lesson = {
     ],
     check: ["q-1.1.5-1", "q-1.1.5-2", "q-1.1.5-3"],
     recap: {
+      next: "Next, 1.1.6: count a move in ticks, points or pips, and turn it into money and a share of your account.",
       takeaways: [
         "Break-even covers the spread and both fees: a long from 100.05 needs a mid of 100.21.",
         "Cost share = round-trip cost ÷ planned gain: 0.20 on a 0.30 target is 67%.",
@@ -784,6 +792,7 @@ const L116: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.6",
+    bridge: "In 1.1.2 you worked out P&L as units × (sell − buy), and in 1.1.5 you measured break-even as a move of about 0.20. Here you count moves in ticks, points and pips, and turn each into money and a share of your account.",
     hook: {
       prompt: "LABX moves from 100.00 to 101.25. How many ticks is that?",
       control: {
@@ -802,7 +811,7 @@ const L116: Lesson = {
       {
         kind: "explain",
         title: "Ticks and points",
-        text: "A [[tick]] is the smallest step a price can take: 0.01 on LABX. A [[point]] is a move of 1.00. Your P&L is units × price change, so on LABX each point is worth 1.00 vUSD for every [[unit]] you hold.",
+        text: "A [[tick]] is the smallest step a price can take: 0.01 on LABX. A [[point]] is a move of 1.00. Your P&L is units × price change, so on LABX each point is worth 1.00 vUSD for every [[unit]] you hold, one whole piece of LABX.",
       },
       {
         kind: "worked",
@@ -918,6 +927,7 @@ const L116: Lesson = {
     ],
     check: ["q-1.1.6-1", "q-1.1.6-2", "q-1.1.6-3"],
     recap: {
+      next: "Next, 1.1.7: find these numbers on screen, in the quote line and the account panel, and check a ticket before sending it.",
       takeaways: [
         "P&L = units × price change: 30 × 1.25 = 37.50 vUSD, or 0.375% of 10,000.00.",
         "Ticks, points and pips count the move; size and value per point turn it into money.",
@@ -948,6 +958,7 @@ const L117: Lesson = {
   script: {
     unit: "1.1",
     courseId: "1.1.7",
+    bridge: "In 1.1.5 you found a long's break-even after both fees, and in 1.1.6 you turned moves into money. Here you meet those numbers on screen: a quote line, an account panel that shows fees and open P&L, and an order ticket.",
     hook: {
       prompt: "One open long of 50 units, bought at 100.05. The panel shows Balance 9,997.49 and Equity 9,992.49. Why is equity lower?",
       control: {
@@ -1057,6 +1068,7 @@ const L117: Lesson = {
     ],
     check: ["q-1.1.7-1", "q-1.1.7-2", "q-1.1.7-3"],
     recap: {
+      next: "Next: the 1.1 checkpoint, then unit 1.2, Charts and candles, which starts with 1.2.1: what one candle, drawn from the mid, shows.",
       takeaways: [
         "Last is the latest trade; bid and ask are the quote; change and high–low describe the day.",
         "Balance counts closed results after fees; equity adds open P&L at the mid.",
@@ -1658,5 +1670,18 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "The prices you actually trade at and what each trade costs: bid and ask, long and short, commission, break-even, and P&L in money. It comes before any chart because costs are the one certain part of a trade, and because LABX charts are drawn from the mid, which needs the bid and ask first.",
+  outcomes: [
+    "Name the bid, ask, mid and last, and say which one fills each order and triggers each stop.",
+    "Work out the P&L of a long and of a short from the correct side of the spread.",
+    "Calculate commission on each fill and the break-even move of a round trip.",
+    "Turn ticks, points and pips into money and into a share of your account.",
+    "Read a quote line and the account panel, and check an order ticket before you send it.",
+  ],
+  buildsOn: "Lesson 0.1.1: a price is where a buyer and a seller agree, and the bid and ask are the best ones waiting. In 0.2.5 and 0.2.6 you judged results after costs; here you learn to count those costs.",
+};
+
 /** Unit 1.1 · Prices, quotes and costs (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_1: UnitContent = { lessons: [L112, L113, L114, L115, L116, L117], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_1_1: UnitContent = { intro: INTRO, lessons: [L112, L113, L114, L115, L116, L117], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };

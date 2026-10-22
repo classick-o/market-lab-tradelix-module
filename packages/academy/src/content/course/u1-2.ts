@@ -1,4 +1,4 @@
-import type { CandleData, ChartLayer, ChartSpec, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, ChartLayer, ChartSpec, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /** One candle, in price units with 2 decimals; `v` is the volume in units. */
 const k = (o: number, h: number, l: number, c: number, v?: number): CandleData => (v === undefined ? { o, h, l, c } : { o, h, l, c, v });
@@ -482,6 +482,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.2",
+      bridge: "In 1.2.1 you read one candle's four prices: open, high, low and close. Here you draw the same hours three ways, as a line, as bars and as candles, and see which prices each drawing keeps.",
       hook: {
         prompt: "This [[line-chart|line chart]] shows 12 hours of LABX. Did LABX trade above 102.00 during these 12 hours?",
         control: {
@@ -631,6 +632,7 @@ const lessons: Lesson[] = [
       ],
       check: ["q-1.2.2-1", "q-1.2.2-2", "q-1.2.2-3"],
       recap: {
+        next: "Next, 1.2.3: combine short candles into longer ones, and watch one market change its look across timeframes.",
         takeaways: [
           "A line chart keeps only closes. Bars and candles keep open, high, low and close.",
           "On an OHLC bar, the left tick is the open and the right tick the close.",
@@ -662,6 +664,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.3",
+      bridge: "In 1.2.1 you read one 1-hour candle, and in 1.2.2 you saw a line keep only the closes. Here you combine four 1-hour candles into one 4-hour candle, and see what the longer candle hides.",
       hook: {
         prompt: "These are four 1-hour [[candle|candles]] of LABX. Combine them into one 4-hour candle. What is its close?",
         control: {
@@ -799,6 +802,7 @@ const lessons: Lesson[] = [
       },
       check: ["q-1.2.3-1", "q-1.2.3-2", "q-1.2.3-3"],
       recap: {
+        next: "Next, 1.2.4: the volume bars under the candles, and what they can and can't tell you.",
         takeaways: [
           "A longer candle takes the first open, highest high, lowest low and last close.",
           "The same market can look choppy on 1H and steady on 4H: aggregation hides the path.",
@@ -830,6 +834,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.4",
+      bridge: "In 1.2.1 and 1.2.3 each candle gave you four prices, on 1H or 4H. Here you add the panel under the candles: volume, how many units changed hands in each period, and how to tell when it's unusual.",
       hook: {
         prompt: "[[volume|Volume]] jumps to three times its average on a candle that closes flat. Were there more buyers or more sellers?",
         control: {
@@ -959,6 +964,7 @@ const lessons: Lesson[] = [
       ],
       check: ["q-1.2.4-1", "q-1.2.4-2", "q-1.2.4-3"],
       recap: {
+        next: "Next, 1.2.5: measure how tall a normal candle is, and what happens when price jumps a gap.",
         takeaways: [
           "Volume counts units traded in a period. Compare each bar with its average, not with the tallest bar.",
           "Every trade has a buyer and a seller, so volume shows activity, never direction.",
@@ -990,6 +996,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.5",
+      bridge: "In 1.2.1 you measured a candle from its low to its high, and in 1.2.4 you compared each volume bar with its average. Here you do the same with candle heights, then meet the gap: prices nobody traded at.",
       hook: {
         prompt: "These ten LABX candles have ranges between 0.30 and 0.55. The next candle opens 1.20 below the last close. What happened in between?",
         control: {
@@ -1115,6 +1122,7 @@ const lessons: Lesson[] = [
       ],
       check: ["q-1.2.5-1", "q-1.2.5-2", "q-1.2.5-3"],
       recap: {
+        next: "Next, 1.2.6: why a move in percent says more than a move in price, and how a log scale draws it.",
         takeaways: [
           "A candle's range is high minus low; the average of recent ranges is a normal candle.",
           "A gap is a jump from one close to the next open, with no trading in between.",
@@ -1143,6 +1151,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.6",
+      bridge: "In 1.2.2 the same prices looked different as a line, bars or candles. Here the drawing changes on the price axis instead: a log scale gives equal percentage moves equal heights, which matters over long histories.",
       hook: {
         prompt: "LABX goes from 50.00 to 100.00, then from 100.00 to 150.00. Which move was bigger?",
         control: {
@@ -1284,6 +1293,7 @@ const lessons: Lesson[] = [
       ],
       check: ["q-1.2.6-1", "q-1.2.6-2", "q-1.2.6-3"],
       recap: {
+        next: "Next, 1.2.7: what no chart, on any scale or timeframe, can tell you.",
         takeaways: [
           "Compare moves in percent: (new − old) ÷ old. The same price move means less at higher prices.",
           "A log scale gives equal percentage moves equal heights; a linear scale gives equal price moves equal heights.",
@@ -1315,6 +1325,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "1.2",
       courseId: "1.2.7",
+      bridge: "From 1.2.1 to 1.2.6 you read what a chart records: prices, volume, candle size, gaps and scale. In 0.2.5 random coin flips drew convincing trends. Here you list what no chart records, and why examples picked after the outcome mislead.",
       hook: {
         prompt: "A textbook chart: support near 98.00 held three times, then price jumped. Would you have bought at the third touch?",
         control: {
@@ -1434,6 +1445,7 @@ const lessons: Lesson[] = [
       ],
       check: ["q-1.2.7-1", "q-1.2.7-2", "q-1.2.7-3"],
       recap: {
+        next: "Next: the 1.2 checkpoint, then unit 1.3, Orders and execution, which starts with 1.3.1: market and limit orders.",
         takeaways: [
           "A chart records price and volume. It can't show who traded, why, the path inside a candle, or what's next.",
           "Examples picked after the outcome look obvious. That's hindsight and cherry-picking, not evidence.",
@@ -1972,5 +1984,18 @@ const concepts: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "How to read a price chart: one candle, line, bar and candle charts, timeframes, volume, normal candle size and gaps, and the log scale. It comes now because orders, stops and market structure all use the chart's language, and it ends with what no chart can tell you.",
+  outcomes: [
+    "Read open, high, low and close on any candle, and the same prices as a bar or a line.",
+    "Build a 4-hour candle from 1-hour candles, and choose a timeframe that matches your holding period.",
+    "Compare volume and candle size with their recent average, and spot a gap.",
+    "Compare moves in percent, and use a log scale for long histories.",
+    "Say what a chart can't show, and ask for a base rate before trusting a pattern.",
+  ],
+  buildsOn: "Unit 1.1: LABX candles are drawn from the mid, halfway between the bid and the ask (1.1.1, 1.1.3). Lesson 1.2.7 returns to 0.2.5, where random prices drew convincing patterns.",
+};
+
 /** Unit 1.2 · Charts and candles (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_2: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_1_2: UnitContent = { intro: INTRO, lessons, questions, terms, concepts };
