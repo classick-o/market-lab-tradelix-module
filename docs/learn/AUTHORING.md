@@ -72,7 +72,7 @@ script: {
 
 **Figuri** (`FigureSpec`): `chart` (`ChartSpec` + `steps[{text, layers?, visible?}]`), `formula` (`boxes[{text, answer?, unit?}]`, `operators`, `steps?`), `bars` (`bars[{label,value,role?}]`, `unit?`, `steps?`), `flow` (noduri `{id,text,kind?,yes?,no?,next?,correct?,explain?}`, `start`, `interactive?`).
 
-**Grafice** (`ChartSpec`): `candles: {o,h,l,c,v?}[]` cu 2 zecimale, h ≥ max(o,c), l ≤ min(o,c); `layers` (`level` cu rol `entry/stop/target/support/resistance/neutral/concept`, `zone`, `marker`, `bracket`, `line`, `path`, `ma`); `visible` pentru văl. **Seriile se scriu de mână sau se generează determinist cu un script** și se verifică: fiecare cifră din text trebuie să apară exact în date.
+**Grafice** (`ChartSpec`): `candles: {o,h,l,c,v?}[]` cu 2 zecimale, h ≥ max(o,c), l ≤ min(o,c); `layers` (`level` cu rol `entry/stop/target/support/resistance/neutral/concept`, `zone`, `marker`, `bracket`, `line`, `path`, `ma`); `visible` pentru văl; `style: "candle" | "bar" | "line"` (bare OHLC sau linie prin închideri, fără lumânări false), `scale: "log"` (scară logaritmică), `volume: true` (panou de volum din `v`), `hideCandles` (doar straturile). Pașii unei figuri pot schimba `style` și `scale` (de exemplu lumânări → linie, liniar → log). **Seriile se scriu de mână sau se generează determinist cu un script** și se verifică: fiecare cifră din text trebuie să apară exact în date.
 
 **Feedback-ul** spune ce s-a întâmplat și de ce, niciodată „Wrong!”. Placeholder-ele `{field}` / `{field:2}` din task-uri folosesc doar numele câmpurilor widget-ului.
 
