@@ -327,22 +327,26 @@ const L011: Lesson = {
     },
     learn: [
       {
-        kind: "explain",
-        title: "Nobody sets the price",
-        text: "A [[market]] is where [[order|orders]] to buy meet orders to sell. A trade needs a buyer and a seller who agree on a price. The price on a chart is simply the last price at which that happened. Nobody sets it: it comes out of the orders.",
-      },
-      {
-        kind: "figure",
-        title: "Two queues of orders",
-        figure: {
-          kind: "chart",
-          chart: bookChart([], BOOK_A_DESCRIBE),
-          steps: [
-            { text: "Buyers, one unit each. Each will pay **at most** their price.", layers: buyMarks(BOOK_A.buyers) },
-            { text: "Sellers, one unit each. Each will accept **at least** their price.", layers: sellMarks(BOOK_A.sellers) },
-            { text: "A buyer and a seller can trade when the buyer's price is at or above the seller's." },
-          ],
-        },
+        kind: "scene",
+        title: "Where a price comes from",
+        scene: "auction-intro",
+        chapters: [
+          { title: "Every point is a trade", caption: "Every price on a chart is a trade that already happened: a buyer and a seller agreed on that number. Nobody sets the price; it comes out of the [[order|orders]]." },
+          { title: "Two sides", caption: "A [[market]] is where orders to buy meet orders to sell. Each buyer pays **at most** their price; each seller accepts **at least** theirs. Five of each here, one [[unit]] apiece." },
+          { title: "Two queues", caption: "Sort them by price and you get two queues: the keenest buyer at the top, the cheapest seller at the bottom." },
+          { title: "When can they trade?", caption: "Each order accepts a range: a buyer anything up to their price, a seller anything from theirs. Where the two ranges overlap, they can trade." },
+          { title: "One price for everyone", caption: "In an auction, everyone trades at one price. Which price lets the most units change hands? You'll find it on the next screen." },
+        ],
+        stops: [
+          {
+            prompt: "This buyer pays at most 99.80. This seller wants at least 100.25. Can they trade?",
+            choices: [
+              { id: "yes", label: "Yes, they can meet in the middle", feedback: "There's no middle to meet in: every price the seller accepts is above what the buyer will pay." },
+              { id: "no", label: "No", feedback: "99.80 is below 100.25, so no price suits both of them." },
+            ],
+            answer: "no",
+          },
+        ],
         concept: "market-as-auction",
       },
       {

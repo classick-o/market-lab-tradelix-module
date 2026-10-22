@@ -51,6 +51,7 @@ const BEAT_LABEL: Record<Beat["kind"], string> = {
   hotspot: "Find it",
   callout: "Key idea",
   fields: "Your rules",
+  scene: "Animation",
 };
 
 export function screenLabel(s: Screen): string {

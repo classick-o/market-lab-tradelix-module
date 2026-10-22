@@ -298,7 +298,25 @@ export type Beat =
   /** The learner sets their own rules; any values for which `valid` holds are accepted and saved with the lesson. */
   | { kind: "fields"; title?: string; prompt: string; fields: PlanField[]; valid?: import("./success").Condition; correct?: string; feedback?: import("./success").FeedbackCase[]; concept?: string }
   | { kind: "hotspot"; title?: string; prompt: string; chart: ChartSpec; zones: TapZone[]; answer: string; correct: string; concept?: string }
-  | { kind: "callout"; tone: "key" | "warning" | "info"; text: string };
+  | { kind: "callout"; tone: "key" | "warning" | "info"; text: string }
+  /**
+   * An animated scene: one seekable timeline, in chapters, drawn by the UI's scene `scene`.
+   * The words live here: one caption per chapter, and the questions the scene stops on, in order.
+   */
+  | { kind: "scene"; title?: string; scene: SceneId; chapters: SceneChapter[]; stops?: SceneStop[]; text?: string; concept?: string };
+
+/** Animated scenes the UI can draw (packages/ui/src/scenes). */
+export type SceneId = "auction-intro";
+export interface SceneChapter {
+  title: string;
+  caption: string;
+}
+/** A question the scene pauses on; the animation continues once it is answered, right or wrong. */
+export interface SceneStop {
+  prompt: string;
+  choices: Choice[];
+  answer: string;
+}
 
 export interface LessonScript {
   /** Course unit id, e.g. "1.4". */

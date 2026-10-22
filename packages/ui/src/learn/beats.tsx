@@ -9,6 +9,7 @@ import { seededShuffle, useKeys, useScreen } from "./context";
 import { FigureView } from "./FigureView";
 import { useLab, useStore } from "../store";
 import { BeatTitle, Feedback, Para } from "./parts";
+import { SceneView } from "./SceneView";
 import { TaskRunner } from "./TaskRunner";
 
 type BeatOf<K extends Beat["kind"]> = Extract<Beat, { kind: K }>;
@@ -41,6 +42,17 @@ function FigureBeat({ b }: { b: BeatOf<"figure"> }) {
     <>
       <BeatTitle>{b.title}</BeatTitle>
       <FigureView figure={b.figure} all={s.done || s.mode === "read"} onDone={s.complete} />
+      <Para text={b.text} />
+    </>
+  );
+}
+
+function SceneBeat({ b }: { b: BeatOf<"scene"> }) {
+  const s = useScreen();
+  return (
+    <>
+      <BeatTitle>{b.title}</BeatTitle>
+      <SceneView b={b} onDone={s.complete} />
       <Para text={b.text} />
     </>
   );
@@ -689,6 +701,8 @@ export function BeatView({ beat }: { beat: Beat }) {
       return <FigureBeat b={beat} />;
     case "callout":
       return <CalloutBeat b={beat} />;
+    case "scene":
+      return <SceneBeat b={beat} />;
     case "predict":
       return <PredictBeat b={beat} />;
     case "reveal":
@@ -735,6 +749,8 @@ export function needText(beat: Beat | "hook" | "task" | "check"): string {
       return "Solve the task, or use Show me, to continue";
     case "fields":
       return "Save your rules to continue";
+    case "scene":
+      return "Watch the animation to continue";
     default:
       return "";
   }

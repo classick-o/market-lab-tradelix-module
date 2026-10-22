@@ -1,0 +1,351 @@
+/* Animated scenes in lessons (learn/SceneView.tsx, scenes/*.ts). Every colour is a --ml-* token. */
+
+.lp-scene {
+  display: flex;
+  flex-direction: column;
+}
+.lp-scene-stage {
+  position: relative;
+  aspect-ratio: 720 / 420;
+  overflow: hidden;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+}
+.lp-scene.is-narrow .lp-scene-stage {
+  aspect-ratio: 360 / 500;
+}
+.lp-scene-loading {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, var(--ml-surface-hover) 50%, transparent 70%) 0 0 / 200% 100%;
+  animation: lp-scene-shimmer 1.4s linear infinite;
+}
+@keyframes lp-scene-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.lp-scene-big {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ml-accent-line);
+  border-radius: var(--ml-r-full);
+  background: color-mix(in srgb, var(--ml-surface) 70%, transparent);
+  color: var(--ml-accent-fg);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: lp-scene-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.lp-scene-big:hover {
+  background: var(--ml-accent-soft);
+}
+
+/* Play/pause, the chapter scrubber, the chapter count */
+.lp-scene-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.lp-scene-track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: var(--ml-r-sm);
+}
+.lp-scene-track:focus-visible {
+  outline: 2px solid var(--ml-focus);
+  outline-offset: 2px;
+}
+.lp-scene-seg {
+  position: relative;
+  min-width: 14px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ml-border-strong);
+  transition: height var(--ml-d-micro) var(--ml-ease);
+}
+.lp-scene-track:hover .lp-scene-seg {
+  height: 6px;
+}
+.lp-scene-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ml-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.lp-scene-count {
+  min-width: 30px;
+  font-size: 12px;
+  color: var(--ml-text-3);
+  text-align: right;
+}
+
+/* The chapter caption, or the question the scene stopped on */
+.lp-scene-caption,
+.lp-scene-stop {
+  margin-top: 14px;
+  animation: lp-scene-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.lp-scene-caption {
+  min-height: 76px;
+}
+.lp-scene-caption p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ml-text);
+}
+.lp-scene-stop .lp-prompt {
+  margin-top: 0;
+}
+@keyframes lp-scene-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.ml-reduced-motion .lp-scene-caption,
+.ml-reduced-motion .lp-scene-stop,
+.ml-reduced-motion .lp-scene-big {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-scene-caption,
+  .lp-scene-stop,
+  .lp-scene-big,
+  .lp-scene-loading {
+    animation: none;
+  }
+}
+
+/* ── Inside the SVG ─────────────────────────────────────────────────── */
+.sc-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: var(--ml-font);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.sc-glow-in {
+  stop-color: var(--ml-accent);
+  stop-opacity: 0.11;
+}
+.sc-glow-out {
+  stop-color: var(--ml-accent);
+  stop-opacity: 0;
+}
+.sc-area-top {
+  stop-color: var(--ml-accent);
+  stop-opacity: 0.22;
+}
+.sc-area-bottom {
+  stop-color: var(--ml-accent);
+  stop-opacity: 0;
+}
+.sc-gridline {
+  stroke: var(--ml-border);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.sc-gridlabel {
+  fill: var(--ml-text-3);
+}
+.sc-line {
+  fill: none;
+  stroke: var(--ml-accent);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.sc-tag rect {
+  fill: var(--ml-surface-2);
+  stroke: var(--ml-accent-line);
+}
+.sc-tag text {
+  fill: var(--ml-text);
+  font-weight: 500;
+}
+.sc-tag.is-last rect {
+  fill: var(--ml-accent);
+  stroke: none;
+}
+.sc-tag.is-last text {
+  fill: var(--ml-accent-ink);
+  font-weight: 600;
+}
+.sc-dot {
+  fill: var(--ml-accent);
+}
+.sc-ring {
+  fill: none;
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+}
+.sc-glyph circle {
+  stroke-width: 1.25;
+}
+.sc-glyph text {
+  font-weight: 600;
+}
+.sc-glyph--buy circle {
+  fill: var(--ml-surface);
+  stroke: var(--ml-pos);
+}
+.sc-glyph--buy text {
+  fill: var(--ml-pos);
+}
+.sc-glyph--sell circle {
+  fill: var(--ml-surface);
+  stroke: var(--ml-neg);
+}
+.sc-glyph--sell text {
+  fill: var(--ml-neg);
+}
+.sc-wipe {
+  fill: var(--ml-accent);
+}
+
+/* The ladder and the orders */
+.sc-axis {
+  stroke: var(--ml-border-strong);
+  stroke-width: 1.5;
+}
+.sc-plabel-bg {
+  fill: var(--ml-surface);
+}
+.sc-plabel {
+  fill: var(--ml-text-2);
+}
+.sc-chip > rect:not(.sc-halo) {
+  stroke-width: 1;
+}
+.sc-chip text {
+  fill: var(--ml-text);
+  font-weight: 500;
+}
+.sc-lead {
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.sc-chip--buy > rect:not(.sc-halo) {
+  fill: color-mix(in srgb, var(--ml-pos) 11%, var(--ml-surface));
+  stroke: color-mix(in srgb, var(--ml-pos) 55%, transparent);
+}
+.sc-chip--buy .sc-lead {
+  fill: var(--ml-pos);
+}
+.sc-chip--sell > rect:not(.sc-halo) {
+  fill: color-mix(in srgb, var(--ml-neg) 11%, var(--ml-surface));
+  stroke: color-mix(in srgb, var(--ml-neg) 55%, transparent);
+}
+.sc-chip--sell .sc-lead {
+  fill: var(--ml-neg);
+}
+.sc-halo {
+  fill: none;
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+}
+.sc-head-title {
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.sc-head--buy .sc-head-title {
+  fill: var(--ml-pos);
+}
+.sc-head--sell .sc-head-title {
+  fill: var(--ml-neg);
+}
+.sc-head-sub {
+  fill: var(--ml-text-2);
+}
+.sc-underline {
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* Who can trade with whom: each order's range of prices, and where two ranges overlap (or don't) */
+.sc-band--buy {
+  fill: var(--ml-pos);
+}
+.sc-band--sell {
+  fill: var(--ml-neg);
+}
+.sc-zone {
+  stroke-width: 1;
+}
+.sc-zone--ok {
+  fill: color-mix(in srgb, var(--ml-pos) 10%, transparent);
+  stroke: color-mix(in srgb, var(--ml-pos) 45%, transparent);
+}
+.sc-zone--no {
+  fill: color-mix(in srgb, var(--ml-neg) 8%, transparent);
+  stroke: color-mix(in srgb, var(--ml-neg) 60%, transparent);
+  stroke-dasharray: 4 4;
+}
+.sc-badge rect {
+  fill: var(--ml-surface-2);
+  stroke-width: 1;
+}
+.sc-badge--ok rect {
+  stroke: color-mix(in srgb, var(--ml-pos) 50%, transparent);
+}
+.sc-badge--no rect {
+  stroke: color-mix(in srgb, var(--ml-neg) 50%, transparent);
+}
+.sc-badge text {
+  fill: var(--ml-text);
+  font-weight: 500;
+}
+.sc-badge-icon path {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sc-badge--ok .sc-badge-icon path {
+  stroke: var(--ml-pos);
+}
+.sc-badge--no .sc-badge-icon path {
+  stroke: var(--ml-neg);
+}
+.sc-cross circle {
+  fill: var(--ml-surface);
+  stroke: var(--ml-neg);
+  stroke-width: 1.5;
+}
+.sc-cross path {
+  stroke: var(--ml-neg);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* One price for everyone */
+.sc-pline line {
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.sc-qtag rect {
+  fill: var(--ml-accent);
+}
+.sc-qtag text {
+  fill: var(--ml-accent-ink);
+  font-weight: 700;
+}

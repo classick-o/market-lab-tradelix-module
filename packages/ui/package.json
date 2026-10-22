@@ -16,7 +16,8 @@
     "@market-lab/evaluation": "0.1.0",
     "@market-lab/learning": "0.1.0",
     "@market-lab/missions": "0.1.0",
-    "@market-lab/scenario-gen": "0.1.0"
+    "@market-lab/scenario-gen": "0.1.0",
+    "gsap": "^3.15.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

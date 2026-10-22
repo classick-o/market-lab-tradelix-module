@@ -77,6 +77,12 @@ function beatTexts(b: Beat): string[] {
       return [b.text];
     case "figure":
       return b.text ? [b.text] : [];
+    case "scene":
+      return [
+        ...b.chapters.map((c) => c.caption),
+        ...(b.text ? [b.text] : []),
+        ...(b.stops ?? []).flatMap((q) => [q.prompt, ...q.choices.flatMap((c) => [c.label, ...(c.feedback ? [c.feedback] : [])])]),
+      ];
     default:
       return [];
   }
@@ -110,6 +116,12 @@ function scriptOk(id: string, s: LessonScript) {
       expect(b.zones.some((z) => z.id === b.answer), `${where}: hotspot answer is a zone`).toBe(true);
     }
     if (b.kind === "task") taskOk(b.task, where);
+    if (b.kind === "scene") {
+      expect(b.chapters.length, `${where}: a scene has 2–8 chapters`).toBeGreaterThanOrEqual(2);
+      expect(b.chapters.length, `${where}: a scene has 2–8 chapters`).toBeLessThanOrEqual(8);
+      for (const c of b.chapters) expect(words(c.caption), `${where}: chapter caption ≤ 35 words`).toBeLessThanOrEqual(35);
+      for (const q of b.stops ?? []) expect(q.choices.some((c) => c.id === q.answer), `${where}: stop answer is a choice`).toBe(true);
+    }
     if (b.kind === "predict" && b.control.kind === "tap") chartOk(b.control.chart, where);
     if ("concept" in b && b.concept) expect(conceptIds.has(b.concept), `${where}: concept ${b.concept}`).toBe(true);
   });
