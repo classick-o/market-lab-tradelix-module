@@ -302,7 +302,7 @@ export const LESSONS_A: Lesson[] = [
     topic: "technical_analysis",
     level: "beginner",
     tier: "free",
-    minutes: 5,
+    minutes: 6,
     summary: "Most stretches of a chart look like a trend, a range or plain noise, and naming which one you see comes before any trade idea.",
     objectives: [
       "Identify an uptrend or a downtrend from its swing highs and swing lows.",
@@ -492,9 +492,8 @@ export const LESSONS_A: Lesson[] = [
       { kind: "check", questionIds: ["q-ta-7", "q-ta-8", "q-ta-10"] },
     ],
     practice: [
-      { kind: "mission", ref: "M02", label: "Trend or Noise?" },
+      { kind: "arena", ref: "bullish", label: "Arena: bullish, with SMA 20 and SMA 50" },
       { kind: "arena", ref: "sideways", label: "Arena: sideways" },
-      { kind: "arena", ref: "bullish", label: "Arena: bullish" },
     ],
   },
 

@@ -266,7 +266,7 @@ export const CONCEPTS: Concept[] = [
       "Idea: the LABX uptrend holds above the pullback low at 98.40. A break below 98.40 ends the higher-low sequence, so with a 0.15 buffer the stop goes at 98.25. A stop at 99.50, chosen only to keep the loss small, could be hit by ordinary noise while the idea was still valid.",
     related: ["stop-loss-order", "support-and-resistance", "position-sizing"],
     missions: ["M04", "M06"],
-    lessons: ["L10"],
+    lessons: ["L04", "L10"],
   },
   {
     id: "trailing-stop",
