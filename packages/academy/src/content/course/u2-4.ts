@@ -2686,7 +2686,7 @@ const concepts: Concept[] = [
     example: "On a 60-hour LABX chart, RSI and %K correlated at 0.88, %K and %R at 1.00, RSI and CCI at 0.83, but RSI and ATR at −0.13.",
     related: ["confirmation-bias", "stochastic-family", "oscillator"],
     missions: [],
-    lessons: ["2.4.3"],
+    lessons: ["2.4.3", "2.8.9"],
   },
   {
     id: "overbought-oversold",
