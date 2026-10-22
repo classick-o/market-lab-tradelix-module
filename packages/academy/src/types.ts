@@ -82,6 +82,156 @@ export interface Lesson {
   objectives: string[];
   blocks: LessonBlock[];
   practice: PracticeLink[];
+  /** The interactive version: Hook → Learn → Try → Check → Recap. Lessons without it open in Read mode. */
+  script?: LessonScript;
+}
+
+// ─── Interactive lessons (PLAN_LEARN §4, docs/learn) ───────────────────────
+
+/** One candle in a figure, in price units (2 decimals). */
+export interface CandleData {
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v?: number;
+}
+
+/** What a level means on a chart; the UI maps roles to the colour system (PLAN_LEARN §8.2). */
+export type LevelRole = "entry" | "stop" | "target" | "support" | "resistance" | "neutral" | "concept";
+/** Colour role for lines, markers and brackets. */
+export type MarkRole = "accent" | "concept" | "up" | "down" | "neutral";
+
+export type ChartLayer =
+  | { kind: "line"; values: (number | null)[]; role?: MarkRole; label?: string; dashed?: boolean }
+  | { kind: "ma"; period: number; role?: MarkRole; label?: string }
+  | { kind: "level"; id?: string; price: number; role: LevelRole; label?: string; chip?: boolean }
+  | { kind: "zone"; from: number; to: number; role: LevelRole; label?: string }
+  | { kind: "marker"; index: number; price?: number; at?: "high" | "low" | "open" | "close"; label?: string; role?: MarkRole }
+  | { kind: "bracket"; from: number; to: number; index?: number; label: string; role?: MarkRole }
+  | { kind: "path"; points: { index: number; price: number }[]; role?: MarkRole; label?: string; dashed?: boolean };
+
+export interface ChartSpec {
+  candles: CandleData[];
+  layers?: ChartLayer[];
+  /** Candles after this count are hidden under the "unknown" veil until revealed. */
+  visible?: number;
+  /** Fixed price range; otherwise fitted to the data and levels. */
+  range?: [number, number];
+  /** Chart height in px (default 240). */
+  height?: number;
+  /** Screen-reader description; generated from the data when absent. */
+  describe?: string;
+}
+
+export interface FigureStep {
+  text: string;
+  /** Layers that appear at this step (added to those of earlier steps). */
+  layers?: ChartLayer[];
+  /** Candles visible from this step on. */
+  visible?: number;
+}
+
+export interface FormulaBox {
+  text: string;
+  /** The box the learner fills in (one per formula). */
+  answer?: number;
+  tolerance?: number;
+  unit?: string;
+}
+
+export interface FlowNode {
+  id: string;
+  text: string;
+  /** Terminal nodes have no branches. "pause" nodes have one way on. */
+  kind?: "question" | "end" | "pause";
+  yes?: string;
+  no?: string;
+  next?: string;
+  /** For learner choices: which branch is right, and what to say on the other one. */
+  correct?: "yes" | "no";
+  explain?: string;
+}
+
+export type FigureSpec =
+  | { kind: "chart"; chart: ChartSpec; steps: FigureStep[] }
+  | { kind: "formula"; boxes: FormulaBox[]; operators: string[]; steps?: string[] }
+  | { kind: "bars"; bars: { label: string; value: number; role?: MarkRole }[]; unit?: string; steps?: string[] }
+  | { kind: "flow"; nodes: FlowNode[]; start: string; interactive?: boolean; steps?: string[] }
+  /** A static diagram from before the chart kit, kept while it is being migrated. */
+  | { kind: "diagram"; diagram: DiagramId; caption?: string };
+
+export interface Choice {
+  id: string;
+  label: string;
+  /** Shown when this choice is picked. */
+  feedback?: string;
+}
+
+/** The control a learner answers with in a hook or a predict beat. */
+export type AnswerControl =
+  | { kind: "choice"; choices: Choice[]; answer?: string }
+  | { kind: "slider"; min: number; max: number; step: number; unit?: string; start?: number; answer?: number; tolerance?: number }
+  | { kind: "numeric"; unit?: string; answer?: number; tolerance?: number; feedback?: { value: number; text: string }[] }
+  | { kind: "tap"; chart: ChartSpec; zones: TapZone[]; answer?: string };
+
+export interface TapZone {
+  id: string;
+  label: string;
+  /** A price band (from–to) or a candle index (with optional price) defines where a tap lands. */
+  price?: number;
+  from?: number;
+  to?: number;
+  index?: number;
+  feedback?: string;
+}
+
+/** Interactive task configuration for a widget (docs/learn/widgets.md). */
+export interface TaskSpec {
+  widget: string;
+  goal: string;
+  /** Starting values, by the widget's field names. */
+  start?: Record<string, number | string | boolean>;
+  /** Controls the learner can't change. */
+  locked?: string[];
+  /** Output rows hidden until the task is solved (they would give the answer away). */
+  hidden?: string[];
+  success: import("./success").Condition;
+  /** Checked in order after a wrong attempt; the first that matches is shown. */
+  feedback?: import("./success").FeedbackCase[];
+  correct: string;
+  /** Shown when no feedback case matches. */
+  incorrect?: string;
+  hints: string[];
+  /** The state "Show me" animates to. */
+  showMe: Record<string, number | string | boolean>;
+  concept?: string;
+}
+
+export type Beat =
+  | { kind: "explain"; title?: string; text: string; figure?: FigureSpec }
+  | { kind: "figure"; title?: string; figure: FigureSpec; text?: string; concept?: string }
+  | { kind: "predict"; title?: string; prompt: string; control: AnswerControl; figure?: FigureSpec; reveal?: string; concept?: string }
+  | { kind: "reveal"; title?: string; prompt: string; chart: ChartSpec; choices?: Choice[]; answer?: string; after: string; concept?: string }
+  | { kind: "worked"; title: string; lines: string[]; ask?: { answer: number; tolerance?: number; unit?: string; feedback?: { value: number; text: string }[]; correct?: string }; after?: string; concept?: string }
+  | { kind: "task"; title?: string; task: TaskSpec }
+  | { kind: "match"; title?: string; prompt: string; pairs: { left: string; right: string; wrong?: string }[]; columns?: [string, string]; concept?: string }
+  | { kind: "order"; title?: string; prompt: string; items: string[]; explain?: string; concept?: string }
+  | { kind: "hotspot"; title?: string; prompt: string; chart: ChartSpec; zones: TapZone[]; answer: string; correct: string; concept?: string }
+  | { kind: "callout"; tone: "key" | "warning" | "info"; text: string };
+
+export interface LessonScript {
+  /** Course unit id, e.g. "1.4". */
+  unit: string;
+  /** Position in the course, e.g. "1.4.4". */
+  courseId: string;
+  /** The prediction before any explanation. `compare` is shown in the recap; `{yours}` is the learner's answer. */
+  hook: { prompt: string; control: AnswerControl; figure?: FigureSpec; compare: string; concept?: string };
+  learn: Beat[];
+  task?: TaskSpec;
+  /** Three question ids from the bank. */
+  check: string[];
+  recap: { takeaways: [string, string, string] };
 }
 
 export interface Concept {
@@ -122,6 +272,25 @@ export interface GlossaryTerm {
 export interface QuestionOption {
   id: string;
   label: string;
+  /** Why a learner might pick this wrong option, and the right reasoning (wrong options only). */
+  rationale?: string;
+}
+
+/**
+ * Generates fresh numbers for a numeric question, so reviews don't repeat the same figures.
+ * `fields` are drawn from [min, max] in `step`s; `answer`, `prompt`, `explanation` and `hint` are
+ * templates evaluated by the UI (`{field}` placeholders; `answer` is an expression over the fields).
+ */
+export interface VarySpec {
+  fields: Record<string, [min: number, max: number, step: number]>;
+  /** Arithmetic expression over the fields, e.g. "floor(budget / (entry - stop))". */
+  answer: string;
+  /** Conditions the drawn fields must meet; the generator draws again until they hold. */
+  constraints?: string[];
+  prompt: string;
+  explanation: string;
+  /** Replaces the last hint, which usually contains numbers. */
+  hint?: string;
 }
 
 /**
@@ -144,6 +313,11 @@ export interface Question {
   explanation: string;
   /** Lesson to review when the answer is wrong. */
   lesson: string;
+  /** Concept ids this question gives evidence for (one or two). */
+  concepts?: string[];
+  /** Up to three hints, from a direction to the first step worked out. */
+  hints?: string[];
+  vary?: VarySpec;
 }
 
 export type PathStep = { kind: "lesson"; id: string } | { kind: "mission"; id: string } | { kind: "check"; id: string };
