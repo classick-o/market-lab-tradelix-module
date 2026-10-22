@@ -1,4 +1,4 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent, UnitIntro } from "../../types";
 
 type Cards = NonNullable<TaskData["cards"]>;
 type Options = NonNullable<TaskData["options"]>;
@@ -26,6 +26,7 @@ const L_2_12_1: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.1",
+    bridge: "In 2.11.8 you judged systems by their numbers. Those numbers hold only if you trade the rules as written. In 1.7.2 you met loss aversion as a trap; here prospect theory explains it, with 0.2.2's expected value as the fair yardstick.",
     hook: {
       prompt: "Choice 1: a sure +50.00 vUSD, or a 50% chance of +100.00. Choice 2: a sure −50.00, or a 50% chance of −100.00. Which do you pick in each?",
       control: {
@@ -178,6 +179,7 @@ const L_2_12_1: Lesson = {
         "Most people play safe with gains and gamble with losses, even at equal expected values.",
         "Holding losers, cutting winners and moonshot targets follow the pattern; exits set at entry counter it.",
       ],
+      next: "Next, 2.12.2: the disposition effect, the same pattern in your exits, and how to measure it.",
     },
   },
 };
@@ -205,6 +207,7 @@ const L_2_12_2: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.2",
+    bridge: "In 2.12.1 people played safe with gains and gambled with losses. In an open trade that becomes the disposition effect. Here you measure it with PGR and PLR, see what it costs, and hand exits back to the rules of 2.7.",
     hook: {
       prompt: "You hold two positions: one is +0.8R, the other −0.7R. You need to close one. Which do most people close?",
       control: {
@@ -332,6 +335,7 @@ const L_2_12_2: Lesson = {
         "Cutting winners to +0.8R turns +0.40R per trade into −0.28R at a 40% win rate.",
         "Exit by rule: stop, target, time or an opposing signal, never by how P&L feels.",
       ],
+      next: "Next, 2.12.3: overconfidence, being sure more often than you are right, and how to measure it.",
     },
   },
 };
@@ -409,6 +413,7 @@ const L_2_12_3: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.3",
+    bridge: "In 2.12.2 you measured a bias in your exits. Overconfidence comes earlier, in how sure you feel before entry. Here you put a number on that feeling, check it against your hit rate, and price the extra trades it brings as in 2.9.6.",
     hook: {
       prompt: "Picture giving five ranges for LABX's close 10 candles from now, each one you're 90% sure contains it. How many would actually contain it?",
       control: { kind: "slider", min: 0, max: 5, step: 1, unit: "of 5", start: 4 },
@@ -507,6 +512,7 @@ const L_2_12_3: Lesson = {
         "Log a confidence number before each trade; the gap is hit rate minus average confidence.",
         "Overconfidence adds trades, and each extra trade pays costs for certain while its edge is unproven.",
       ],
+      next: "Next, 2.12.4: recency and small samples, and why the last few trades feel like the truth.",
     },
   },
 };
@@ -587,6 +593,7 @@ const L_2_12_4: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.4",
+    bridge: "In 2.12.3 your confidence ran ahead of your record. Recency does the same with the last few trades. In 2.11.7 a 20-trade interval still included zero; here you see why a short run, good or bad, feels like more proof than it is.",
     hook: {
       prompt: "Your pullback setup lost its last 3 trades. A fourth valid signal appears. Take it?",
       control: {
@@ -720,6 +727,7 @@ const L_2_12_4: Lesson = {
         "Small samples look convincing: with 20 trades, a 95% interval usually still includes zero.",
         "After an extreme run, expect results closer to the true edge: regression to the mean.",
       ],
+      next: "Next, 2.12.5: confirmation and anchoring, and how holding a trade changes what you see on the chart.",
     },
   },
 };
@@ -829,6 +837,7 @@ const L_2_12_5: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.5",
+    bridge: "In 2.12.4 the last few results bent your view of the base rate. Once you hold a trade, confirmation and anchoring bend your view of the chart. Here the invalidation you have logged since 1.6.4's journal becomes the tool that pushes back.",
     hook: {
       prompt: "You bought LABX at 104.00. It's 101.20 now and your plan's stop is 100.80. A voice says: 'I'll sell when it gets back to 104.00.' What is 104.00 to the market?",
       control: {
@@ -967,6 +976,7 @@ const L_2_12_5: Lesson = {
         "Your entry price is an anchor: it matters to you, not to the market.",
         "Write the invalidation before entry, and play devil's advocate while the trade is open.",
       ],
+      next: "Next, 2.12.6: sunk cost and house money, when past losses or gains steer your next decision.",
     },
   },
 };
@@ -994,6 +1004,7 @@ const L_2_12_6: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.6",
+    bridge: "In 2.12.5 your entry price became an anchor. Sunk cost and house money anchor to what is already lost or won, the reference point of 2.12.1. Here you apply 1.7.7's fresh-eyes question to holding, adding and sizing, and keep risk per trade flat.",
     hook: {
       prompt:
         "After three wins you're up 400.00 vUSD. The next setup appears and you size it at 2% because 'it's the market's money'. Is that money different from the rest of your account?",
@@ -1112,6 +1123,7 @@ const L_2_12_6: Lesson = {
         "House money: profits are your money. Risk after a win should match risk after a loss.",
         "Fresh eyes: would you open it now, at this size? Keep risk per trade flat.",
       ],
+      next: "Next, 2.12.7: tilt, when single slips cluster into a run of rule breaks, and the routines that stop it.",
     },
   },
 };
@@ -1139,6 +1151,7 @@ const L_2_12_7: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.7",
+    bridge: "In 2.12.6 single decisions slipped after a loss or a win. Tilt is when the slips cluster. The loss limits of 2.11.4 and the pause of 1.7.7 cap the damage; here you add a cool-down, a tilt threshold, a daily lock and a reset routine.",
     hook: {
       prompt: "Your last 10 trades include 4 rule breaks, 3 of them in the last 4 trades. What's the best next action?",
       control: {
@@ -1272,6 +1285,7 @@ const L_2_12_7: Lesson = {
         "Set guard-rails before the session: cool-down, tilt threshold, daily lock and readiness check.",
         "Reappraise early and run the reset routine, rather than pushing the feeling down.",
       ],
+      next: "Next, 2.12.8: handling losing streaks, where these guard-rails get tested, and the streak rules you set before one starts.",
     },
   },
 };
@@ -1299,6 +1313,7 @@ const L_2_12_9: Lesson = {
   script: {
     unit: "2.12",
     courseId: "2.12.9",
+    bridge: "In 2.12.8 you found a +0.20R method almost surely loses five in a row, and set streak rules. Here you take the wider view: each trade is one draw from a distribution, so you judge blocks of trades, as 2.11.7's intervals showed.",
     hook: {
       prompt:
         "Your system makes +0.40R per trade on average: it wins 40% of trades at +2.5R and loses 60% at −1R. Over the next 10 trades, how likely is a net loss?",
@@ -1426,6 +1441,7 @@ const L_2_12_9: Lesson = {
         "A +0.40R system still loses 33.7% of 5-trade stretches and 16.7% of 10-trade stretches.",
         "Commit to blocks of 20 trades by the rules, and judge each block by process first.",
       ],
+      next: "Next: the 2.12 checkpoint, then unit 2.13, Playbook, routine and review, starting with 2.13.1: thinking in scenarios.",
     },
   },
 };
@@ -2354,8 +2370,22 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "The biases that bend decisions, measured on your own trades: prospect theory, the disposition effect, overconfidence, recency, confirmation and anchoring, sunk cost and house money, tilt, losing streaks and thinking in probabilities. It comes now because you have enough trades from Levels 1 and 2 to measure them, and 2.11's metrics to measure with.",
+  outcomes: [
+    "Explain prospect theory and measure the disposition effect in your exits with PGR and PLR.",
+    "Log your confidence before trades and compare it with your hit rate.",
+    "Catch recency, confirmation, anchoring, sunk cost and house money before they change your size or exits.",
+    "Recognise tilt as a cluster of rule breaks and set guard-rails before the session.",
+    "Set streak rules in advance and judge blocks of trades by process, not single results.",
+  ],
+  buildsOn: "Unit 1.7 named the traps in single decisions: loss aversion (1.7.2), outcome bias, the pause. Unit 0.2 taught variance and samples; 2.11 added the metrics, drawdown tiers (2.11.5) and expectancy intervals (2.11.7) that now measure your own trades.",
+};
+
 /** Unit 2.12 · The trader's mind II (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_12: UnitContent = {
+  intro: INTRO,
   lessons: [L_2_12_1, L_2_12_2, L_2_12_3, L_2_12_4, L_2_12_5, L_2_12_6, L_2_12_7, L_2_12_9],
   questions: QUESTIONS,
   terms: TERMS,

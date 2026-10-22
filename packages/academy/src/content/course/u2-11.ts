@@ -1,4 +1,4 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /**
  * Unit 2.11 · Portfolio risk and performance (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce.
@@ -49,6 +49,7 @@ const L_2_11_1: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.1",
+    bridge: "In 2.10.9 you saw that only small size caps a news shock. In 1.4.4 you sized one trade from its stop, and in 2.4.6 you measured ATR. Here you size LABX and LABZ so one ATR of movement costs both the same.",
     hook: {
       prompt: "You buy 50 units of LABX (ATR 2.00) and 50 units of LABZ (ATR 0.50). Which position moves your account more on a typical day?",
       control: {
@@ -183,6 +184,7 @@ const L_2_11_1: Lesson = {
         "Fixed units let wild instruments dominate: 50 LABX swing 100.00 a day, 50 LABZ 25.00.",
         "ATR lags after volatility jumps, and equal size per ATR doesn't make positions independent.",
       ],
+      next: "Next, 2.11.2: portfolio heat, the open risk of all your positions added up and kept under a cap.",
     },
   },
 };
@@ -210,6 +212,7 @@ const L_2_11_2: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.2",
+    bridge: "In 2.11.1 you gave each position the same cost per ATR, with a stop near 1% risk. Each trade was still sized alone. Here you add up the open risk of every position, pending orders included, and cap the total: portfolio heat.",
     hook: {
       prompt: "Five trades, each risking 1%, all hit their stops in one afternoon. How much has the account lost?",
       control: {
@@ -326,6 +329,7 @@ const L_2_11_2: Lesson = {
         "Before each order, heat plus the new risk must fit the cap. Resize or skip.",
         "Pending orders count, and a breakeven stop still carries gap risk.",
       ],
+      next: "Next, 2.11.3: correlation, and why positions that move together add up to fewer bets than you count.",
     },
   },
 };
@@ -350,6 +354,7 @@ const L_2_11_3: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.3",
+    bridge: "In 2.11.2 you added open risks as if each stop could fail alone. Positions that move together fail together. Like the five oscillators of 2.8.9, which were one piece of evidence, correlated positions can be one bet. Here you count the bets you really hold.",
     hook: {
       prompt: "You hold LABX and LABY long, 1% risk each. They move together, with a correlation of 0.9. Is that 2% of independent risk, or close to one 2% bet?",
       control: {
@@ -476,6 +481,7 @@ const L_2_11_3: Lesson = {
         "Effective bets = n ÷ (1 + (n − 1)ρ). Five positions at ρ = 0.8 are 1.19 bets.",
         "Look for the same bet in disguise, and expect correlations to rise in stress.",
       ],
+      next: "Next, 2.11.4: caps per instrument, direction and theme, plus weekly and monthly loss limits that count open risk.",
     },
   },
 };
@@ -503,6 +509,7 @@ const L_2_11_4: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.4",
+    bridge: "In 2.11.2 you capped heat, and in 2.11.3 you found the same bet in disguise. Here both become written caps per instrument, direction and theme, and 1.4.9's daily loss limit grows into weekly and monthly limits that count open risk.",
     hook: {
       prompt: "Month-start equity is 10,000.00 and your monthly cap is 6%: 600.00. You have lost 350.00 and have 200.00 of open risk. How much new risk can you take?",
       control: {
@@ -645,6 +652,7 @@ const L_2_11_4: Lesson = {
         "Monthly room = cap − realised losses − open risk: 600.00 − 350.00 − 200.00 = 50.00.",
         "A new trade must fit every limit at once; the tightest one sets the size.",
       ],
+      next: "Next, 2.11.5: drawdown tiers, the rules that cut risk step by step as the account falls from its peak.",
     },
   },
 };
@@ -672,6 +680,7 @@ const L_2_11_5: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.5",
+    bridge: "In 2.11.4 your limits stopped new risk within a week or a month. A drawdown can run longer. In 1.4.8 you saw how deep a normal drawdown gets; here you set tiers that cut risk at preset depths, calibrated to your system's own simulated runs.",
     hook: {
       prompt: "At 1% risk, a simulated system has a median maximum drawdown of 8.3% over 100 trades; about 1 run in 20 goes past 14.8%. You set 'stop trading at −8%'. How often will a normal run trigger it?",
       control: {
@@ -820,6 +829,7 @@ const L_2_11_5: Lesson = {
         "Calibrate them to simulated normal runs: a stop at −8% fires in 54% of them.",
         "Risk only goes down as the drawdown deepens. Never raise it to recover.",
       ],
+      next: "Next, 2.11.6: the performance metrics that read a journal, and what each of them hides.",
     },
   },
 };
@@ -844,6 +854,7 @@ const L_2_11_6: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.6",
+    bridge: "In 2.11.5 you calibrated tiers to a system's normal drawdowns. Now you read the rest of its record. In 1.6.4 you started a journal and in 1.6.7 you graded process; here you compute win rate, payoff, expectancy, profit factor and outlier dependence from one journal.",
     hook: {
       prompt: "System A wins 62% of trades with a profit factor of 1.15. System B wins 38% with a profit factor of 1.6. Losses are −1R in both. Which makes more per trade?",
       control: {
@@ -981,6 +992,7 @@ const L_2_11_6: Lesson = {
         "Each hides something: win rate hides payoff, profit factor hides order, drawdown rests on one episode.",
         "Grade the process. Read outcome metrics as diagnostics, next to their sample size.",
       ],
+      next: "Next, 2.11.7: how sure you can be of an expectancy, with a confidence interval around it.",
     },
   },
 };
@@ -1005,6 +1017,7 @@ const L_2_11_7: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.7",
+    bridge: "In 2.11.6 you computed expectancy as one number. In 0.2.4 a win rate from 20 trades turned out to be a wide range, and 2.8.10 put ±0.40R around 50 trades. Here you build that interval for expectancy and count the trades needed.",
     hook: {
       prompt: "Your setup shows +0.40R per trade over 20 trades, with a spread of results of 1.71R. How sure can you be that the true expectancy is above zero?",
       control: {
@@ -1154,6 +1167,7 @@ const L_2_11_7: Lesson = {
         "Trades needed ≈ (2 × sd ÷ mean)². +0.20R with sd 1.5R needs about 225.",
         "A no-edge system shows +0.40R over 30 trades about 1 time in 10.",
       ],
+      next: "Next, 2.11.8: SQN, one score from the mean, spread and number of trades, and comparing two systems fairly.",
     },
   },
 };
@@ -1181,6 +1195,7 @@ const L_2_11_8: Lesson = {
   script: {
     unit: "2.11",
     courseId: "2.11.8",
+    bridge: "In 2.11.7 you put an interval around expectancy. SQN folds the same mean, spread and trade count into one score. Then, as in 2.8.10, you compare systems after costs and next to holding, this time per month instead of per trade.",
     hook: {
       prompt: "System A: +0.40R per trade, 8 trades a month. System B: +1.00R per trade, 2 trades a month. Which earns more per month?",
       control: {
@@ -1313,6 +1328,7 @@ const L_2_11_8: Lesson = {
         "Compare per month after costs: (0.40 − 0.10) × 8 = 2.4R beats (1.00 − 0.10) × 2 = 1.8R.",
         "Set every system next to the passive benchmark, drawdowns included, before calling it good.",
       ],
+      next: "Next: the 2.11 checkpoint, then unit 2.12, The trader's mind II, starting with 2.12.1: why losses feel bigger than gains.",
     },
   },
 };
@@ -1995,8 +2011,22 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "From risk per trade to risk across positions: volatility sizing, portfolio heat, correlation, exposure and period limits, and drawdown tiers. Then reading results: performance metrics, confidence intervals and SQN. It comes after strategies, sessions and news because you now hold several positions on several instruments at once.",
+  outcomes: [
+    "Size positions so one ATR costs the same share of equity in every instrument.",
+    "Add up portfolio heat and keep it under a cap, counting correlation between positions.",
+    "Check a new trade against caps per instrument, direction, theme and period before you place it.",
+    "Set drawdown tiers calibrated to your system's normal drawdowns, with a rule for when risk returns.",
+    "Read a journal's metrics with a confidence interval, and compare systems by SQN and monthly R after costs.",
+  ],
+  buildsOn: "Unit 1.4: R, sizing from the stop (1.4.4), drawdowns (1.4.8) and daily limits (1.4.9). ATR from 2.4.6, sample size from 0.2.4, process KPIs from 1.6.7, and judging a strategy after costs from 2.8.10.",
+};
+
 /** Unit 2.11 · Portfolio risk and performance (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_11: UnitContent = {
+  intro: INTRO,
   lessons: [L_2_11_1, L_2_11_2, L_2_11_3, L_2_11_4, L_2_11_5, L_2_11_6, L_2_11_7, L_2_11_8],
   questions: QUESTIONS,
   terms: TERMS,
