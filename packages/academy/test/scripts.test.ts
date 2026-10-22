@@ -148,6 +148,35 @@ describe("interactive lesson scripts", () => {
           }
   });
 
+  it("plan-fields rules can be met with the values the fields offer", () => {
+    for (const l of scripted)
+      for (const b of l.script!.learn) {
+        if (b.kind !== "fields" || !b.valid) continue;
+        // Every value each field can take: the options, or the stepper's range (around the default when open-ended).
+        const domains = b.fields.map((f): (number | string)[] => {
+          if (f.kind === "text") return ["My answer"];
+          if (f.kind === "choice") return f.options ?? [];
+          const step = f.step ?? 1;
+          const lo = f.min ?? Number(f.default) - 50 * step;
+          const hi = f.max ?? Number(f.default) + 50 * step;
+          const xs: number[] = [];
+          for (let v = lo; v <= hi + 1e-9 && xs.length < 200; v += step) xs.push(Number(v.toFixed(6)));
+          return xs;
+        });
+        let met = false;
+        const walk = (i: number, values: Record<string, number | string>) => {
+          if (met) return;
+          if (i === b.fields.length) {
+            met = evaluateCondition(b.valid!, values);
+            return;
+          }
+          for (const v of domains[i]) walk(i + 1, { ...values, [b.fields[i].id]: v });
+        };
+        walk(0, {});
+        expect(met, `${l.id}: "${b.title}" has a rule no combination of values meets`).toBe(true);
+      }
+  });
+
   it("use unique glossary and concept ids", () => {
     expect(new Set(GLOSSARY.map((t) => t.id)).size).toBe(GLOSSARY.length);
     expect(new Set(CONCEPTS.map((c) => c.id)).size).toBe(CONCEPTS.length);

@@ -989,15 +989,18 @@
 }
 .lp-seg-options {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   padding: 3px;
   border: 1px solid var(--ml-border-strong);
   border-radius: var(--ml-r-md);
   background: var(--ml-bg);
 }
 .lp-seg-opt {
-  flex: 1;
-  height: 30px;
-  padding: 0 10px;
+  flex: 1 1 auto;
+  min-height: 30px;
+  padding: 6px 10px;
+  line-height: 1.3;
   border: 0;
   border-radius: var(--ml-r-sm);
   background: none;
@@ -1818,7 +1821,7 @@
   color: var(--ml-text);
 }
 .lp-field .lp-seg-options {
-  flex: none;
+  flex: 0 1 auto;
 }
 .lp-stepper {
   display: inline-flex;
@@ -1866,7 +1869,7 @@
   line-height: 1.5;
 }
 .lp-sort-item .lp-seg-options {
-  flex: none;
+  flex: 0 1 auto;
 }
 .lp-sort-item .lp-seg-opt.is-on {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ml-pos) 60%, transparent);
@@ -1922,6 +1925,10 @@
 .lp-field--text {
   flex-direction: column;
   align-items: stretch;
+}
+/* In a column the label's 240px basis would become its height. */
+.lp-field--text .lp-field-label {
+  flex: none;
 }
 .lp-field--text textarea {
   width: 100%;
