@@ -136,8 +136,9 @@ describe("interactive lesson scripts", () => {
       for (const b of l.script!.learn)
         if (b.kind === "fields")
           for (const f of b.fields) {
-            if (f.kind === "choice") expect(f.options, `${l.id}: ${f.id} options`).toContain(f.default);
-            else expect(f.default >= (f.min ?? -Infinity) && f.default <= (f.max ?? Infinity), `${l.id}: ${f.id} default`).toBe(true);
+            if (f.kind === "text") expect(typeof f.default, `${l.id}: ${f.id} text default`).toBe("string");
+            else if (f.kind === "choice") expect(f.options, `${l.id}: ${f.id} options`).toContain(f.default);
+            else expect(Number(f.default) >= (f.min ?? -Infinity) && Number(f.default) <= (f.max ?? Infinity), `${l.id}: ${f.id} default`).toBe(true);
           }
   });
 

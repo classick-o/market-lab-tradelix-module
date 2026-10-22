@@ -66,7 +66,7 @@ script: {
 | `match` | perechi | `pairs[{left,right,wrong?}]`, `columns?`, `correct?`; dacă mai multe perechi au același `right`, devine sortare pe categorii |
 | `order` | pașii în ordine | `items` (ordinea corectă), `explain`, `wrong?`, `note?` |
 | `hotspot` | tap pe grafic | `chart`, `zones`, `answer`, `correct` |
-| `fields` | regulile proprii ale utilizatorului | `fields: PlanField[]`, `valid?`, `correct?`, `feedback?` |
+| `fields` | regulile și notițele proprii ale utilizatorului | `fields: PlanField[]` (`choice`, `stepper` sau `text` cu `placeholder` și `required`), `valid?`, `correct?`, `feedback?` |
 | `task` | un widget în mijlocul lecției | `task` |
 | `callout` | ideea-cheie sau un avertisment | `tone: key/warning/info`, `text` |
 

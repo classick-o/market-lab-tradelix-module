@@ -244,14 +244,19 @@ export interface TaskData {
 export interface PlanField {
   id: string;
   label: string;
-  kind: "choice" | "stepper";
+  /** A choice between values, a stepper, or the learner's own words (a thesis, a rule, a journal line). */
+  kind: "choice" | "stepper" | "text";
   /** Choice values (choice fields). */
   options?: number[];
   min?: number;
   max?: number;
   step?: number;
   unit?: string;
-  default: number;
+  /** A number for choice and stepper fields; text fields start empty (""). */
+  default: number | string;
+  /** Text fields: the hint shown in the empty field, and whether the beat needs it filled in. */
+  placeholder?: string;
+  required?: boolean;
 }
 
 /** Interactive task configuration for a widget (docs/learn/widgets.md). */

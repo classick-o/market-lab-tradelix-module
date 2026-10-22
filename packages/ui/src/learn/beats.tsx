@@ -581,13 +581,19 @@ function FieldsBeat({ b }: { b: BeatOf<"fields"> }) {
   const lab = useLab();
   const store = useStore();
   const saved = lab.lessons[s.lessonId]?.fields ?? {};
-  const [values, setValues] = useState<Record<string, number>>(() => Object.fromEntries(b.fields.map((f) => [f.id, typeof saved[`${b.title ?? "fields"}:${f.id}`] === "number" ? (saved[`${b.title ?? "fields"}:${f.id}`] as number) : f.default])));
+  const key = (id: string) => `${b.title ?? "fields"}:${id}`;
+  const [values, setValues] = useState<Record<string, number | string>>(() => Object.fromEntries(b.fields.map((f) => [f.id, saved[key(f.id)] ?? f.default])));
   const [result, setResult] = useState<{ ok: boolean; text?: string } | null>(s.done ? { ok: true } : null);
   const save = () => {
     if (result?.ok) return false;
+    const missing = b.fields.find((f) => f.kind === "text" && f.required && !String(values[f.id] ?? "").trim());
+    if (missing) {
+      setResult({ ok: false, text: `Write your answer to "${missing.label}" first.` });
+      return true;
+    }
     const ok = !b.valid || evaluateCondition(b.valid, values);
     if (ok) {
-      for (const f of b.fields) store.setLessonField(s.lessonId, `${b.title ?? "fields"}:${f.id}`, values[f.id]);
+      for (const f of b.fields) store.setLessonField(s.lessonId, key(f.id), typeof values[f.id] === "string" ? String(values[f.id]).trim().slice(0, 500) : values[f.id]);
       setResult({ ok: true, text: b.correct });
       s.evidence(b.concept, 1);
       s.complete();
@@ -599,7 +605,7 @@ function FieldsBeat({ b }: { b: BeatOf<"fields"> }) {
     return true;
   };
   useKeys({ Enter: save });
-  const set = (id: string, v: number) => {
+  const set = (id: string, v: number | string) => {
     setValues((x) => ({ ...x, [id]: v }));
     if (result && !result.ok) setResult(null);
   };
@@ -611,7 +617,14 @@ function FieldsBeat({ b }: { b: BeatOf<"fields"> }) {
       </p>
       <div className="lp-fields">
         {b.fields.map((f) => {
-          const v = values[f.id];
+          if (f.kind === "text")
+            return (
+              <label key={f.id} className="lp-field lp-field--text">
+                <span className="lp-field-label">{f.label}</span>
+                <textarea rows={2} maxLength={500} value={String(values[f.id] ?? "")} placeholder={f.placeholder} disabled={result?.ok} onChange={(e) => set(f.id, e.target.value)} />
+              </label>
+            );
+          const v = Number(values[f.id]);
           const label = f.label.includes("__") ? f.label.replace("__", String(v)) : f.label;
           return (
             <div key={f.id} className="lp-field">
