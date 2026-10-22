@@ -72,6 +72,7 @@ const L_3_12_1: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.1",
+    bridge: "Unit 3.11 ended in 3.11.10 with a validated system going live at small size. Now the size itself. In 1.4.1 a 50% loss needed a 100% gain; here that asymmetry becomes volatility drag, and 3.10.1's mean-versus-median gap reappears across whole paths.",
     hook: {
       prompt: "Your account of 10,000.00 vUSD gains 50%, then loses 50%. Where does it end?",
       control: {
@@ -218,6 +219,7 @@ const L_3_12_1: Lesson = {
         "Volatility drag: g ≈ μ − σ²/2. A 10% average with 30% volatility compounds near 5.5%.",
         "You live one path: at 16% risk the average ends at 481×, the median at 20×.",
       ],
+      next: "Next, 3.12.2: the same trades under three sizing rules, to see what sizing can change and what it can't.",
     },
   },
 };
@@ -245,6 +247,7 @@ const L_3_12_2: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.2",
+    bridge: "In 3.12.1 the risk per trade changed where the typical path ends. Now compare sizing rules on the same trades: fixed units, 1.4.1's fixed fractional, and fixed ratio. The last two add size after wins, the reverse of 1.8.1's martingale, which added it after losses.",
     hook: {
       prompt: "You always buy 100 units of LABX at 50.00. Trade A's stop is 0.50 below, trade B's 1.50 below. How many times bigger is your risk on trade B?",
       control: {
@@ -395,6 +398,7 @@ const L_3_12_2: Lesson = {
         "Fixed ratio: lot N needs Δ × N(N − 1) ÷ 2 of profit, so size grows slowly.",
         "Sizing reshapes the path and the drawdown. It can't turn a losing list into a winner.",
       ],
+      next: "Next, 3.12.3: the Kelly criterion, the fraction that grows a known edge fastest, and why it's only a ceiling.",
     },
   },
 };
@@ -422,6 +426,7 @@ const L_3_12_3: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.3",
+    bridge: "In 3.12.2 sizing reshaped the path but couldn't create an edge. Given an edge, which fraction grows fastest? In 3.12.1 growth rose with risk, then fell. Kelly finds that peak from the win rate and payoff of 1.4.5 and 0.2.2's expected value.",
     hook: {
       prompt: "You win 55% of trades; winners pay 1.5R and losers cost 1R. What fraction of equity should you risk per trade to grow fastest in the long run?",
       control: {
@@ -538,6 +543,7 @@ const L_3_12_3: Lesson = {
         "Growth peaks at full Kelly; half Kelly keeps 75% of it. Twice Kelly grows almost nothing.",
         "Kelly is a ceiling: it assumes a known edge, independent trades and fixed payoffs.",
       ],
+      next: "Next, 3.12.4: fractional Kelly and optimal f, because the edge you plug into Kelly is only an estimate.",
     },
   },
 };
@@ -565,6 +571,7 @@ const L_3_12_4: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.4",
+    bridge: "In 3.12.3 full Kelly assumed you know the edge exactly. You don't: 3.10.3 and 3.11.5 showed in-sample edges shrink on new data. Here you price full Kelly on an overestimated edge, then meet fractional Kelly and optimal f, fitted to the past's worst loss.",
     hook: {
       prompt: "You estimated a 55% win rate at 1.5R, so Kelly said 25%. The true win rate is 45%. Risking 25% per trade, your long-run growth is…",
       control: {
@@ -700,6 +707,7 @@ const L_3_12_4: Lesson = {
         "Optimal f peaks the past list's TWR: f 0.239, one contract per 418 vUSD.",
         "Choose a fraction by the drawdown you accept: half Kelly keeps 76% of the growth.",
       ],
+      next: "Next, 3.12.5: risk of ruin, defined as the drawdown where you'd stop, with a size that keeps it under 1%.",
     },
   },
 };
@@ -727,6 +735,7 @@ const L_3_12_5: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.5",
+    bridge: "In 3.12.4 you chose a fraction by the drawdown you accept. Now put a number on surviving it. 1.8.1's martingale made ruin a matter of time; here ruin is the drawdown where you'd stop, and 3.11.7's Monte Carlo estimates its chance at each size.",
     hook: {
       prompt: "Reference system, 4% risk per trade, 100 trades. What's the chance of hitting a 30% drawdown at least once?",
       control: {
@@ -853,6 +862,7 @@ const L_3_12_5: Lesson = {
         "Ruin is the drawdown where you'd stop. At 2% risk: 9.2% for 25%, 0.004% for 50%.",
         "Size so a Monte Carlo keeps ruin under 1%: 1.6% for the reference system at 30%.",
       ],
+      next: "Next, 3.12.6: volatility targeting, sizing so the position's normal daily swing fits a fixed budget.",
     },
   },
 };
@@ -880,6 +890,7 @@ const L_3_12_6: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.6",
+    bridge: "In 3.12.5 a ruin threshold capped your risk per trade. Volatility targeting sizes from normal swings instead: units follow a forecast of the daily move, the idea behind 2.4.6's ATR. Volatility clusters (3.10.2), so you resize as forecasts change and cap exposure in calm spells.",
     hook: {
       prompt: "Your account is 10,000 vUSD and your volatility budget is 0.63% a day, about 10% a year. LABX moves about 1.50 vUSD a day, one standard deviation. How many units fit the budget?",
       control: {
@@ -1010,6 +1021,7 @@ const L_3_12_6: Lesson = {
         "When the forecast doubles, units halve: 21 at 3.00. Resize on a fixed schedule.",
         "Forecasts lag jumps: day 31 cost 252.00. In calm spells, cap exposure.",
       ],
+      next: "Next, 3.12.7: equity-curve trading, adjusting exposure to the system's own recent results instead of the market's swings.",
     },
   },
 };
@@ -1037,6 +1049,7 @@ const L_3_12_7: Lesson = {
   script: {
     unit: "3.12",
     courseId: "3.12.7",
+    bridge: "In 3.12.6 size followed the market's volatility. Equity-curve trading follows the system's own results: pause below its 20-trade average. 3.10.7's runs test says whether that can help, and it differs from 2.11.5's drawdown tiers and 3.11.10's kill switch.",
     hook: {
       prompt: "A trend-following system pauses whenever its equity is below its 20-trade average. Over 10 synthetic years, does it end with more or less than the unfiltered system?",
       control: {
@@ -1150,6 +1163,7 @@ const L_3_12_7: Lesson = {
         "Measure both sides: the drawdown the filter saved and the R it missed.",
         "It helps clustered outcomes, hurts trend following, and only costs R on independent trades.",
       ],
+      next: "Next: the 3.12 checkpoint. Then unit 3.13, Systematic strategies and evidence, where your testing and sizing tools meet strategies with published evidence, starting with momentum.",
     },
   },
 };
@@ -1851,6 +1865,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 3.12 · Position sizing theory (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_3_12: UnitContent = {
+  intro: {
+    summary: "Sizing answers 'how much?' with maths: compound growth and volatility drag, sizing rules on one trade list, Kelly as a ceiling, fractional Kelly and optimal f, risk of ruin as a drawdown, volatility targeting and equity-curve filters. It follows 3.11 because a signal is validated in R first. Sizing reshapes the path and the odds of survival, never the edge.",
+    outcomes: [
+      "Compute volatility drag, and compare sizes by their median path, not the average.",
+      "Run fixed units, fixed fractional and fixed ratio on the same list of trades.",
+      "Compute the Kelly fraction, and choose a fraction of it by the drawdown you accept.",
+      "Define ruin as the drawdown where you'd stop, and size so a Monte Carlo keeps it under 1%.",
+      "Size by a volatility budget, and judge an equity-curve filter by whether your outcomes cluster.",
+    ],
+    buildsOn: "Builds on 1.4's fixed-fractional risk and drawdown recovery, 1.8.1's martingale, ATR from 2.4.6, 2.11's volatility sizing and drawdown tiers, 3.10's distributions, volatility and runs test, and 3.11.7's Monte Carlo.",
+  },
   lessons: [L_3_12_1, L_3_12_2, L_3_12_3, L_3_12_4, L_3_12_5, L_3_12_6, L_3_12_7],
   questions: QUESTIONS,
   terms: TERMS,

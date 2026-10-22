@@ -120,6 +120,7 @@ const L_3_11_1: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.1",
+    bridge: "Unit 3.10 ended with 3.10.7's independence tests. Now you build what gets tested. 3.10.4 showed most ideas that pass are still false, so start strict: a setup from 2.8 or your 2.13 playbook becomes a falsifiable hypothesis, then rules exact enough for code.",
     hook: {
       prompt: "Two traders apply the same rule, 'buy strong breakouts in an uptrend', to the first 40 breakouts in a LABX test. On how many of the 40 do both of them buy?",
       control: {
@@ -213,6 +214,7 @@ const L_3_11_1: Lesson = {
         "Codified rules give anyone the same trades: condition, trigger, stop, exit, and a fixed 1R size.",
         "Use adjusted, point-in-time data, judge the signal in R first, and log every run.",
       ],
+      next: "Next, 3.11.2: fills and costs, because exact rules still need honest prices before any result counts.",
     },
   },
 };
@@ -240,6 +242,7 @@ const L_3_11_2: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.2",
+    bridge: "In 3.11.1 your rules became exact enough for code. Now the backtest must fill them honestly: next-bar fills, the stop first when a bar holds both, and 1.1's cost stack in R. 2.9's opening range breakout shows a small gross edge lost to costs.",
     hook: {
       prompt: "A LABX strategy earns +0.15R a trade before costs. Its stop is 2.00 away, and spread plus commissions cost 0.20 per unit. What's left per trade?",
       control: {
@@ -401,6 +404,7 @@ const L_3_11_2: Lesson = {
         "Costs in R = cost per unit ÷ stop distance. Subtract them from gross expectancy.",
         "Breakeven multiple = gross edge ÷ current costs. Near 1, the edge has no room.",
       ],
+      next: "Next, 3.11.3: look-ahead and survivorship, two bugs that make worthless rules look brilliant even with honest costs.",
     },
   },
 };
@@ -443,6 +447,7 @@ const L_3_11_3: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.3",
+    bridge: "In 3.11.2 you made fills and costs honest. Two bugs can still make worthless rules look brilliant: inputs the trader didn't know yet, and a universe of survivors only. In 1.8.3 survivorship flattered other people's claims; here it flatters your own test.",
     hook: {
       prompt: "A rule buys LABX at the open whenever the day closes above its 20-day high, and sells at that close. Ten-year backtest: 95.2% winners after costs. Real edge or a bug?",
       control: {
@@ -535,6 +540,7 @@ const L_3_11_3: Lesson = {
         "Survivors-only tests flatter: +18.9% a year on survivors, +4.8% with the delisted included.",
         "Before any test: input timing, the universe at each date, adjusted prices, delisted names, costs.",
       ],
+      next: "Next, 3.11.4: in-sample and out-of-sample, keeping part of the clean data locked away to judge the final rules.",
     },
   },
 };
@@ -562,6 +568,7 @@ const L_3_11_4: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.4",
+    bridge: "In 3.11.3 you cleaned the inputs and the universe. Now decide which data judges the rules. 3.10.6 showed extra tests breed false hits, and 3.10.5 that short samples say little. So tune on one stretch, then test once on a later, locked one.",
     hook: {
       prompt: "You tuned a system on 2018–2023 synthetic data. The 2024–2025 hold-out lost money. You tweak one filter and re-run the hold-out: now it wins. How much should you trust that?",
       control: {
@@ -684,6 +691,7 @@ const L_3_11_4: Lesson = {
         "Each extra look is a trial in the log and turns the hold-out into in-sample.",
         "A short out-of-sample barely tells: Sharpe SE ≈ √((1 + Sharpe² ÷ 2) ÷ years).",
       ],
+      next: "Next, 3.11.5: overfitting and the R0 control, why tuned rules fade on new data and how a random walk exposes it.",
     },
   },
 };
@@ -711,6 +719,7 @@ const L_3_11_5: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.5",
+    bridge: "In 3.11.4 tuned results shrank out of sample: about half the edge survived on R1, nothing on R0. Here you see why: many parameters on few trades, and the best of many tries lifted by luck, as in 3.10.3 and 3.10.6.",
     hook: {
       prompt: "This LABX strategy made +58.5% in four synthetic years: Sharpe 1.29 after costs, 6 tuned parameters, 46 trades. Predict its next two years.",
       control: {
@@ -819,6 +828,7 @@ const L_3_11_5: Lesson = {
         "The best of 10 zero-edge tries shows a Sharpe near 1.5 by luck alone.",
         "Run every test on R0 too. An 'edge' on a random walk is a leak.",
       ],
+      next: "Next, 3.11.6: walk-forward analysis, repeating tune-then-trade on rolling windows instead of trusting one split.",
     },
   },
 };
@@ -843,6 +853,7 @@ const L_3_11_6: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.6",
+    bridge: "In 3.11.4 you tested once on a single hold-out, and 3.11.5 showed how tuning fits noise. Walk-forward repeats tune-then-trade on rolling windows and keeps only the unseen segments, so you see how the system would really have been re-tuned, and whether its choices stay stable.",
     hook: {
       prompt: "A system's best breakout lookback, re-tuned each year on the four years before: 10, 22, 40, 40, 18, 16. Is it adapting to the market, or fitting noise?",
       control: {
@@ -940,6 +951,7 @@ const L_3_11_6: Lesson = {
         "WFE = out-of-sample ÷ in-sample annual return; 0.5 is a rule of thumb. Check stability too.",
         "Choose anchored or rolling, and the window length, before running. Choosing afterwards is meta-overfitting.",
       ],
+      next: "Next, 3.11.7: Monte Carlo, turning one out-of-sample record into many possible futures to plan drawdowns.",
     },
   },
 };
@@ -967,6 +979,7 @@ const L_3_11_7: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.7",
+    bridge: "In 3.11.6 you stitched the unseen segments into one out-of-sample record. That is still one path. Monte Carlo reorders and resamples its trades into thousands, so 2.11.5's drawdown tiers come from percentiles, not from the one drawdown you happened to see.",
     hook: {
       prompt: "The reference system (40% winners at +2.5R, 60% losers at −1R) showed a worst drawdown of 7R in its one backtest. Reshuffle the same 100 trades 10,000 times. 95th-percentile worst drawdown?",
       control: {
@@ -1095,6 +1108,7 @@ const L_3_11_7: Lesson = {
         "Plan drawdowns from the 95th percentile, 13.5R here, not from the backtest's 7R.",
         "A corridor of normal variance tells bad luck from breakage. Monte Carlo can't create edge.",
       ],
+      next: "Next, 3.11.8: robustness, checking that neighbouring settings and harsher conditions still leave an edge.",
     },
   },
 };
@@ -1119,6 +1133,7 @@ const L_3_11_8: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.8",
+    bridge: "In 3.11.7 you varied the order of the trades. Now vary the rules and the conditions. 3.11.5 warned about fitted peaks, and 3.11.6 checked whether choices stay stable; here you look for a broad plateau and run a stress battery a fitted system can't survive.",
     hook: {
       prompt: "The course system, run with breakout lookbacks from 10 to 61 bars in 10% steps. Each point is the net result per trade over ten years. Tap the lookback you would trade.",
       control: {
@@ -1225,6 +1240,7 @@ const L_3_11_8: Lesson = {
         "Stress battery: double costs, drop the best 5%, add noise, start later, try another market.",
         "A robust edge weakens under stress; a fitted one collapses. R0 fails the same battery.",
       ],
+      next: "Next, 3.11.9: random-entry benchmarks, to see whether the profit comes from your entry or only from exits and drift.",
     },
   },
 };
@@ -1266,6 +1282,7 @@ const L_3_11_9: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.9",
+    bridge: "In 3.11.8 the course system held up under stress. But does its profit come from the entry, the exits or drift? Random-entry twins keep your exits and swap the entry, a control like 3.11.5's R0, and the edge ratio reuses 2.7.8's MAE and MFE.",
     hook: {
       prompt: "Your breakout system made +17.1% on LABX in ten synthetic years. 1,000 random-entry twins with the same exits made −6.9% to +41.8%; the median twin, +15.4%. How much does your entry add?",
       control: {
@@ -1359,6 +1376,7 @@ const L_3_11_9: Lesson = {
         "E-ratio = average MFE ÷ average MAE in ATR. Compare it with random entries on the same data.",
         "Profit comes from the entry, the exits or drift. Only beating your twins shows entry edge.",
       ],
+      next: "Next, 3.11.10: incubation and kill switches, taking a tested system live in steps, with every change in the research log.",
     },
   },
 };
@@ -1386,6 +1404,7 @@ const L_3_11_10: Lesson = {
   script: {
     unit: "3.11",
     courseId: "3.11.10",
+    bridge: "In 3.11.9 you checked what the entry adds. A system that passes every test still goes live in steps: 3.11.7's bands set its gates and kill switch, and rule changes follow 2.13.7's written process into a new version of your 1.6.2 plan.",
     hook: {
       prompt: "Your validated system goes live on a small simulated account and loses 6 of its first 10 trades. What do you do?",
       control: {
@@ -1498,6 +1517,7 @@ const L_3_11_10: Lesson = {
         "A premortem lists why the system failed, before it trades. Each reason becomes a check.",
         "Change rules only by hypothesis, evidence threshold, simulator test and a new plan version.",
       ],
+      next: "Next: the 3.11 checkpoint. Then unit 3.12, Position sizing theory, where the edge you validated in R gets a size.",
     },
   },
 };
@@ -2587,6 +2607,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 3.11 · Backtesting and system design (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_3_11: UnitContent = {
+  intro: {
+    summary: "The full research process for a trading system: a falsifiable hypothesis, exact rules, honest fills and costs, bias checks, a locked hold-out, an R0 control, walk-forward, Monte Carlo, stress tests, random-entry twins and a staged go-live. It comes after 3.10's significance and multiple-testing maths, and before 3.12, because a signal is validated in R before it gets a size.",
+    outcomes: [
+      "Turn an edge hypothesis into codified rules, and price fills and costs in R.",
+      "Catch look-ahead and survivorship bugs, and test once on an untouched out-of-sample.",
+      "Expose overfitting with an R0 control, walk-forward analysis and a parameter plateau.",
+      "Plan drawdowns from Monte Carlo percentiles, and measure your entry against random-entry twins.",
+      "Write go-live gates, kill criteria and a premortem, and change rules only through the research log.",
+    ],
+    buildsOn: "Builds on all of 3.10, 2.8's strategies and cost-adjusted judging (2.8.10), costs in R (1.4.6), survivorship (1.8.3), 2.11's metrics and drawdown tiers, 2.13's playbook and rule changes (2.13.7), and the plan and journal of 1.6.",
+  },
   lessons: [L_3_11_1, L_3_11_2, L_3_11_3, L_3_11_4, L_3_11_5, L_3_11_6, L_3_11_7, L_3_11_8, L_3_11_9, L_3_11_10],
   questions: QUESTIONS,
   terms: TERMS,
