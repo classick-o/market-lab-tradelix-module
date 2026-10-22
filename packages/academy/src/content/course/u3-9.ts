@@ -1,4 +1,1917 @@
-import type { UnitContent } from "../../types";
+import type { CandleData, ChartLayer, Concept, GlossaryTerm, Lesson, MarkRole, Question, UnitContent } from "../../types";
 
 /** Unit 3.9 · Sentiment, positioning and seasonality (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_9: UnitContent = { lessons: [], questions: [], terms: [], concepts: [] };
+
+/** One candle, in price units with 2 decimals; `v` is the volume. */
+const k = (o: number, h: number, l: number, c: number, v?: number): CandleData => (v === undefined ? { o, h, l, c } : { o, h, l, c, v });
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+// Every series below is synthetic. The survey, the lab trades and the calendar tests come from seeded
+// generators run and checked with a script (S17-style survey: weekly regime drifts, a bull–bear spread from
+// adaptive expectations, and a weak built-in contrarian effect); the squeeze, hype and episode charts are
+// hand-built and checked the same way. Every number quoted in the text was computed from these data.
+
+/** 3.9.1: weekly closes of the synthetic index behind the survey (same generator and seed). */
+const SURVEY_PRICE: number[] = [100.67, 103.43, 106.15, 107.31, 108.59, 106.57, 105.33, 104.17, 105.9, 102.53, 98.88, 100.3, 101.34, 93.89, 94.33, 96.64, 96.23, 98.6, 100.18, 97.97, 96.52, 98.17, 96.23, 94.03, 95.69, 93.69, 93.64, 92.69, 92.42, 89.13, 91.69, 92.52, 95.68, 100.53, 100.35, 100.16, 98.97, 99.34, 98.78, 100.47, 102.02, 102.63, 101.38, 96.31, 97.19, 99.72, 102.78, 106.38, 109.58, 107.61, 102.84, 100.16, 101.42, 100.94, 99.45, 99.96, 99.07, 99.16, 97.1, 96.45, 91.1, 92.67, 90.61, 91.41, 90.94, 88.61, 92.05, 89.37, 91.5, 91.88, 90.91, 88.48, 90.18, 89.71, 90.03, 90.5, 89.1, 90.03, 87.27, 87.84, 90.62, 89.09, 89.92, 91.46, 88.95, 90.03, 89.91, 84.87, 84.5, 87.35, 89.98, 92.7, 95.64, 95.16, 99.83, 97.65, 98.47, 96.74, 96.68, 97.28, 98.44, 97.8, 97.14, 94.07, 92.91, 93.75, 92.29, 87.44, 83.99, 82.52, 81.1, 82.77, 79.78, 74.59, 75.8, 79.75, 77.67, 76.01, 74.04, 77.49, 77.48, 76.32, 75.62, 74.31, 72, 70.73, 68.46, 68.53, 72.1, 73.36, 74.63, 74.02, 74.67, 75.82, 78.66, 80.04, 80.31, 83.1, 82.83, 85.23, 86.39, 86.57, 85.2, 85.74, 82.56, 81.44, 81.62, 78.05, 77.78, 76.13, 74.73, 74.86, 76.3, 75.72, 76.89, 78.19, 79.25, 76.82, 77.6, 79.33, 82.49, 83.98, 85.53, 85.95, 85.91, 87.76, 85.53, 85.26, 83.5, 86.45, 88.53, 89.44, 89.59, 89.62, 89.63, 92.6, 91.96, 93.2, 92.63, 94.48, 96.28, 93.99, 95.31, 97.51, 97.81, 97.21, 95.9, 93.26, 94.57, 97.53, 93.62, 93.14, 99.04, 100.03, 100.63, 100.77, 100.16, 98.45, 97.94, 100.17, 104.4, 107.59, 107.65, 109.33, 108.25, 109.94, 107.85, 110.44, 114.29, 114.58, 120.53, 123.91, 128.7, 131.43, 131.23, 127.19, 126.54, 125.81, 121.59, 123.82, 123.62, 119.63, 116.63, 117.24, 117.38, 114.79, 112.67, 112.32, 112.82, 113.8, 115.32, 118.26, 118.93, 117.79, 120.98, 120, 120.6, 122.23, 119.49, 118.21, 121.4, 120.01, 121.04, 122.66, 118.31, 118.82, 114.89, 106.3, 108.66, 112.19, 111.39, 115.24, 116.73, 117.9, 115.66, 115.13, 111.26, 111.85, 116, 114.94];
+
+/** 3.9.1: the synthetic weekly bull–bear spread, 260 weeks (S17 generator, seed 229). Mean 6.015, sd 15.008. */
+const SPREAD: number[] = [9, 13, 28, 22, 23, 7, 3, 7, 16, -3, -17, 3, 8, -27, -15, -7, -11, 6, 19, 2, -3, 9, 8, 0, 3, -2, -1, -6, -5, -22, -1, 11, 26, 40, 35, 22, 18, 20, 11, 16, 16, 14, 12, -20, -12, 13, 30, 34, 37, 25, -3, -12, -6, -5, -7, 6, -4, -10, -13, -7, -30, -12, -23, -5, -10, -17, 5, -9, 9, 8, 4, -9, 5, 8, 3, 6, 1, 11, 3, 9, 18, 11, 16, 17, -1, 7, 4, -19, -11, 6, 10, 18, 20, 16, 35, 14, 16, 9, -2, 9, 11, 0, 4, -6, -4, -2, -3, -27, -36, -33, -26, -10, -17, -34, -14, 13, -5, -9, -9, 14, 6, 5, -1, -2, -8, -8, -22, -17, 9, 15, 17, 9, 16, 19, 27, 23, 21, 30, 18, 31, 26, 24, 8, 17, 6, -1, 7, -17, -13, -21, -23, -6, -5, -7, 1, 12, 14, -7, 7, 14, 36, 34, 31, 26, 17, 23, 8, 4, -10, 7, 18, 16, 13, 14, 15, 20, 14, 15, 7, 13, 13, 3, 11, 17, 16, 7, -4, -6, 10, 21, 1, 0, 31, 27, 26, 15, 10, 0, -8, 4, 19, 27, 18, 17, 17, 21, 16, 20, 26, 14, 31, 40, 44, 36, 26, 12, 0, 1, -15, 1, 7, -7, -9, -1, 1, -6, -14, -15, -17, -5, 5, 8, 9, 11, 20, 10, 14, 11, 9, 1, 3, 3, 13, 15, -2, 8, 2, -32, -13, 7, -3, 17, 22, 17, 18, 14, 2, 3, 12, 6];
+
+/** 3.9.1 hotspot: 34 weeks, hand-built. Extremes: +41 at week 8 (trend runs on to 121.00), −29 at the week-20 low (101.00), +38 at week 31, three weeks after the 118.50 top. */
+const EPISODES: CandleData[] = [
+  k(99.40, 100.60, 98.80, 100.00),
+  k(100.00, 102.10, 99.40, 101.50),
+  k(101.50, 103.60, 100.90, 103.00),
+  k(103.00, 105.40, 102.40, 104.80),
+  k(104.80, 107.10, 104.20, 106.50),
+  k(106.50, 109.00, 105.90, 108.40),
+  k(108.40, 110.80, 107.80, 110.20),
+  k(110.20, 112.60, 109.60, 112.00),
+  k(112.00, 114.70, 111.40, 114.10),
+  k(114.10, 116.60, 113.50, 116.00),
+  k(116.00, 118.80, 115.40, 118.20),
+  k(118.20, 120.20, 117.60, 119.60),
+  k(119.60, 121.60, 119.00, 121.00),
+  k(121.00, 121.60, 119.20, 119.80),
+  k(119.80, 120.40, 117.40, 118.00),
+  k(118.00, 118.60, 115.90, 116.50),
+  k(116.50, 117.10, 112.40, 113.00),
+  k(113.00, 113.60, 107.90, 108.50),
+  k(108.50, 109.10, 103.40, 104.00),
+  k(104.00, 104.60, 100.40, 101.00),
+  k(101.00, 104.80, 100.40, 104.20),
+  k(104.20, 107.40, 103.60, 106.80),
+  k(106.80, 109.50, 106.20, 108.90),
+  k(108.90, 110.90, 108.30, 110.30),
+  k(110.30, 113.20, 109.70, 112.60),
+  k(112.60, 115.40, 112.00, 114.80),
+  k(114.80, 117.50, 114.20, 116.90),
+  k(116.90, 119.10, 116.30, 118.50),
+  k(118.50, 119.10, 116.60, 117.20),
+  k(117.20, 117.80, 115.30, 115.90),
+  k(115.90, 116.50, 113.60, 114.20),
+  k(114.20, 114.80, 111.40, 112.00),
+  k(112.00, 112.60, 108.90, 109.50),
+  k(109.50, 110.10, 107.20, 107.80),
+];
+
+/** 3.9.2: managed money's net position in LXO, 156 weeks, thousands of contracts (low −22.0 at week 23, high 148.0 at week 141, latest 142.1). */
+const MM_NET: number[] = [73.4, 53.1, 49, 21.7, 31.5, 24.6, 18.5, 26, 33.5, 30, 27.4, 28.5, 21.8, 41.1, 56, 53.8, 53.8, 47.7, 48.6, 11.7, -0.9, -12, -22, 2.8, 8.1, -3, -6.5, 10, 12.6, 1.2, 2.6, 3.6, 17.8, 31.3, 42.9, 42.2, 46.4, 58.8, 65.1, 61.5, 78.2, 69, 81.5, 82.3, 73.6, 62.5, 31.9, 43.6, 54.1, 50.8, 44, 34, 31.4, 40.3, 27.2, 36.7, 48, 60.7, 59.3, 43.7, 51.5, 61.2, 56.9, 60.1, 73.4, 75.2, 75.9, 57.5, 61, 73.5, 69.5, 58.7, 63.4, 63.7, 55.9, 35.1, 56.7, 68.7, 70, 60.1, 50.9, 63.2, 62.3, 63.9, 73.8, 65.7, 61.8, 86.8, 92.6, 80.2, 88.4, 80.9, 73.1, 58, 65.2, 87.1, 93.5, 102.7, 98.7, 103.8, 91.9, 101.2, 103.3, 100.6, 93.9, 86.1, 84.3, 88.7, 73.1, 57.2, 56.6, 46.7, 38.2, 43.6, 41.8, 43, 44.7, 49.7, 51.4, 53.8, 49.8, 50.9, 50.3, 73.1, 83, 74.8, 104.2, 107.9, 92.8, 77.8, 79.1, 85.7, 94.1, 87.5, 97.3, 108.3, 113.7, 121.2, 143.9, 136.3, 148, 138.4, 121.7, 123.9, 121.1, 120.1, 121.4, 118.3, 108.8, 128.2, 144, 145.7, 119.5, 128.9, 136.7, 142.1];
+/** Producer/merchant net position, the other side: −0.85 × managed money − 12, plus noise. */
+const PM_NET: number[] = [-75.8, -56.9, -57.8, -36.9, -40.3, -32, -34.6, -42.8, -49.1, -43.3, -38.7, -40.9, -28.9, -47.4, -63.5, -62.6, -62.7, -56.4, -56.4, -22.2, -12.8, -4.2, 7, -15.8, -16.4, -6.5, -8.6, -27.2, -28.7, -17.3, -17.5, -19.8, -30.1, -40.9, -53.5, -57.9, -55.7, -68.2, -70.2, -62.1, -78.5, -67.6, -79.2, -86.9, -82, -67.8, -43.9, -53.9, -64.9, -58, -48.5, -46.4, -43.3, -46.9, -32.9, -41.3, -54.2, -60, -58, -51.9, -57.9, -67.2, -66.7, -67.1, -78.9, -79.9, -75.5, -64.6, -67, -76.3, -74.1, -66.4, -68.6, -72.5, -61.5, -45.6, -61, -67.6, -71.1, -57.8, -49.9, -56.5, -52, -57.1, -69.9, -62, -62.5, -88, -92.5, -80.2, -88.4, -83.7, -78.3, -64.4, -66.7, -83.5, -89.2, -97.1, -95.2, -100.3, -94.3, -95, -94.8, -97, -94, -85.3, -86, -88.9, -76.1, -64.4, -62.7, -50.7, -45.6, -46.1, -48.1, -52, -50.8, -54.6, -56.2, -62.3, -54, -58.1, -54.3, -71.8, -81.5, -72.5, -100.5, -102.3, -88, -74.5, -79.5, -90.3, -97.4, -93.6, -104.1, -114.8, -111.3, -113.8, -133.9, -127, -131.4, -122.5, -108.9, -118.6, -115.2, -110, -113.6, -113.5, -106.3, -125.3, -141.4, -138.7, -113, -123.6, -126.4, -129.8];
+
+/** 3.9.3: a synthetic VIX over 60 sessions (closes; drawn as a line). The index falls 12% from 4,080 (session 20) to 3,590 (session 28), then recovers to 3,850. */
+const VIX_SHOCK: CandleData[] = [
+  k(15.30, 15.78, 14.90, 15.38),
+  k(15.38, 16.14, 14.98, 15.74),
+  k(15.74, 16.35, 15.34, 15.95),
+  k(15.95, 16.46, 15.55, 16.06),
+  k(16.06, 16.48, 15.66, 16.08),
+  k(16.08, 16.48, 15.43, 15.83),
+  k(15.83, 16.23, 15.06, 15.46),
+  k(15.46, 15.86, 14.91, 15.31),
+  k(15.31, 15.92, 14.91, 15.52),
+  k(15.52, 15.92, 14.83, 15.23),
+  k(15.23, 15.63, 14.69, 15.09),
+  k(15.09, 15.49, 14.60, 15.00),
+  k(15.00, 15.40, 14.49, 14.89),
+  k(14.89, 15.29, 14.33, 14.73),
+  k(14.73, 15.78, 14.33, 15.38),
+  k(15.38, 15.95, 14.98, 15.55),
+  k(15.55, 15.95, 14.76, 15.16),
+  k(15.16, 16.36, 14.76, 15.96),
+  k(15.96, 16.39, 15.56, 15.99),
+  k(15.99, 16.60, 15.59, 16.20),
+  k(16.20, 18.19, 15.80, 17.79),
+  k(17.79, 18.79, 17.39, 18.39),
+  k(18.39, 21.23, 17.99, 20.83),
+  k(20.83, 26.85, 20.43, 26.45),
+  k(26.45, 28.68, 26.05, 28.28),
+  k(28.28, 33.90, 27.88, 33.50),
+  k(33.50, 36.29, 33.10, 35.89),
+  k(35.89, 41.40, 35.49, 41.00),
+  k(41.00, 41.40, 37.25, 37.65),
+  k(37.65, 38.05, 36.60, 37.00),
+  k(37.00, 37.40, 35.00, 35.40),
+  k(35.40, 35.80, 33.66, 34.06),
+  k(34.06, 34.46, 32.60, 33.00),
+  k(33.00, 33.40, 30.76, 31.16),
+  k(31.16, 31.56, 29.40, 29.80),
+  k(29.80, 30.20, 28.97, 29.37),
+  k(29.37, 29.77, 27.38, 27.78),
+  k(27.78, 28.18, 26.33, 26.73),
+  k(26.73, 27.13, 26.15, 26.55),
+  k(26.55, 26.95, 24.82, 25.22),
+  k(25.22, 25.62, 23.72, 24.12),
+  k(24.12, 24.95, 23.72, 24.55),
+  k(24.55, 25.41, 24.15, 25.01),
+  k(25.01, 25.41, 23.63, 24.03),
+  k(24.03, 24.45, 23.63, 24.05),
+  k(24.05, 24.45, 23.00, 23.40),
+  k(23.40, 23.80, 22.58, 22.98),
+  k(22.98, 23.60, 22.58, 23.20),
+  k(23.20, 23.60, 22.42, 22.82),
+  k(22.82, 23.22, 21.66, 22.06),
+  k(22.06, 22.46, 21.06, 21.46),
+  k(21.46, 21.86, 20.88, 21.28),
+  k(21.28, 21.68, 19.94, 20.34),
+  k(20.34, 21.19, 19.94, 20.79),
+  k(20.79, 21.89, 20.39, 21.49),
+  k(21.49, 21.89, 21.09, 21.49),
+  k(21.49, 21.89, 21.00, 21.40),
+  k(21.40, 21.80, 21.00, 21.40),
+  k(21.40, 21.80, 19.63, 20.03),
+  k(20.03, 21.56, 19.63, 21.16),
+];
+
+/** 3.9.3: 52 weekly index moves in % with the VIX held at 28 (one-sigma week = 28 ÷ √52 = 3.88%): Student-t, 4 degrees of freedom, scaled to that sd (seed 38). */
+const WEEK_MOVES: number[] = [-0.69, -0.68, 0.68, 11.2, -0.46, 2.38, 0.59, 0.27, 3.7, -2.36, -2.05, -4.69, -0.34, -1.68, 0.21, 4.13, 5.31, -1.65, -0.84, -11.78, -0.5, 0.17, -0.66, -1.16, -3.52, 1.4, -3.39, -3.48, -0.72, 0.55, 5.17, 0.19, -1.13, 6.68, 4.6, 8.16, -0.14, 3.34, -0.35, -2.67, 1.67, 0.3, -0.87, -1.46, 3.69, -0.91, -5.99, 6.12, 1.19, -2.15, -6.7, 1.07];
+
+/** 3.9.4: LABE, 16 sessions, hand-built; `v` in thousands of shares (average 1,488 before the news). News on session 9 (+2%), high 27.00 on session 13. */
+const SQUEEZE: CandleData[] = [
+  k(20.10, 20.25, 19.90, 20.05, 1450),
+  k(20.05, 20.20, 19.85, 19.95, 1520),
+  k(19.95, 20.10, 19.80, 20.00, 1480),
+  k(20.00, 20.15, 19.85, 19.90, 1550),
+  k(19.90, 20.05, 19.75, 20.02, 1400),
+  k(20.02, 20.18, 19.92, 20.10, 1500),
+  k(20.10, 20.20, 19.95, 19.98, 1530),
+  k(19.98, 20.12, 19.88, 20.00, 1470),
+  k(20.00, 20.52, 19.98, 20.40, 2100),
+  k(20.70, 21.85, 20.65, 21.70, 6200),
+  k(21.80, 24.10, 21.70, 23.95, 9400),
+  k(24.20, 26.40, 23.90, 26.10, 8700),
+  k(26.30, 27.00, 24.80, 25.10, 7600),
+  k(25.00, 25.30, 23.60, 23.80, 4300),
+  k(23.70, 23.90, 22.70, 22.90, 3100),
+  k(22.80, 23.10, 22.20, 22.60, 2400),
+];
+
+/** 3.9.4 hype cycle: a synthetic small cap, 18 sessions, hand-built; `v` in thousands of shares. Posts start on day 4, an insider sale is filed on day 10, the high is 7.80 on day 11. */
+const HYPE: CandleData[] = [
+  k(4.00, 4.06, 3.95, 4.02, 300),
+  k(4.02, 4.08, 3.97, 4.04, 320),
+  k(4.04, 4.12, 4.00, 4.10, 380),
+  k(4.10, 4.30, 4.08, 4.26, 650),
+  k(4.26, 4.60, 4.20, 4.55, 1100),
+  k(4.55, 4.95, 4.50, 4.88, 1600),
+  k(4.90, 5.40, 4.85, 5.32, 2300),
+  k(5.35, 6.10, 5.30, 6.02, 3400),
+  k(6.05, 6.70, 5.95, 6.55, 4200),
+  k(6.60, 7.40, 6.50, 7.25, 5600),
+  k(7.30, 7.80, 6.90, 7.05, 7800),
+  k(6.95, 7.10, 6.05, 6.15, 5200),
+  k(6.10, 6.25, 5.40, 5.50, 3900),
+  k(5.45, 5.60, 4.95, 5.05, 2700),
+  k(5.00, 5.10, 4.60, 4.70, 1900),
+  k(4.70, 4.85, 4.45, 4.55, 1300),
+  k(4.55, 4.65, 4.30, 4.40, 900),
+  k(4.40, 4.50, 4.25, 4.35, 700),
+];
+
+/** 3.9.5: 18 weeks of LABX from the S17 generator (seed 254, weeks 41–58), mirrored so the extreme is bullish. Bullish extremes (z ≥ 2) at weeks 8–11. */
+const FADE_A: CandleData[] = [
+  k(105.08, 107.06, 104.82, 105.30),
+  k(105.30, 107.55, 105.29, 107.26),
+  k(107.26, 109.74, 106.99, 107.63),
+  k(107.63, 109.41, 107.41, 108.36),
+  k(108.36, 113.67, 108.26, 111.51),
+  k(111.51, 113.18, 110.71, 111.60),
+  k(111.60, 114.94, 111.32, 114.68),
+  k(114.68, 118.60, 114.48, 118.51),
+  k(118.51, 121.40, 118.48, 121.09),
+  k(121.09, 123.34, 120.16, 123.26),
+  k(123.26, 124.69, 122.96, 124.06),
+  k(124.06, 124.19, 120.15, 120.92),
+  k(120.92, 121.11, 116.65, 116.67),
+  k(116.67, 118.73, 116.19, 118.48),
+  k(118.48, 118.49, 114.20, 114.27),
+  k(114.27, 114.69, 111.63, 111.85),
+  k(111.85, 112.19, 111.38, 111.64),
+  k(111.64, 111.96, 109.59, 109.87),
+];
+
+/** 3.9.5: a fast reversal, 18 weeks of the 3.9.1 market (seed 229, weeks 87–104). Bullish extreme (z 2.28) at week 9. */
+const FADE_B: CandleData[] = [
+  k(90.03, 90.47, 88.80, 89.91),
+  k(89.91, 90.11, 84.86, 84.87),
+  k(84.87, 85.17, 83.75, 84.50),
+  k(84.50, 87.61, 84.28, 87.35),
+  k(87.35, 90.75, 87.12, 89.98),
+  k(89.98, 92.73, 89.93, 92.70),
+  k(92.70, 96.19, 92.52, 95.64),
+  k(95.64, 96.11, 94.51, 95.16),
+  k(95.16, 100.05, 94.92, 99.83),
+  k(99.83, 100.59, 96.95, 97.65),
+  k(97.65, 98.58, 96.77, 98.47),
+  k(98.47, 98.80, 96.65, 96.74),
+  k(96.74, 97.83, 96.00, 96.68),
+  k(96.68, 98.05, 96.41, 97.28),
+  k(97.28, 99.95, 96.93, 98.44),
+  k(98.44, 99.00, 97.51, 97.80),
+  k(97.80, 98.53, 96.10, 97.14),
+  k(97.14, 97.40, 93.91, 94.07),
+];
+
+/** 3.9.6: a synthetic December gas future, 26 weeks from June to expiry: 3.55 → 3.60. Spot: 2.80 in June, 3.60 in December. */
+const GAS_DEC: CandleData[] = [
+  k(3.53, 3.56, 3.48, 3.55),
+  k(3.55, 3.59, 3.48, 3.54),
+  k(3.54, 3.63, 3.50, 3.59),
+  k(3.59, 3.64, 3.47, 3.52),
+  k(3.52, 3.55, 3.40, 3.45),
+  k(3.45, 3.50, 3.41, 3.46),
+  k(3.46, 3.50, 3.42, 3.46),
+  k(3.46, 3.51, 3.41, 3.45),
+  k(3.45, 3.49, 3.41, 3.46),
+  k(3.46, 3.59, 3.41, 3.54),
+  k(3.54, 3.57, 3.48, 3.53),
+  k(3.53, 3.60, 3.49, 3.55),
+  k(3.55, 3.71, 3.52, 3.67),
+  k(3.67, 3.72, 3.61, 3.64),
+  k(3.64, 3.68, 3.60, 3.63),
+  k(3.63, 3.69, 3.58, 3.65),
+  k(3.65, 3.72, 3.61, 3.68),
+  k(3.68, 3.72, 3.56, 3.61),
+  k(3.61, 3.65, 3.51, 3.55),
+  k(3.55, 3.67, 3.52, 3.62),
+  k(3.62, 3.65, 3.57, 3.62),
+  k(3.62, 3.70, 3.57, 3.67),
+  k(3.67, 3.70, 3.61, 3.64),
+  k(3.64, 3.70, 3.61, 3.65),
+  k(3.65, 3.69, 3.57, 3.61),
+  k(3.61, 3.65, 3.56, 3.60),
+];
+
+/** 3.9.6 lab case: cumulative turn-of-month return (% , sum of daily returns), year by year over 20 years, for each market's best window in years 1–10. Market A has a real drift; B and C are noise (seed 12240). */
+const TOM_A: number[] = [0, -2.5, 5.5, -2, 0, 6.2, 10.9, 21, 36.1, 47.5, 54, 58, 67.7, 67.9, 80, 91.4, 92.9, 95, 95.7, 93.8, 108.3];
+const TOM_B: number[] = [0, 3.5, 15, 15.5, 27.6, 51.8, 53.2, 53.4, 46.9, 44.6, 62.3, 55.4, 59.5, 70.1, 82, 83.7, 85.3, 82.1, 69.2, 65.8, 63.1];
+const TOM_C: number[] = [0, -2.3, -1.8, 4, 2.3, 4.5, 6.5, 3.3, 4.5, 6.6, 9.8, 5.7, 10.8, 0.8, -2.9, -3.5, -1.1, 1, -2.9, -4.6, -1.7];
+
+// ─── Shared helpers and layers ──────────────────────────────────────────────
+
+/** Flat placeholder candles for charts drawn only with layers (`hideCandles`). */
+const blank = (n: number, p = 0): CandleData[] => Array.from({ length: n }, () => ({ o: p, h: p, l: p, c: p }));
+/** A labelled horizontal level. */
+const lvl = (price: number, label: string, role: "neutral" | "support" | "resistance" | "concept" = "neutral", chip = true): ChartLayer => ({ kind: "level", price, role, label, chip });
+/** A labelled dot at a candle's high (or low). */
+const mk = (index: number, label: string, role: MarkRole, at: "high" | "low" = "high"): ChartLayer => ({ kind: "marker", index, at, label, role });
+/** A dot at a given price. */
+const pt = (index: number, price: number, role: MarkRole, label?: string): ChartLayer => (label ? { kind: "marker", index, price, role, label } : { kind: "marker", index, price, role });
+/** A line on the chart's own scale. */
+const ln = (values: (number | null)[], label: string, role: MarkRole = "accent", dashed = false): ChartLayer => ({ kind: "line", values, role, label, dashed });
+
+/** 3.9.1: the 12 weeks (0-based) with the spread beyond two standard deviations (above +36 or below −24), and the 5 followed by a 5% reversal within eight weeks. */
+const EXTREME_WEEKS = [13, 33, 48, 60, 107, 108, 109, 110, 113, 211, 212, 247];
+const REVERSED = [13, 48, 113, 212, 247];
+const EXTREME_MARKS: ChartLayer[] = EXTREME_WEEKS.map((i) => pt(i, SURVEY_PRICE[i], REVERSED.includes(i) ? "accent" : "neutral"));
+
+/** 3.9.3: the one-sigma weekly move with the VIX at 28, in % (28 ÷ √52 = 3.883). */
+const SIGMA_WEEK = 3.88;
+const WEEK_MARKS: ChartLayer[] = WEEK_MOVES.map((m, i) => pt(i, m, m > SIGMA_WEEK ? "up" : m < -SIGMA_WEEK ? "down" : "neutral"));
+
+/** 3.9.6: the in-sample (years 1–10) and hold-out (years 10–20) parts of each market's yearly line. */
+const inSample = (a: number[]) => a.map((v, i) => (i <= 10 ? v : null));
+const holdOut = (a: number[]) => a.map((v, i) => (i >= 10 ? v : null));
+
+// ─── Lessons ────────────────────────────────────────────────────────────────
+
+const lessons: Lesson[] = [
+  // 3.9.1 · Sentiment is a condition, not a trigger
+  {
+    id: "3.9.1",
+    title: "Sentiment is a condition, not a trigger",
+    topic: "scenario_analysis",
+    level: "intermediate",
+    tier: "free",
+    minutes: 6,
+    summary: "Reading a weekly sentiment survey against its own history, and why extremes shift reversal odds without timing the turn.",
+    objectives: [
+      "Read a weekly sentiment survey as a bull–bear spread against its own history.",
+      "Explain why extremes raise the odds of a reversal but do not time it.",
+      "Show that most survey swings follow price instead of leading it.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "arena", ref: "reversal", label: "Arena: reversal" },
+      { kind: "check", ref: "scenario_analysis", label: "Scenario analysis check" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.1",
+      hook: {
+        prompt: "A weekly investor survey shows 70% bears, the most in its history. Over the next four weeks, the index will most likely…",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "up", label: "Rise", feedback: "Extremes do raise the odds of a bounce. But a record reading can deepen for weeks, and four weeks is a timing call." },
+            { id: "down", label: "Fall", feedback: "Trends often run on after an extreme, but a record bearish crowd also raises the odds of a turn. Neither is reliable over four weeks." },
+            { id: "cant", label: "Can't tell", feedback: "Right. An extreme shifts the odds of a reversal; it doesn't date it." },
+          ],
+          answer: "cant",
+        },
+        compare: "You picked {yours}. The record AAII reading, 70.3% bearish on 5 March 2009, came close to the market's low. But surveys can stay one-sided for weeks: extremes shift odds, they don't set dates.",
+        concept: "market-sentiment",
+      },
+      learn: [
+        {
+          kind: "figure",
+          title: "The spread against its own history",
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: blank(260),
+              hideCandles: true,
+              range: [-45, 55],
+              height: 220,
+              describe: "Five synthetic years of a weekly bull–bear spread, from −36 to +44, averaging +6 with a standard deviation of 15. 12 of 260 weeks are above +36 or below −24.",
+            },
+            steps: [
+              { text: "Five synthetic years of a weekly survey: the bull–bear spread, % bulls minus % bears.", layers: [ln(SPREAD, "SPREAD")] },
+              { text: "Its own history: an average of +6, a standard deviation of 15.", layers: [lvl(6, "MEAN +6", "neutral", false)] },
+              { text: "Two standard deviations out: above +36 or below −24. Just 12 of 260 weeks.", layers: [lvl(36, "+2σ · +36", "concept", false), lvl(-24, "−2σ · −24", "concept", false)] },
+            ],
+          },
+          text: "A [[sentiment-survey|sentiment survey]] asks investors which way they expect prices to go. The [[bull-bear-spread|bull–bear spread]] is the % bullish minus the % bearish. Read it against its own history, not against 50%: each survey has its own lean.",
+          concept: "market-sentiment",
+        },
+        {
+          kind: "figure",
+          title: "Following, not leading",
+          figure: {
+            kind: "bars",
+            bars: [
+              { label: "Spread vs the past 8 weeks' change", value: 0.8, role: "accent" },
+              { label: "Spread vs the next 8 weeks' change", value: 0.02, role: "neutral" },
+            ],
+            unit: "",
+          },
+          text: "Correlations over the 244 weeks where both windows fit: 0.8 between the spread and the past eight weeks' price change, 0.02 with the next eight. The survey mostly reports what price already did. Investors extrapolate recent moves: adaptive expectations.",
+          concept: "market-sentiment",
+        },
+        {
+          kind: "hotspot",
+          title: "Leading or following?",
+          prompt: "Three extreme readings, each marked with the spread. Tap the week where sentiment led price instead of following it.",
+          chart: {
+            candles: EPISODES,
+            layers: [mk(7, "SPREAD +41", "up"), mk(19, "SPREAD −29", "down", "low"), mk(30, "SPREAD +38", "up")],
+            describe: "34 weekly candles. A rally from 100.00 to 112.00 by week 8 (spread +41) runs on to 121.00; a fall to 101.00 at week 20 (spread −29) is followed by a rise to 118.50 at week 28; at week 31, with price at 114.20, the spread reads +38.",
+          },
+          zones: [
+            { id: "w8", label: "Week 8", index: 7, feedback: "Week 8 came after a 12% rally, and price kept rising another 8% to 121.00. The crowd was echoing the trend." },
+            { id: "w20", label: "Week 20", index: 19 },
+            { id: "w31", label: "Week 31", index: 30, feedback: "Week 31 came three weeks after the top at 118.50, with price already sliding. The survey caught up late." },
+          ],
+          answer: "w20",
+          correct: "Right. The −29 reading came at the low, 101.00, after a 13.3% drop in four weeks, and price rose 9.2% over the next four. Only hindsight told you which extreme was the turn.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "worked",
+          title: "Is −30 extreme?",
+          lines: [
+            "This week: 22% bullish, 26% neutral, 52% bearish.",
+            "Spread = 22 − 52 = −30.",
+            "The survey's own history: mean +6, standard deviation 15.",
+            "z = (spread − mean) ÷ standard deviation = (−30 − 6) ÷ 15 = ?",
+          ],
+          ask: {
+            answer: -2.4,
+            tolerance: 0.05,
+            feedback: [
+              { value: 2.4, text: "Right size, wrong sign: −30 is below the mean, so z is negative." },
+              { value: -2, text: "That's −30 ÷ 15. Subtract the mean first: −30 − 6 = −36." },
+              { value: -1.6, text: "That adds the mean. The distance from +6 is −30 − 6 = −36." },
+            ],
+            correct: "Right: −36 ÷ 15 = −2.4. Beyond −2: a bearish extreme for this survey.",
+          },
+          after: "A raw −30 says little on its own. Against this survey's +6 average and its usual swing of 15, it's a [[sentiment-extreme|sentiment extreme]].",
+          concept: "market-sentiment",
+        },
+        {
+          kind: "explain",
+          title: "Real surveys",
+          text: "AAII's long-run averages are about 37.5% bullish, 31% neutral and 31.5% bearish, though its site quotes slightly different figures in different places. Others include Investors Intelligence, NAAIM, the BofA Fund Manager Survey and the Fear & Greed index. Popular cut-offs such as 'bulls below 20%' come from secondary sources and are unverified.",
+        },
+        {
+          kind: "predict",
+          title: "Your turn: count the reversals",
+          prompt: "In the five synthetic years, 12 weeks were beyond ±2σ. A reversal: a 5% move against the prior eight-week trend within eight weeks. Any week: 33.6%. After an extreme?",
+          control: {
+            kind: "slider",
+            min: 0,
+            max: 100,
+            step: 5,
+            unit: "%",
+            start: 50,
+            answer: 41.7,
+            tolerance: 10,
+            feedback: [
+              { from: 0, to: 25, text: "Lower than for any week? Extremes did raise the odds here: 41.7% against 33.6%." },
+              { from: 30, to: 55, text: "Close: 5 of 12, 41.7%, against 33.6% for any week." },
+              { from: 60, to: 100, text: "Much lower: 5 of 12, 41.7%. The other seven extremes saw no reversal within eight weeks." },
+            ],
+          },
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: blank(260, 100),
+              hideCandles: true,
+              range: [60, 140],
+              height: 200,
+              layers: [ln(SURVEY_PRICE, "INDEX")],
+              describe: "Weekly closes of the synthetic index behind the survey, from 68.46 to 131.43 over five years, with the 12 extreme weeks marked.",
+            },
+            steps: [{ text: "The 12 extreme weeks: 5, highlighted, were followed by a 5% reversal within eight weeks; 7 were not.", layers: EXTREME_MARKS }],
+          },
+          reveal: "5 of 12, 41.7%, against 33.6% for any week: better odds, not a timer. In 4 of the 12 the spread got more extreme first. After week 108's −27, the index fell another 8.8% in eight weeks.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "callout",
+          tone: "key",
+          text: "Grade C: in studies, sentiment extremes shift reversal odds modestly, and the popular cut-offs are unverified. So a reading is a **condition**: it can make a playbook more or less willing to fade. The **trigger** must come from price (3.9.5).",
+        },
+      ],
+      check: ["q-3.9.1-1", "q-3.9.1-2", "q-3.9.1-3"],
+      recap: {
+        takeaways: [
+          "Read the bull–bear spread against its own mean and standard deviation: −30 here was z = −2.4.",
+          "Extremes raised reversal odds from 33.6% to 41.7% in our sample, with no date attached.",
+          "Surveys mostly echo the last weeks of price; treat sentiment as a condition, never the trigger.",
+        ],
+      },
+    },
+  },
+
+  // 3.9.2 · Commitments of Traders
+  {
+    id: "3.9.2",
+    title: "Commitments of Traders",
+    topic: "market_fundamentals",
+    level: "intermediate",
+    tier: "free",
+    minutes: 7,
+    summary: "Who holds what in futures: the COT report families, a three-year COT index, the reporting lag, and why hedgers' shorts aren't bets.",
+    objectives: [
+      "Name the COT report families and their trader categories.",
+      "Compute a three-year COT index from net positions.",
+      "Explain the reporting lag and why commercial hedgers' shorts are not bearish bets.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "arena", ref: "event_shock", label: "Arena: event shock" },
+      { kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.2",
+      hook: {
+        prompt: "Speculators' net long in synthetic crude is at a three-year high. You read the report on Friday, the day it comes out. On which day were these positions measured?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "mon", label: "Monday", feedback: "The CFTC measures positions as of Tuesday and publishes them on Friday at 3:30 p.m. Eastern." },
+            { id: "tue", label: "Tuesday", feedback: "Right: Tuesday's positions, published on Friday at 3:30 p.m. Eastern." },
+            { id: "wed", label: "Wednesday", feedback: "The CFTC measures positions as of Tuesday and publishes them on Friday at 3:30 p.m. Eastern." },
+            { id: "thu", label: "Thursday", feedback: "The CFTC measures positions as of Tuesday and publishes them on Friday at 3:30 p.m. Eastern." },
+            { id: "fri", label: "Friday", feedback: "Friday is publication day. The positions are as of the Tuesday before: three days old when you read them." },
+          ],
+          answer: "tue",
+        },
+        compare: "You picked {yours}. COT positions are measured on Tuesday and published on Friday at 3:30 p.m. ET: three days old when you read them, and older by the time you act.",
+        concept: "commitments-of-traders",
+      },
+      learn: [
+        {
+          kind: "explain",
+          title: "Futures in one minute",
+          text: "If you skipped 3.14: a [[futures]] contract is an agreement between a buyer and a seller, so every long has a short. [[open-interest|Open interest]] counts the contracts still open. Across all traders, net positions add up to zero: when one group is very long, others are short.",
+        },
+        {
+          kind: "match",
+          title: "Three reports, three ways to split traders",
+          prompt: "The CFTC publishes the [[cot-report|COT report]] in several families. Sort each trader category into its report.",
+          pairs: [
+            { left: "Commercial", right: "Legacy", wrong: "The commercial / non-commercial split is the Legacy report, the oldest one." },
+            { left: "Non-commercial", right: "Legacy", wrong: "Non-commercial is the Legacy label for large speculators." },
+            { left: "Producer/merchant", right: "Disaggregated", wrong: "Producers and merchants appear in the Disaggregated report, for physical commodities." },
+            { left: "Managed money", right: "Disaggregated", wrong: "Managed money, the CTAs and hedge funds, is a Disaggregated category." },
+            { left: "Leveraged funds", right: "Traders in Financial Futures", wrong: "Leveraged funds belong to the TFF report, for financial futures." },
+            { left: "Asset manager", right: "Traders in Financial Futures", wrong: "Asset managers are a TFF category, for financial futures." },
+          ],
+          columns: ["Trader category", "Report"],
+          correct: "Legacy: commercial, non-commercial, non-reportable. Disaggregated (physical commodities, since 2009): producer/merchant, swap dealer, managed money, other reportables. TFF: dealer, asset manager, leveraged funds, other reportables.",
+          concept: "commitments-of-traders",
+        },
+        {
+          kind: "worked",
+          title: "The COT index",
+          lines: [
+            "Net position = longs − shorts, for one trader group, each week.",
+            "Over the last 156 weeks: lowest −40k contracts, highest +140k.",
+            "This week: +120k.",
+            "COT index = (net − lowest) ÷ (highest − lowest) × 100 = ?",
+          ],
+          ask: {
+            answer: 88.9,
+            tolerance: 0.1,
+            feedback: [
+              { value: 85.7, text: "120 ÷ 140 compares with the high alone. Measure from the low: (120 + 40) ÷ (140 + 40)." },
+              { value: 80, text: "That treats the low as +40k. It's −40k, so net − low = 120 + 40 = 160." },
+              { value: 44.4, text: "Subtracting −40 means adding 40: 120 − (−40) = 160, not 80." },
+            ],
+            correct: "Right: 160 ÷ 180 = 0.889, so 88.9. High in its three-year range, but under a cut-off of 90.",
+          },
+          after: "The [[cot-index|COT index]] runs from 0, the most short in three years, to 100, the most long. It compares a group only with itself.",
+          concept: "commitments-of-traders",
+        },
+        {
+          kind: "callout",
+          tone: "warning",
+          text: "Reportable positions usually cover about 70–90% of open interest. The CFTC decides who counts as commercial, and can reclassify traders. Non-commercials are large speculators, not retail. And a [[commercial-hedger|commercial hedger]]'s short is usually a producer locking in a price for future output, not a bet that prices will fall.",
+        },
+        {
+          kind: "figure",
+          title: "Managed money in LXO",
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: blank(156),
+              hideCandles: true,
+              range: [-155, 165],
+              height: 240,
+              describe: "Managed money's net position in synthetic LXO crude over 156 weeks, from a low of −22.0k at week 23 to a high of +148.0k at week 141; latest +142.1k. Producers and merchants mirror it on the short side.",
+            },
+            steps: [
+              { text: "Managed money's net position in LXO, 156 weeks, in thousands of contracts.", layers: [ln(MM_NET, "MANAGED MONEY")] },
+              { text: "The three-year range: low −22.0k at week 23, high +148.0k at week 141.", layers: [lvl(148, "HIGH +148.0k", "resistance", false), lvl(-22, "LOW −22.0k", "support", false)] },
+              { text: "Producers and merchants sit on the other side: their net short grows as funds buy.", layers: [ln(PM_NET, "PRODUCER/MERCHANT", "down", true)] },
+            ],
+          },
+          text: "Synthetic LXO crude: the simulator's agents produce the report, published each Friday with Tuesday's positions. The latest week reads +142.1k.",
+          concept: "positioning",
+        },
+        {
+          kind: "worked",
+          title: "Your turn: crowded or not?",
+          lines: ["LXO managed money, last 156 weeks: low −22.0k, high +148.0k.", "Latest week: +142.1k.", "COT index = (142.1 + 22.0) ÷ (148.0 + 22.0) × 100 = ?"],
+          ask: {
+            answer: 96.5,
+            tolerance: 1,
+            feedback: [{ value: 95.3, text: "That subtracts +22.0. The low is −22.0k: 142.1 − (−22.0) = 164.1." }],
+            correct: "Right: 164.1 ÷ 170 = 96.5. Above 90: by this rule, a crowded long.",
+          },
+          concept: "commitments-of-traders",
+        },
+        {
+          kind: "predict",
+          title: "What does 96.5 tell you?",
+          prompt: "Managed money's COT index in LXO is 96.5: funds are about as long as they've been in three years. What does it tell you?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "sell", label: "Sell now: the top is in", feedback: "Crowded is a condition. The index has been above 90 on and off since week 139, and the data are three days old." },
+              { id: "crowded", label: "A crowded long: if the story turns, many funds must sell", feedback: "Right. It tells you who would have to exit, not when." },
+              { id: "nothing", label: "Nothing: COT data are useless", feedback: "Weak as a timer, not useless: it shows which side could be forced out." },
+            ],
+            answer: "crowded",
+          },
+          reveal: "Grade C: a multi-year extreme is a weak-to-moderate contrarian condition. As a timer it's weak: weekly data, a three-day lag and mixed motives inside each group. Write it into your plan as a filter, and let price give the [[trigger]].",
+          concept: "positioning",
+        },
+      ],
+      check: ["q-3.9.2-1", "q-3.9.2-2", "q-3.9.2-3"],
+      recap: {
+        takeaways: [
+          "Legacy, Disaggregated and TFF split traders differently; non-commercials are large speculators, not retail.",
+          "COT index = (net − 3-year low) ÷ (3-year high − low) × 100; 96.5 marks a crowded long.",
+          "Tuesday's positions arrive Friday; a hedger's short protects a business, it isn't a bet on falling prices.",
+        ],
+      },
+    },
+  },
+
+  // 3.9.3 · VIX and put/call: fear priced in options
+  {
+    id: "3.9.3",
+    title: "VIX and put/call: fear priced in options",
+    topic: "market_fundamentals",
+    level: "intermediate",
+    tier: "free",
+    minutes: 7,
+    summary: "Turning the VIX into an expected move, why it spikes in sell-offs and mean-reverts, and reading put/call ratios against a shifting baseline.",
+    objectives: [
+      "Convert a VIX level into an expected one-month and one-week move.",
+      "Explain why the VIX jumps when stocks fall and then mean-reverts.",
+      "Read a put/call ratio against its baseline and see why structural shifts break fixed thresholds.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "arena", ref: "high_volatility", label: "Arena: high volatility" },
+      { kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.3",
+      hook: {
+        prompt: "The VIX reads 20. Roughly what one-month move, one standard deviation, does the options market price for the index?",
+        control: {
+          kind: "slider",
+          min: 1,
+          max: 20,
+          step: 0.5,
+          unit: "%",
+          start: 10,
+          answer: 5.77,
+          tolerance: 0.5,
+          feedback: [
+            { from: 1, to: 3.5, text: "That's nearer a one-week move: 20 ÷ √52 = 2.77%. For a month, divide by √12." },
+            { from: 4, to: 7.5, text: "In the right zone: 20 ÷ √12 = 5.77%." },
+            { from: 8, to: 20, text: "20 is a yearly figure. Volatility scales with the square root of time, so a month is 20 ÷ √12 = 5.77%." },
+          ],
+        },
+        compare: "You said {yours}. The VIX is annualised: 20 means about ±20% over a year, one standard deviation. Over a month, 20 ÷ √12 = 5.77%.",
+        concept: "vix",
+      },
+      learn: [
+        {
+          kind: "worked",
+          title: "From the VIX to a range",
+          lines: [
+            "The VIX is an annualised volatility in %: 20 means about ±20% over a year, one standard deviation.",
+            "Volatility grows with the square root of time. A month: 20 ÷ √12 = 20 ÷ 3.46 = 5.77%.",
+            "A week: 20 ÷ √52 = ?",
+          ],
+          ask: {
+            answer: 2.77,
+            tolerance: 0.02,
+            unit: "%",
+            feedback: [
+              { value: 0.38, text: "That's 20 ÷ 52. Time scales with its square root: divide by √52 ≈ 7.21." },
+              { value: 5.77, text: "That's the month. A week is shorter: divide by √52." },
+            ],
+            correct: "Right: 20 ÷ 7.21 = 2.77%. On an index at 4,000, that's about ±111 points for the week.",
+          },
+          after: "If moves were normal, about two weeks in three would stay inside that range.",
+          concept: "vix",
+        },
+        {
+          kind: "figure",
+          title: "Fear jumps, then fades",
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: VIX_SHOCK,
+              style: "line",
+              height: 220,
+              describe: "A synthetic VIX over 60 sessions: between 14.73 and 16.20 while the index drifts up to 4,080, a jump to 41.00 as the index falls 12% to 3,590 in eight sessions, then a slide to 21.16 by session 60, with the index back at 3,850.",
+            },
+            steps: [
+              { text: "Calm: the index drifts up to 4,080 while the VIX sits between 14.7 and 16.2.", visible: 20, layers: [mk(19, "INDEX 4,080", "neutral")] },
+              { text: "The index drops 12% in eight sessions, to 3,590. The VIX jumps to 41.", visible: 28, layers: [mk(27, "INDEX 3,590", "down")] },
+              { text: "The selling stops. Thirty-two sessions later the VIX is down to 21.2.", visible: 60, layers: [mk(59, "INDEX 3,850", "neutral")] },
+            ],
+          },
+          text: "Investors pay up for protection when prices fall, so implied volatility jumps; as the selling fades, it [[mean-reversion|mean-reverts]]. In acute stress the VIX futures curve flips into backwardation, with near months above later ones.",
+          concept: "vix",
+        },
+        {
+          kind: "explain",
+          title: "What the VIX is, and isn't",
+          text: "The [[vix|VIX]] is 30-day expected volatility, computed from a strip of S&P 500 options with 23 to 37 days to expiry, without Black–Scholes. You can't buy the index itself: VIX futures and ETPs often lose on the roll (3.14.3). And a low VIX means cheap protection and possible complacency, not safety.",
+        },
+        {
+          kind: "match",
+          title: "Which ratio says what?",
+          prompt: "The [[put-call-ratio|put/call ratio]] is put volume ÷ call volume. Match each version with what it mostly reflects.",
+          pairs: [
+            { left: "Index put/call", right: "Mostly portfolio hedging by institutions", wrong: "Index puts are bought as insurance on whole portfolios, so this ratio runs high by habit." },
+            { left: "Equity put/call", right: "The cleaner read of speculative mood", wrong: "Single-stock options carry more speculation, so the equity ratio is the usual sentiment gauge." },
+            { left: "Total put/call", right: "A blend of hedging and speculation", wrong: "The total mixes index hedges with equity bets, so it's harder to read." },
+          ],
+          columns: ["Ratio", "What it mostly reflects"],
+          correct: "Read the equity ratio for crowd mood and the index ratio for hedging demand, each against its own history.",
+          concept: "put-call-ratio",
+        },
+        {
+          kind: "callout",
+          tone: "warning",
+          text: "The total put/call ratio averaged about 0.97 in 2007–2022, with extremes above 1.23 and below 0.72. Then same-day [[zero-dte|0DTE]] options surged and moved the baseline, so fixed thresholds stopped working. Read the ratio against its recent history. As signals, put/call and the VIX are grade C; the VIX as a measure is mechanical.",
+        },
+        {
+          kind: "worked",
+          title: "Your turn: the week's range",
+          lines: ["Synthetic index 4,000, synthetic VIX 28.", "Weekly move = 28 ÷ √52 = 3.883%.", "In points: 4,000 × 3.883% = 155.3.", "Upper end of the one-week range = ?"],
+          ask: {
+            answer: 4155.3,
+            tolerance: 1,
+            feedback: [
+              { value: 4323.3, text: "That's a month: 28 ÷ √12 = 8.08%. A week uses √52." },
+              { value: 5120, text: "28% is a year's move. Scale it to a week: divide by √52." },
+            ],
+            correct: "Right: 4,000 + 155.3 = 4,155.3. The range runs from 3,844.7 to 4,155.3.",
+          },
+          concept: "vix",
+        },
+        {
+          kind: "predict",
+          title: "How often does it break?",
+          prompt: "Hold the VIX at 28 for a year, so each week gets the same ±3.88% range around its open. Out of 52 weeks, how many close outside it?",
+          control: {
+            kind: "slider",
+            min: 0,
+            max: 52,
+            step: 1,
+            unit: "weeks",
+            start: 26,
+            answer: 12,
+            tolerance: 3,
+            feedback: [
+              { from: 0, to: 8, text: "More than that: a one-sigma range breaks fairly often." },
+              { from: 9, to: 15, text: "Close: 12 weeks, fewer than a normal curve's 16.5." },
+              { from: 16, to: 19, text: "That's the normal-curve answer: 31.7% of 52 weeks, 16.5. This year had 12." },
+              { from: 20, to: 52, text: "Too many: a one-sigma range should hold about two weeks in three. This year, 12 broke it." },
+            ],
+          },
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: blank(52),
+              hideCandles: true,
+              range: [-13, 13],
+              height: 220,
+              layers: [lvl(SIGMA_WEEK, "+1σ WEEK +3.88%", "concept", false), lvl(-SIGMA_WEEK, "−1σ WEEK −3.88%", "concept", false)],
+              describe: "52 weekly moves, from −11.78% to +11.20%, against a ±3.88% band. 12 weeks close outside it: 8 above, 4 below.",
+            },
+            steps: [
+              { text: "52 weekly moves against the ±3.88% range: 12 closed outside, 8 up and 4 down.", layers: WEEK_MARKS },
+              { text: "Week 20 fell 11.78%, beyond three sigma. A normal curve expects that once in 370 weeks.", layers: [pt(19, -11.78, "down", "WEEK 20 · −11.78%")] },
+            ],
+          },
+          reveal: "12 of 52 broke the range, fewer than the 16.5 a normal curve predicts, yet one week fell 11.78%. That's fat tails: fewer middling breaks, more huge ones (3.10.1). The VIX gives the week a scale, not a ceiling.",
+          concept: "vix",
+        },
+      ],
+      check: ["q-3.9.3-1", "q-3.9.3-2", "q-3.9.3-3"],
+      recap: {
+        takeaways: [
+          "VIX ÷ √12 gives the one-month move, ÷ √52 the weekly: VIX 28 means ±3.88% a week.",
+          "The VIX jumps when stocks fall, as protection gets bid, then mean-reverts as the selling fades.",
+          "Read put/call against its own recent baseline; 0DTE trading broke the old fixed thresholds.",
+        ],
+      },
+    },
+  },
+
+  // 3.9.4 · Positioning, short interest and squeezes
+  {
+    id: "3.9.4",
+    title: "Positioning, short interest and squeezes",
+    topic: "risk_management",
+    level: "intermediate",
+    tier: "free",
+    minutes: 7,
+    summary: "Days to cover and short interest as squeeze fuel, how forced buying dwarfs the news that starts it, and how not to be exit liquidity.",
+    objectives: [
+      "Compute days-to-cover from short interest and average volume.",
+      "Explain how forced buying turns a small surprise into a large squeeze.",
+      "Spot a social-media pump and avoid becoming someone's exit liquidity.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "mission", ref: "M06", label: "The FOMO Trap" },
+      { kind: "arena", ref: "event_shock", label: "Arena: event shock" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.4",
+      hook: {
+        prompt: "LABE has 12 million shares sold short and trades 1.5 million shares a day. How many days of normal volume would all short sellers need to buy back?",
+        control: {
+          kind: "slider",
+          min: 1,
+          max: 20,
+          step: 1,
+          unit: "days",
+          start: 5,
+          answer: 8,
+          tolerance: 0,
+          feedback: [
+            { from: 1, to: 6, text: "More than that: 12 million is eight times one day's 1.5 million." },
+            { from: 7, to: 9, text: "12 ÷ 1.5 = 8 days." },
+            { from: 10, to: 20, text: "Fewer: 12 ÷ 1.5 = 8 days." },
+          ],
+        },
+        compare: "You said {yours}. Days to cover = 12m ÷ 1.5m = 8 days of normal volume, if the shorts did all the buying.",
+        concept: "short-squeeze",
+      },
+      learn: [
+        {
+          kind: "worked",
+          title: "How crowded is the short side?",
+          lines: [
+            "Short interest: 12.0m LABE shares sold short.",
+            "Average daily volume: 1.5m. Days to cover = 12.0 ÷ 1.5 = 8.0.",
+            "Float, the shares free to trade: 40m.",
+            "Short interest as a % of float = ?",
+          ],
+          ask: {
+            answer: 30,
+            tolerance: 0.1,
+            unit: "%",
+            feedback: [
+              { value: 8, text: "8 is days to cover. Now divide short interest by the float: 12 ÷ 40." },
+              { value: 3.33, text: "That's 40 ÷ 12, upside down. Short interest ÷ float = 12 ÷ 40." },
+            ],
+            correct: "Right: 12 ÷ 40 = 30%. Nearly a third of the tradable shares are owed back to lenders.",
+          },
+          after: "Both numbers measure how crowded the short side is. Neither says when, or whether, a squeeze starts.",
+          concept: "positioning",
+        },
+        {
+          kind: "figure",
+          title: "A small surprise, a big squeeze",
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: SQUEEZE,
+              volume: true,
+              describe: "LABE over 16 sessions: near 20.00 on about 1.5 million shares a day, a +2% news day to 20.40, then volume of 6.2, 9.4 and 8.7 million as price climbs to a 27.00 high, before sagging to 22.60.",
+            },
+            steps: [
+              { text: "LABE drifts near 20.00 on about 1.5m shares a day. 12m are sold short.", visible: 8 },
+              { text: "Small good news: LABE closes at 20.40, up 2%.", visible: 9, layers: [mk(8, "NEWS +2%", "up")] },
+              { text: "Shorts' stops trigger and buy at market. Volume hits 9.4m, more than six times normal.", visible: 11, layers: [mk(10, "9.4M SHARES", "accent")] },
+              { text: "The high reaches 27.00, up 35%: many times the news. Then the forced buying ends.", visible: 16, layers: [mk(12, "27.00 · +35%", "accent")] },
+            ],
+          },
+          text: "A [[short-squeeze|short squeeze]] is fed by buying that isn't a choice: stops, margin calls and lenders recalling shares. The news only lights the fuse. This is a synthetic scenario.",
+          concept: "short-squeeze",
+        },
+        {
+          kind: "explain",
+          title: "Flows that amplify",
+          text: "Mechanical flows can amplify or dampen a move: trend-following funds (CTAs), volatility-target funds that cut exposure as volatility rises, dealers' options hedging (gamma, in 4.1), short interest and margin debt. The 2021 meme-stock episode is the usual example. Forced buying is mechanical; positioning as a forecast is grade C, and the episode accounts come from secondary sources.",
+        },
+        {
+          kind: "match",
+          title: "Fuel or noise?",
+          prompt: "Before any news, sort each signal: does it add squeeze fuel, or is it noise?",
+          pairs: [
+            { left: "Short interest 30% of float, 8 days to cover", right: "Fuel", wrong: "Many shares owed, slow to buy back: that's what forced buying feeds on." },
+            { left: "Borrow fee jumps from 2% to 30% a year", right: "Fuel", wrong: "A soaring fee means lendable shares are scarce: shorts are crowded and recalls get likelier." },
+            { left: "A hashtag trending, with 5,000 new accounts posting", right: "Noise", wrong: "Mentions from new accounts are cheap to fake. Bots and pumpers create them." },
+            { left: "An anonymous post with a 300% price target", right: "Noise", wrong: "Anyone can post a target. It adds no forced buying." },
+          ],
+          columns: ["Signal", "Squeeze"],
+          correct: "Fuel is short interest that can't exit fast. Social buzz may bring buyers, but it's noisy and easy to manipulate.",
+          concept: "positioning",
+        },
+        {
+          kind: "callout",
+          tone: "warning",
+          text: "Social-media sentiment is grade D: noisy, and easy to fake with bots or a [[pump-and-dump]]. In one study, stocks in Robinhood herding episodes were followed by abnormal returns of about −3% over five days, and about −6% after the most extreme herding. The late crowd tends to pay.",
+        },
+        {
+          kind: "hotspot",
+          title: "Who is the exit?",
+          prompt: "A small cap trends on social media, and insiders file to sell on day 10. Tap the day the latest buyers became [[exit-liquidity|exit liquidity]].",
+          chart: {
+            candles: HYPE,
+            volume: true,
+            layers: [mk(3, "FIRST POSTS", "neutral", "low"), mk(7, "TRENDING", "neutral"), mk(9, "INSIDER SALE FILED", "down")],
+            describe: "A synthetic small cap over 18 sessions: 4.00 to a 7.80 high on day 11 on record volume of 7.8 million shares, the day after an insider sale filing, then down to 4.40 by day 17.",
+          },
+          zones: [
+            { id: "d4", label: "Day 4", index: 3, feedback: "Day 4's buyers came early, at 4.26. The question is who bought from the sellers at the top." },
+            { id: "d11", label: "Day 11", index: 10 },
+            { id: "d17", label: "Day 17", index: 16, feedback: "By day 17 the run was over, at 4.40. Few were buying then." },
+          ],
+          answer: "d11",
+          correct: "Day 11: record volume, 7.8m shares, at the 7.80 high, the day after the insider filing. Late buyers gave insiders and early holders their exit. By day 17 the price was 4.40.",
+          concept: "fomo",
+        },
+        {
+          kind: "order",
+          title: "Your turn: rank the fuel",
+          prompt: "Before any news, rank three synthetic stocks by squeeze fuel, most first.",
+          items: [
+            "LABE: 30% of float short, 8.0 days to cover, borrow fee 35% and rising",
+            "LABD: 15% of float short, 4.0 days to cover, borrow fee 12% and rising",
+            "LABB: 22% of float short, 1.2 days to cover, borrow fee 1.5% and flat",
+          ],
+          explain: "Same +2% news on all three, in the simulator: LABE peaked at +35%, LABD at +21%, LABB moved just the 2%. LABB's shorts could buy back in about a day, and its lenders were relaxed.",
+          wrong: "Weigh how fast shorts can exit: days to cover first, then a rising borrow fee. A high % of float matters less when volume is heavy.",
+          concept: "short-squeeze",
+        },
+      ],
+      check: ["q-3.9.4-1", "q-3.9.4-2", "q-3.9.4-3"],
+      recap: {
+        takeaways: [
+          "Days to cover = short interest ÷ average volume; LABE's 12m ÷ 1.5m = 8 days.",
+          "Forced buying, from stops and recalls, turned 2% news into a 35% squeeze.",
+          "Social hype is grade D; late buyers in a pump become insiders' exit liquidity.",
+        ],
+      },
+    },
+  },
+
+  // 3.9.5 · Contrarian signals that wait for price
+  {
+    id: "3.9.5",
+    title: "Contrarian signals that wait for price",
+    topic: "decision_making",
+    level: "intermediate",
+    tier: "free",
+    minutes: 7,
+    summary: "Writing a contrarian rule as a condition plus a price trigger, and comparing naive and confirmed fades after costs, in and out of sample.",
+    objectives: [
+      "Combine a sentiment extreme with a price-reversal confirmation into one written rule.",
+      "Compare naive fades with confirmed fades in the strategy lab, after costs and out of sample.",
+      "Tell the contrarian use of extremes from the trend-confirming use of moderate sentiment.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "mission", ref: "M10", label: "No Trade Is a Trade" },
+      { kind: "check", ref: "decision_making", label: "Decision-making check" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.5",
+      hook: {
+        prompt: "Two rules fade the same sentiment extremes. Rule A sells at once. Rule B waits for a weekly close below the prior week's low. Which loses less when the extreme keeps getting more extreme?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "a", label: "Rule A", feedback: "Rule A sells into a rising market and gets stopped as the extreme deepens, possibly again and again." },
+            { id: "b", label: "Rule B", feedback: "Right. B never sells while the rally continues. Its price: entering later, after part of the move." },
+            { id: "same", label: "The same", feedback: "They differ exactly here: A keeps selling into the rise; B waits until price turns." },
+          ],
+          answer: "b",
+        },
+        compare: "You picked {yours}. Rule B loses less when extremes deepen, because it never sells into a rising market. It pays by entering later and missing part of the turn.",
+        concept: "contrarian-signal",
+      },
+      learn: [
+        {
+          kind: "figure",
+          title: "Two rules, one extreme",
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: FADE_A,
+              describe: "18 weekly LABX candles. A bullish extreme at week 8 (high 118.60); the rally runs to a 124.69 high in week 11, then falls to 109.87 by week 18.",
+            },
+            steps: [
+              { text: "Week 8: a bullish extreme. Rule A sells the next open at 118.46.", layers: [mk(7, "EXTREME", "accent"), pt(8, 118.46, "down", "A SELLS")] },
+              { text: "The rally runs on. A is stopped at 119.84, sells again, and is stopped at 124.62.", layers: [pt(8, 119.84, "up", "STOP 1"), pt(10, 123.21, "down"), pt(10, 124.62, "up", "STOP 2")] },
+              { text: "Week 12 closes below week 11's low. B sells next open, 120.87; its 2R target fills at 110.64.", layers: [pt(12, 120.87, "down", "B SELLS"), pt(17, 110.64, "up", "B TARGET")] },
+            ],
+          },
+          text: "Both rules, on LABX with costs: a stop 1% above the extreme's highest high, a 2R target, a six-week limit. Rule A: two stops, −2R. Rule B: one trade, +1.93R. B gave up the first leg down, from 124.06 to 120.92, to get its confirmation.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "order",
+          title: "A complete contrarian rule",
+          prompt: "Put the parts of a contrarian rule in the order you apply them.",
+          items: [
+            "Condition: the sentiment spread is beyond 2 standard deviations",
+            "Trigger: a price reversal you can code, such as a weekly close below the prior week's low",
+            "Stop: 1% beyond the highest high since the extreme",
+            "Exit: a 2R target or six weeks, whichever comes first",
+            "Size: units from the distance to the stop, risking 1%",
+          ],
+          explain: "Condition, then trigger, then the stop that defines the risk, the exit, and finally the size computed from the stop. Each part is something you could code.",
+          wrong: "The condition only allows a trade; the trigger starts it; the size always comes from the stop.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "explain",
+          title: "Moderate sentiment confirms",
+          text: "Contrarian use is for extremes only. In a healthy uptrend, moderate optimism is normal: a spread of +15 to +25 confirms the trend rather than warning against it. Selling every bullish reading means fading the trend itself. The edge, if any, sits at multi-year extremes, and even there it needs price to agree.",
+        },
+        {
+          kind: "predict",
+          title: "A fast turn",
+          prompt: "A new bullish extreme at week 9, and price turns the very next week. Same costs and exits. Which rule ends with more R?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "a", label: "Rule A", feedback: "Right: on a fast turn, selling at once catches the move." },
+              { id: "b", label: "Rule B", feedback: "Not this time. B waits for a weekly close below the prior low, so it enters after the first drop." },
+              { id: "same", label: "About the same", feedback: "No: A catches the first leg, B starts after it." },
+            ],
+            answer: "a",
+          },
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: FADE_B,
+              visible: 9,
+              describe: "18 weekly LABX candles. A bullish extreme at week 9 (close 99.83); the next week trades down to 96.95, and price drifts to 92.91 by week 18.",
+            },
+            steps: [
+              { text: "Week 9: extreme. A sells the next open, 99.78, and hits its 97.14 target that week.", visible: 10, layers: [mk(8, "EXTREME", "accent"), pt(9, 99.78, "down", "A SELLS"), pt(9, 97.14, "up", "A TARGET")] },
+              { text: "Week 12 closes below week 11's low. B sells 96.69, then times out at 94.12.", visible: 18, layers: [pt(12, 96.69, "down", "B SELLS"), pt(17, 94.12, "up", "B EXIT")] },
+            ],
+          },
+          reveal: "Rule A: +1.79R. Rule B: +0.49R; it sold 3.09 lower with a wider stop, then timed out. Confirmation trades the fast turns for protection in the slow ones. Which wins overall is a question for the lab.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "fields",
+          title: "Your turn: write the rule",
+          prompt: "Write your confirmed-fade rule so the lab could code it. No vague words like 'strong' or 'looks like': only levels, closes and counts.",
+          fields: [
+            { id: "threshold", label: "Condition: spread beyond", kind: "stepper", min: 1.5, max: 3, step: 0.5, unit: "σ", default: 2 },
+            { id: "trigger", label: "Trigger: the price event", kind: "text", default: "", placeholder: "e.g. A weekly close below the prior week's low, within 4 weeks", required: true },
+            { id: "stop", label: "Stop", kind: "text", default: "", placeholder: "e.g. 1% above the highest high since the extreme", required: true },
+            { id: "exit", label: "Exit", kind: "text", default: "", placeholder: "e.g. A 2R target or six weeks, whichever comes first", required: true },
+            { id: "risk", label: "Risk per trade", kind: "stepper", min: 0.25, max: 2, step: 0.25, unit: "%", default: 1 },
+          ],
+          valid: { field: "risk", lte: 1 },
+          feedback: [{ when: { field: "risk", gt: 1 }, text: "Keep it at 1% or less while you test: a run of stopped fades adds up fast." }],
+          correct: "Saved. The lab runs your rule and the naive fade on 30 synthetic markets, five years each, with LABX costs: 70% in-sample, the rest once.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "figure",
+          title: "In-sample, after costs",
+          figure: {
+            kind: "bars",
+            bars: [
+              { label: "Naive fade · 237 trades", value: 0.02, role: "neutral" },
+              { label: "Confirmed fade · 122 trades", value: 0.23, role: "accent" },
+            ],
+            unit: "R",
+          },
+          text: "In-sample, the naive fade averaged +0.02R a trade, 95% CI −0.15R to +0.20R, and hit its stop in 150 of 237 trades. The confirmed fade: +0.23R, CI +0.05R to +0.40R, stopped in 30 of 122. Fewer trades, far fewer stops.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "predict",
+          title: "One look at the hold-out",
+          prompt: "You unlock the last 30% once. The confirmed fade: 36 trades, +0.44R a trade, 95% CI +0.09R to +0.78R. What goes in your research log?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "works", label: "It works: it beat in-sample, so size up", feedback: "It beat in-sample partly by luck: with 36 trades the interval runs from +0.09R to +0.78R." },
+              { id: "keep", label: "Positive out of sample, but wide: keep it as a filter, size small, keep logging", feedback: "Right. The low end is above zero, but 36 trades can't pin down the size of the edge." },
+              { id: "tune", label: "Tighten the stop and test the hold-out again", feedback: "That's a second look. Once you tune on the hold-out, it's in-sample." },
+            ],
+            answer: "keep",
+          },
+          reveal: "Report the interval with the mean, and how many tests you ran. This lab has a contrarian effect built into its generator. In real markets, sentiment evidence is grade C: mixed, and better with price confirmation.",
+          concept: "contrarian-signal",
+        },
+        {
+          kind: "callout",
+          tone: "info",
+          text: "The control: the same confirmed rule on R0, a [[random-walk|random walk]] whose survey is pure noise. In-sample it showed +0.11R, 95% CI −0.06R to +0.28R, over 129 trades: indistinguishable from zero, as it should be. If R0 ever 'wins' clearly, hunt for a bug such as [[look-ahead-bias|look-ahead]] (3.11.3).",
+        },
+      ],
+      check: ["q-3.9.5-1", "q-3.9.5-2", "q-3.9.5-3"],
+      recap: {
+        takeaways: [
+          "A full contrarian rule: condition, price trigger, stop beyond the extreme, exit, size from the stop.",
+          "Confirmation cut the stop-out rate from 63% to 25%, but it misses fast turns.",
+          "Moderate sentiment confirms a trend; only extremes are contrarian, and out-of-sample intervals decide.",
+        ],
+      },
+    },
+  },
+
+  // 3.9.6 · Calendar effects, graded
+  {
+    id: "3.9.6",
+    title: "Calendar effects, graded",
+    topic: "scenario_analysis",
+    level: "intermediate",
+    tier: "free",
+    minutes: 8,
+    summary: "Grading calendar effects by evidence and post-publication record, measuring how often noise looks seasonal, and why futures already price a commodity's seasons.",
+    objectives: [
+      "Grade popular calendar effects by their evidence and post-publication record.",
+      'Show how often pure noise produces a "significant" calendar pattern.',
+      "Explain why a commodity's seasonal rise is usually already in the futures curve.",
+    ],
+    blocks: [],
+    practice: [
+      { kind: "mission", ref: "M02", label: "Trend or Noise?" },
+      { kind: "check", ref: "scenario_analysis", label: "Scenario analysis check" },
+    ],
+    script: {
+      unit: "3.9",
+      courseId: "3.9.6",
+      hook: {
+        prompt: "Twenty years of pure random-walk prices. We test 30 calendar patterns at the 5% level: months, weekdays, month-ends. What's the chance at least one looks 'significant'?",
+        control: {
+          kind: "slider",
+          min: 0,
+          max: 100,
+          step: 5,
+          unit: "%",
+          start: 20,
+          answer: 66,
+          tolerance: 14,
+          feedback: [
+            { from: 0, to: 15, text: "That's the chance for one test, 5%. Thirty tests give noise thirty chances." },
+            { from: 20, to: 45, text: "Higher: even 12 independent tests give 46%." },
+            { from: 50, to: 85, text: "Right range. Independent tests: 1 − 0.95³⁰ = 78.5%. Ours overlap, and 2,000 simulated histories gave 66.0%." },
+            { from: 90, to: 100, text: "Not quite certain: 2,000 simulated histories gave 66.0%." },
+          ],
+        },
+        compare: "You said {yours}. Independent tests: 1 − 0.95³⁰ = 78.5%. Our tests overlap, and 2,000 simulated random walks showed at least one 'hit' 66.0% of the time. Noise usually finds a pattern.",
+        concept: "calendar-effects",
+      },
+      learn: [
+        {
+          kind: "figure",
+          title: "The effects, graded",
+          figure: {
+            kind: "bars",
+            bars: [
+              { label: "Turn of the month · B", value: 3, role: "accent" },
+              { label: "Sell in May · B/C", value: 2.5, role: "accent" },
+              { label: "January effect · C", value: 2, role: "neutral" },
+              { label: "Pre-holiday · C/D", value: 1.5, role: "neutral" },
+              { label: "Monday effect · D today", value: 1, role: "down" },
+              { label: "January barometer · D", value: 1, role: "down" },
+              { label: "Presidential cycle · D", value: 1, role: "down" },
+              { label: "Crypto calendar effects · D", value: 1, role: "down" },
+            ],
+            unit: "",
+            steps: [
+              "Turn of the month: B. Sell in May: B/C, found in 36 of 37 markets, but few years drive it.",
+              "January effect: C, small caps only, costly and fading. Pre-holiday: C/D.",
+              "Monday effect: strong once, gone since the 1990s. January barometer: folklore, D.",
+              "Presidential cycle: D, with about 20 cycles of data. Crypto calendar effects: D.",
+            ],
+          },
+          text: "Grades weigh the evidence and the record after publication; bars run from D (1) to B (3). Turn of the month: in the US, 1926–2005, the whole equity premium came around month-ends, and 31 of 35 countries show it (McConnell & Xu 2008). A Fed working paper finds it gone in S&P futures after 1990.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "match",
+          title: "Grade them yourself",
+          prompt: "Match each effect with its evidence grade.",
+          pairs: [
+            { left: "Turn of the month", right: "B", wrong: "Big, global and with a plausible flow story, but weaker in futures since 1990: B." },
+            { left: "Sell in May", right: "B/C", wrong: "Found in 36 of 37 markets, yet a few extreme years drive much of it: B/C." },
+            { left: "January effect", right: "C", wrong: "Mostly small caps, costly to trade and fading: C." },
+            { left: "Monday effect", right: "D", wrong: "Strong in old data, gone since the 1990s: D today." },
+            { left: "January barometer", right: "D", wrong: "'As January goes, so goes the year' is folklore without robust evidence: D." },
+            { left: "Presidential cycle", right: "D", wrong: "About 20 cycles in total, far too few to test: D." },
+          ],
+          columns: ["Effect", "Grade"],
+          correct: "Only the turn of the month earns a B, and even it faded in futures. Most calendar lore is grade D.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "reveal",
+          title: "Winter is already in the price",
+          prompt: "Spot gas is 2.80 in June and usually rises into winter. The December future trades at 3.55. You buy it in June. What does it do by December?",
+          chart: {
+            candles: GAS_DEC,
+            visible: 1,
+            layers: [lvl(2.8, "SPOT IN JUNE 2.80", "neutral", false)],
+            describe: "A synthetic December gas future over 26 weeks from June: it starts at 3.55, trades between 3.40 and 3.72, and ends at 3.60. Spot was 2.80 in June.",
+          },
+          choices: [
+            { id: "rise", label: "It climbs with spot toward winter", feedback: "Spot climbs; the future already sits near the winter price and moves on surprises." },
+            { id: "priced", label: "It moves only on surprises: winter is already in its price" },
+            { id: "fall", label: "It falls as delivery nears", feedback: "No rule makes it fall either. With no surprise, it ends near where it started." },
+          ],
+          answer: "priced",
+          after: "Spot rose from 2.80 to 3.60, up 28.6%. The December future went from 3.55 to 3.60, up 1.4%. The seasonal rise was in the curve in June; only the surprise pays. Commodity seasonality is mechanical as a physical pattern, grade C as a trade.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "figure",
+          title: "How often noise looks seasonal",
+          figure: {
+            kind: "bars",
+            bars: [
+              { label: "1 test", value: 4.8, role: "neutral" },
+              { label: "5 tests (weekdays)", value: 19.7, role: "neutral" },
+              { label: "12 tests (months)", value: 45.7, role: "accent" },
+              { label: "30 tests (all)", value: 66, role: "accent" },
+            ],
+            unit: "%",
+            steps: ["1 and 5 tests: 4.8% and 19.7% of random walks show a 'significant' pattern.", "12 and 30 tests: 45.7% and 66.0%. Every slice is another lottery ticket."],
+          },
+          text: "We simulated 2,000 histories of 20 years each: pure random walks, no calendar effect at all. Then we ran the tests and counted the histories where at least one came out 'significant' at 5%. That's [[data-mining|data mining]]: search long enough and noise obliges.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "predict",
+          title: "Your turn: which drift is real?",
+          prompt: "Three synthetic markets, years 1–10. Each line is the market's best turn-of-month window out of four tried. One has a real drift; two are noise. Tap the one you'd test on the hold-out.",
+          control: {
+            kind: "tap",
+            chart: {
+              candles: blank(11),
+              hideCandles: true,
+              range: [-10, 75],
+              height: 240,
+              layers: [ln(inSample(TOM_A).slice(0, 11), "A"), ln(inSample(TOM_B).slice(0, 11), "B", "concept"), ln(inSample(TOM_C).slice(0, 11), "C", "neutral")],
+              describe: "Cumulative turn-of-month returns over years 1–10: market A ends at +54.0%, B at +62.3%, C at +9.8%.",
+            },
+            zones: [
+              { id: "a", label: "Market A", index: 10, price: 54, feedback: "A: +54.0% in-sample, t = 2.54, with the last day and first three days of each month." },
+              { id: "b", label: "Market B", index: 10, price: 62.3, feedback: "B: +62.3% in-sample, t = 2.42, the best of four windows tried on it." },
+              { id: "c", label: "Market C", index: 10, price: 9.8, feedback: "C: +9.8% in-sample, t = 0.66. Not much of a candidate." },
+            ],
+          },
+          figure: {
+            kind: "chart",
+            chart: {
+              candles: blank(21),
+              hideCandles: true,
+              range: [-15, 115],
+              height: 240,
+              describe: "The same three markets over 20 years: A climbs to +108.3%, B ends at +63.1%, C at −1.7%.",
+            },
+            steps: [
+              { text: "Years 1–10, in-sample: B ends highest, +62.3%; A +54.0%; C +9.8%.", layers: [ln(inSample(TOM_A), "A"), ln(inSample(TOM_B), "B", "concept"), ln(inSample(TOM_C), "C", "neutral")] },
+              { text: "Years 11–20, the hold-out, checked once: A keeps rising; B stalls, C slips.", layers: [ln(holdOut(TOM_A), "A HOLD-OUT", "accent", true), ln(holdOut(TOM_B), "B HOLD-OUT", "concept", true), ln(holdOut(TOM_C), "C HOLD-OUT", "neutral", true)] },
+            ],
+          },
+          reveal: "Hold-out t-statistics: A 2.55, B 0.03, C −0.74. Only A's drift came back on data it hadn't seen. In-sample, B looked at least as good, because it was the best of four tries on noise.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "worked",
+          title: "Count your tests",
+          lines: [
+            "You tried 4 turn-of-month windows on each of 3 markets.",
+            "Tests run = 4 × 3 = 12.",
+            "If the 12 were independent and nothing were real, the chance that at least one passes at 5% = 1 − 0.95¹² = ?",
+          ],
+          ask: {
+            answer: 46,
+            tolerance: 0.5,
+            unit: "%",
+            feedback: [
+              { value: 60, text: "That's 12 × 5%, which overcounts. Use 1 − 0.95¹²." },
+              { value: 54, text: "0.95¹² = 0.540 is the chance that none passes. Subtract it from 1." },
+            ],
+            correct: "Right: 1 − 0.540 = 46.0%. Overlapping windows share days, so the true figure here is lower, but only a simulation tells you how much.",
+          },
+          after: "A research log lists every slice you checked: 12 here, not just the winner.",
+          concept: "calendar-effects",
+        },
+        {
+          kind: "callout",
+          tone: "info",
+          text: "In this simulator, seasonality is **off** by default and appears only in lab mode, so nobody learns false patterns from synthetic data. Across many published anomalies, returns shrink after publication (McLean & Pontiff, grade A). Pre-FOMC drift is graded in 3.7.",
+        },
+      ],
+      check: ["q-3.9.6-1", "q-3.9.6-2", "q-3.9.6-3"],
+      recap: {
+        takeaways: [
+          "Only the turn of the month earns a B; most calendar lore is grade D.",
+          "Thirty tests on pure noise found a 'significant' pattern in 66% of histories.",
+          "A commodity's seasonal rise is already in the futures curve; only surprises pay.",
+        ],
+      },
+    },
+  },
+];
+
+// ─── Questions ──────────────────────────────────────────────────────────────
+
+const questions: Question[] = [
+  // 3.9.1
+  {
+    id: "q-3.9.1-1",
+    topic: "scenario_analysis",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "A weekly survey shows 24% bullish and 51% bearish. Its bull–bear spread has averaged +6, with a standard deviation of 15. What is this week's z-score?",
+    numeric: { answer: -2.2, tolerance: 0.05, unit: "" },
+    explanation: "Spread = 24 − 51 = −27. z = (−27 − 6) ÷ 15 = −33 ÷ 15 = −2.2. Beyond −2, so a bearish extreme by this survey's own history.",
+    lesson: "3.9.1",
+    concepts: ["market-sentiment"],
+    hints: ["First the spread: % bullish minus % bearish.", "z = (spread − mean) ÷ standard deviation.", "(−27 − 6) ÷ 15."],
+    vary: {
+      fields: { bull: [15, 50, 1], bear: [15, 60, 1], m: [0, 10, 1], s: [10, 20, 1] },
+      constraints: ["bull + bear <= 90", "abs(bull - bear - m) >= s"],
+      answer: "round((bull - bear - m) / s, 2)",
+      prompt: "A weekly survey shows {bull}% bullish and {bear}% bearish. Its bull–bear spread has averaged +{m}, with a standard deviation of {s}. What is this week's z-score?",
+      explanation: "Spread = {bull} − {bear} = {bull - bear}. z = ({bull - bear} − {m}) ÷ {s} = {answer:2}. Beyond ±2 counts as an extreme for this survey.",
+      hint: "z = ({bull - bear} − {m}) ÷ {s}.",
+    },
+  },
+  {
+    id: "q-3.9.1-2",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "A survey shows 70% of respondents bearish, a record. What does that reading tell you?",
+    options: [
+      { id: "a", label: "The market will rise within a month", rationale: "That treats a condition as a trigger. Extremes shift reversal odds; they don't date a turn, and they can deepen for weeks." },
+      { id: "b", label: "How one-sided the crowd's expectations are right now" },
+      { id: "c", label: "That 70% of investors have sold their holdings", rationale: "A survey records opinions, not positions. Many bearish respondents may still be fully invested." },
+      { id: "d", label: "Nothing: surveys are pure noise", rationale: "They mostly echo recent price, but readings at multi-year extremes carry weak-to-moderate evidence (grade C)." },
+    ],
+    correct: "b",
+    explanation: "A survey measures expectations. A record bearish reading says the crowd is unusually one-sided, which raises reversal odds modestly (grade C). It's a condition to note, not a signal to act on.",
+    lesson: "3.9.1",
+    concepts: ["market-sentiment"],
+  },
+  {
+    id: "q-3.9.1-3",
+    topic: "scenario_analysis",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "Your playbook says: 'Fade sentiment extremes only after a price trigger.' The survey hits +40, beyond +2σ, and you sell short at once anyway. Over the next six weeks the index rises 7% and the spread climbs to +47.",
+    prompt: "What does the rule 'condition, not trigger' say about this trade?",
+    options: [
+      { id: "a", label: "The rule failed: extremes should reverse", rationale: "Extremes can deepen, as here. The rule exists for exactly this case." },
+      { id: "b", label: "Selling on the reading alone used the condition as a trigger; the plan said to wait for price" },
+      { id: "c", label: "Add to the short: a higher spread means a stronger signal", rationale: "A deeper extreme isn't a better timer. Adding to a losing fade with no price trigger compounds the error." },
+      { id: "d", label: "Nothing: one trade can't test a rule", rationale: "True for the rule's edge, but this is a process error: the trade skipped the plan's own trigger." },
+    ],
+    correct: "b",
+    explanation: "The extreme was the condition: it made a fade allowable. The trigger, a price reversal, never came, and the trend ran on with the spread climbing further. Judge the decision by its process: it skipped the trigger.",
+    lesson: "3.9.1",
+    concepts: ["contrarian-signal", "market-sentiment"],
+    hints: ["Which part of the playbook did the trade skip?", "Condition: the spread. Trigger: a price event."],
+  },
+
+  // 3.9.2
+  {
+    id: "q-3.9.2-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "Over the past 156 weeks, managed money's net position in a futures market ranged from −30k to +110k contracts. This week it is +75k. What is the COT index?",
+    numeric: { answer: 75, tolerance: 0.5, unit: "" },
+    explanation: "COT index = (net − low) ÷ (high − low) × 100 = (75 + 30) ÷ (110 + 30) × 100 = 105 ÷ 140 × 100 = 75.0. Upper part of the range, but not an extreme.",
+    lesson: "3.9.2",
+    concepts: ["commitments-of-traders"],
+    hints: ["The index places this week inside the three-year range, from 0 to 100.", "Subtracting a negative low adds it: 75 − (−30) = 105.", "105 ÷ 140 × 100."],
+    vary: {
+      fields: { lo: [-60, 20, 5], hi: [80, 200, 5], net: [-50, 190, 1] },
+      constraints: ["net > lo", "net < hi", "hi - lo >= 60"],
+      answer: "round((net - lo) / (hi - lo) * 100, 1)",
+      prompt: "Over the past 156 weeks, managed money's net position in a futures market ranged from {lo}k to {hi}k contracts. This week it is {net}k. What is the COT index?",
+      explanation: "COT index = ({net} − ({lo})) ÷ ({hi} − ({lo})) × 100 = {net - lo} ÷ {hi - lo} × 100 = {answer:1}.",
+      hint: "({net} − ({lo})) ÷ ({hi} − ({lo})) × 100.",
+    },
+  },
+  {
+    id: "q-3.9.2-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "In the Legacy COT report, who are the 'non-commercials'?",
+    options: [
+      { id: "a", label: "Retail traders with small accounts", rationale: "Small traders fall under non-reportable positions. Non-commercials are large enough to report." },
+      { id: "b", label: "Large reportable speculators, such as funds trading for profit" },
+      { id: "c", label: "Producers hedging their output", rationale: "Producers hedging business risk are the commercials." },
+      { id: "d", label: "The exchange's market makers", rationale: "Market makers aren't a Legacy category; the split is commercial, non-commercial and non-reportable." },
+    ],
+    correct: "b",
+    explanation: "Non-commercials hold positions above the reporting threshold without a commercial hedging purpose: mostly funds and other large speculators. Small traders, retail among them, sit in the non-reportable positions.",
+    lesson: "3.9.2",
+    concepts: ["commitments-of-traders"],
+  },
+  {
+    id: "q-3.9.2-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "The latest COT report shows commercials in synthetic crude holding their biggest net short in three years. A forum post calls it 'smart money betting on a crash'.",
+    prompt: "What is the most likely reading?",
+    options: [
+      { id: "a", label: "A strong bearish signal: commercials know the market best", rationale: "Commercials are mostly hedgers. Their shorts lock in prices for output they will sell; they aren't directional bets." },
+      { id: "b", label: "Producers are hedging more of their output; it says little about direction" },
+      { id: "c", label: "A buy signal: commercials are always wrong", rationale: "That flips the error. Hedging flows aren't forecasts in either direction." },
+      { id: "d", label: "The data are wrong: commercials can't be net short", rationale: "They often are: producers sell futures against future output, so commercial net shorts are normal in commodities." },
+    ],
+    correct: "b",
+    explanation: "A producer sells futures to lock in a price for oil it will pump, so a large commercial net short usually means more hedging, not a forecast. Treat it as positioning on the other side of the speculators.",
+    lesson: "3.9.2",
+    concepts: ["commitments-of-traders", "positioning"],
+    hints: ["Why does a producer sell futures?", "Think hedging, not betting."],
+  },
+
+  // 3.9.3
+  {
+    id: "q-3.9.3-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "The VIX is 24 and the index is at 5,000. Using one standard deviation, how many index points either side does the options market price for the coming week?",
+    numeric: { answer: 166.4, tolerance: 1, unit: "points" },
+    explanation: "Weekly move = 24 ÷ √52 = 24 ÷ 7.211 = 3.328%. 5,000 × 3.328% = 166.4 points, so the one-sigma week runs from about 4,833.6 to 5,166.4.",
+    lesson: "3.9.3",
+    concepts: ["vix"],
+    hints: ["The VIX is annualised; scale it to one week.", "Divide by √52 ≈ 7.211.", "24 ÷ 7.211 = 3.328%, then take that share of 5,000."],
+    vary: {
+      fields: { vix: [12, 45, 1], idx: [3000, 6000, 100] },
+      answer: "round(idx * vix / 7.2111 / 100, 1)",
+      prompt: "The VIX is {vix} and the index is at {idx}. Using one standard deviation, how many index points either side does the options market price for the coming week?",
+      explanation: "Weekly move = {vix} ÷ √52 = {vix} ÷ 7.211 = {vix / 7.2111:3}%. {idx} × {vix / 7.2111:3}% = {answer:1} points.",
+      hint: "{vix} ÷ 7.211 = {vix / 7.2111:3}%, then take that share of {idx}.",
+    },
+  },
+  {
+    id: "q-3.9.3-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "The VIX has sat near 11 for months, one of its lowest readings. What does that most likely mean?",
+    options: [
+      { id: "a", label: "The market is safe: big drops are unlikely", rationale: "A low VIX prices small moves; it doesn't prevent large ones. Calm periods can end abruptly." },
+      { id: "b", label: "Options price small moves: protection is cheap, and complacency is possible" },
+      { id: "c", label: "The index will fall soon", rationale: "A low VIX isn't a timer. It can stay low for a long time." },
+      { id: "d", label: "Options traders expect a strong rally", rationale: "The VIX measures the expected size of moves, not their direction." },
+    ],
+    correct: "b",
+    explanation: "The VIX measures the volatility priced into options. A low reading means protection is cheap and traders expect calm. That can reflect complacency, but it's neither a safety guarantee nor a sell signal.",
+    lesson: "3.9.3",
+    concepts: ["vix"],
+  },
+  {
+    id: "q-3.9.3-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "After same-day options volume surged, the total put/call ratio reads 1.30, above the 1.23 extreme that marked fear in 2007–2022. A newsletter calls it a contrarian buy signal.",
+    prompt: "How should you treat the 1.30 reading?",
+    options: [
+      { id: "a", label: "Buy: 1.30 is beyond the historical extreme", rationale: "That threshold came from an older baseline. 0DTE volume shifted the ratio, so the old cut-off no longer marks the same fear." },
+      { id: "b", label: "Compare it with the ratio's recent history, and wait for a price confirmation before acting" },
+      { id: "c", label: "Sell: heavy put buying means insiders expect a fall", rationale: "Put volume mixes hedging and speculation. It isn't insider information, and it doesn't call direction." },
+      { id: "d", label: "Ignore put/call data completely", rationale: "Put/call is grade C, not useless. Read against its recent baseline, at extremes, it's a condition worth noting." },
+    ],
+    correct: "b",
+    explanation: "Structural changes such as the 0DTE boom move the ratio's baseline, so fixed thresholds from 2007–2022 stop meaning what they did. Judge the reading against recent history, treat it as a condition, and let price give the trigger.",
+    lesson: "3.9.3",
+    concepts: ["put-call-ratio", "contrarian-signal"],
+    hints: ["Did the 1.23 threshold come from today's market?", "A condition isn't a trigger."],
+  },
+
+  // 3.9.4
+  {
+    id: "q-3.9.4-1",
+    topic: "risk_management",
+    kind: "numeric",
+    difficulty: 1,
+    prompt: "A stock has 6.3 million shares sold short and trades 0.9 million shares a day on average. What is its days to cover?",
+    numeric: { answer: 7, tolerance: 0.1, unit: "days" },
+    explanation: "Days to cover = short interest ÷ average daily volume = 6.3m ÷ 0.9m = 7.0 days of normal trading.",
+    lesson: "3.9.4",
+    concepts: ["positioning", "short-squeeze"],
+    hints: ["Divide short interest by average daily volume."],
+    vary: {
+      fields: { si: [1, 30, 0.1], adv: [0.3, 6, 0.1] },
+      constraints: ["si / adv >= 1", "si / adv <= 20"],
+      answer: "round(si / adv, 1)",
+      prompt: "A stock has {si:1} million shares sold short and trades {adv:1} million shares a day on average. What is its days to cover?",
+      explanation: "Days to cover = {si:1}m ÷ {adv:1}m = {answer:1} days of normal trading.",
+      hint: "{si:1} ÷ {adv:1}.",
+    },
+  },
+  {
+    id: "q-3.9.4-2",
+    topic: "risk_management",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "A heavily shorted stock jumps 30% on news worth perhaps 3%. What mostly drives the extra move?",
+    options: [
+      { id: "a", label: "The news was better than it looked", rationale: "Possible, but the gap between a 3% surprise and a 30% move is the signature of forced buying." },
+      { id: "b", label: "Short sellers forced to buy back: stops, margin calls and recalls" },
+      { id: "c", label: "Long holders selling into the rise", rationale: "Selling would dampen the move, not extend it." },
+      { id: "d", label: "Market makers pushing the price up for profit", rationale: "Dealers' hedging can add to moves, but the core fuel in a squeeze is shorts who must buy." },
+    ],
+    correct: "b",
+    explanation: "Short sellers who are stopped out, get margin calls or face share recalls must buy at whatever price. That buying isn't a judgement on the news, so the move can be many times the surprise.",
+    lesson: "3.9.4",
+    concepts: ["short-squeeze"],
+    hints: ["Who has to buy, whatever the price?"],
+  },
+  {
+    id: "q-3.9.4-3",
+    topic: "psychology",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "A small-cap ticker is trending on social media. Volume is five times normal and the price has doubled in two weeks. A filing shows two directors sold shares yesterday.",
+    prompt: "What is the most likely reading?",
+    options: [
+      { id: "a", label: "A breakout with insider confirmation: buy before it runs further", rationale: "Insiders selling into the rise is the opposite of confirmation. They are using the demand to exit." },
+      { id: "b", label: "A likely pump, with late buyers serving as exit liquidity for insiders and early holders" },
+      { id: "c", label: "A short squeeze: shorts are covering", rationale: "Nothing here shows short interest or days to cover. Hype plus insider sales points to a pump." },
+      { id: "d", label: "Neutral: volume and social buzz cancel out", rationale: "Rising buzz, rising volume and insider selling all point the same way: distribution to late buyers." },
+    ],
+    correct: "b",
+    explanation: "Social hype plus insiders selling into strength is the classic pump-and-dump shape. Social sentiment is grade D and easy to manipulate. Buying here likely means supplying liquidity to people who want out.",
+    lesson: "3.9.4",
+    concepts: ["fomo", "positioning"],
+    hints: ["Who is selling into the rise?", "What does a late buyer give the sellers?"],
+  },
+
+  // 3.9.5
+  {
+    id: "q-3.9.5-1",
+    topic: "decision_making",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "Why do naive fades of sentiment extremes tend to lose in strong trends?",
+    options: [
+      { id: "a", label: "Extremes in a trend often deepen, so selling at once keeps hitting stops" },
+      { id: "b", label: "Sentiment surveys are published too late to trade", rationale: "Weekly surveys do lag, but instant data wouldn't fix it: strong trends keep producing extreme readings." },
+      { id: "c", label: "Trends never reverse after extremes", rationale: "They sometimes do: extremes raise reversal odds modestly. The issue is timing, not impossibility." },
+      { id: "d", label: "Costs are higher on contrarian trades", rationale: "Costs are the same per trade. The losses come from repeated stops while the extreme persists." },
+    ],
+    correct: "a",
+    explanation: "Strong trends produce extreme readings and keep producing them. A rule that sells on the reading alone keeps entering against the trend and getting stopped. In the lab, the naive fade hit its stop in 150 of 237 in-sample trades.",
+    lesson: "3.9.5",
+    concepts: ["contrarian-signal"],
+    hints: ["What does a strong trend do to the survey, week after week?"],
+  },
+  {
+    id: "q-3.9.5-2",
+    topic: "decision_making",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "You add a price confirmation to a contrarian rule. What do you typically gain, and what do you give up?",
+    options: [
+      { id: "a", label: "Gain fewer stop-outs on deepening extremes; give up part of the move on fast reversals" },
+      { id: "b", label: "Gain a higher win rate; give up nothing", rationale: "Waiting has a price: on fast turns you enter later, at a worse level, often with a wider stop." },
+      { id: "c", label: "Gain more trades; give up accuracy", rationale: "Confirmation filters trades out, so you usually get fewer, not more." },
+      { id: "d", label: "Gain certainty that the extreme marked the top; give up flexibility", rationale: "No confirmation gives certainty. It shifts the odds and the timing, at a cost." },
+    ],
+    correct: "a",
+    explanation: "Confirmation keeps you out while the extreme deepens, which cuts stop-outs. On fast turns it enters after the first leg: in the lesson's fast episode, +0.49R for the confirmed rule against +1.79R for selling at once.",
+    lesson: "3.9.5",
+    concepts: ["contrarian-signal", "anticipation-vs-confirmation"],
+    hints: ["Think of the lesson's two episodes: a slow turn and a fast one."],
+  },
+  {
+    id: "q-3.9.5-3",
+    topic: "decision_making",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "Your confirmed-fade rule, tested out of sample once, shows an expectancy of +0.08R a trade with a 95% confidence interval of −0.05R to +0.21R.",
+    prompt: "What is the right verdict?",
+    options: [
+      { id: "a", label: "It works: the expectancy is positive", rationale: "The interval includes zero, so the data can't tell this rule from no edge at all." },
+      { id: "b", label: "It can't be told from zero yet: gather more data or reject it, and don't trade it as an edge" },
+      { id: "c", label: "Re-run the out-of-sample test with tweaked settings until the interval clears zero", rationale: "Each tweak tested on the hold-out turns it into in-sample data. That's data mining." },
+      { id: "d", label: "It's a losing rule: the low end is negative", rationale: "The interval also includes positive values. Not proven is not the same as proven wrong." },
+    ],
+    correct: "b",
+    explanation: "A confidence interval that spans zero means the result is consistent with no edge. The honest options are more data or rejecting the rule. Tuning on the hold-out would spoil it.",
+    lesson: "3.9.5",
+    concepts: ["expectancy-confidence-interval", "contrarian-signal"],
+    hints: ["Does the interval include zero?", "What happens to a hold-out you tune on?"],
+  },
+
+  // 3.9.6
+  {
+    id: "q-3.9.6-1",
+    topic: "scenario_analysis",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "You test 20 independent calendar patterns at the 5% level on data with no real effect. What is the chance, in %, that at least one looks significant?",
+    numeric: { answer: 64.2, tolerance: 0.5, unit: "%" },
+    explanation: "Each test stays quiet with probability 0.95. For 20 independent tests, all stay quiet with probability 0.95²⁰ = 0.358. So at least one false 'hit' = 1 − 0.358 = 64.2%.",
+    lesson: "3.9.6",
+    concepts: ["calendar-effects"],
+    hints: ["Find the chance that no test passes, then subtract it from 1.", "Each test stays quiet with probability 0.95.", "0.95²⁰ = 0.358."],
+    vary: {
+      fields: { n: [5, 40, 5] },
+      answer: "round(100 - 100 * ((n == 5) * 0.773781 + (n == 10) * 0.598737 + (n == 15) * 0.463291 + (n == 20) * 0.358486 + (n == 25) * 0.27739 + (n == 30) * 0.214639 + (n == 35) * 0.166083 + (n == 40) * 0.128512), 1)",
+      prompt: "You test {n} independent calendar patterns at the 5% level on data with no real effect. What is the chance, in %, that at least one looks significant?",
+      explanation: "Each test stays quiet with probability 0.95. For {n} independent tests, all stay quiet {100 - answer:1}% of the time. So at least one false 'hit' = {answer:1}%.",
+      hint: "1 − 0.95 to the power {n}.",
+    },
+  },
+  {
+    id: "q-3.9.6-2",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "What evidence grade does the 'January barometer' ('as January goes, so goes the year') get, and why?",
+    options: [
+      { id: "a", label: "B: it has worked in most years", rationale: "A hit rate on a few decades, with no mechanism, is folklore. Few independent years can't support a B." },
+      { id: "b", label: "D: folklore, with few independent years and no robust support" },
+      { id: "c", label: "C: it works in small caps only", rationale: "That's the January effect, a different claim about small-cap returns in January." },
+      { id: "d", label: "A: it's in every trading almanac", rationale: "Popularity isn't evidence. Almanacs repeat it; robust studies don't support it." },
+    ],
+    correct: "b",
+    explanation: "The January barometer rests on a handful of decades, so few independent observations, and no mechanism. The course grades it D, with the Santa Claus rally and the presidential cycle.",
+    lesson: "3.9.6",
+    concepts: ["calendar-effects"],
+  },
+  {
+    id: "q-3.9.6-3",
+    topic: "scenario_analysis",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "A newsletter says: 'Natural gas rises every winter, so buy the December future in June and collect the seasonal move.' In June, spot is 2.80 and the December future is 3.55.",
+    prompt: "Why is this unlikely to work as described?",
+    options: [
+      { id: "a", label: "Because winter demand is unpredictable", rationale: "It's fairly predictable, which is exactly why it's already priced. The problem is the price, not the season." },
+      { id: "b", label: "The December future already prices the expected winter rise; only surprises move it from 3.55" },
+      { id: "c", label: "Because futures can't be held until December", rationale: "You can hold the December contract until near its expiry. The issue is what its price already includes." },
+      { id: "d", label: "It will work: seasonal patterns are mechanical", rationale: "The physical pattern is mechanical. As a trade it's grade C, because the curve has already priced it." },
+    ],
+    correct: "b",
+    explanation: "Everyone knows gas demand peaks in winter, so the December contract already trades well above June spot: 3.55 against 2.80. Buying it earns only the surprise relative to that price, not the seasonal rise itself.",
+    lesson: "3.9.6",
+    concepts: ["calendar-effects"],
+    hints: ["Compare the June spot price with the December future's price.", "What does the market already know?"],
+  },
+];
+
+// ─── Glossary terms ─────────────────────────────────────────────────────────
+
+const terms: GlossaryTerm[] = [
+  {
+    id: "sentiment-survey",
+    term: "Sentiment survey",
+    definition: "A regular poll asking investors whether they expect prices to rise, fall or stay flat, such as the weekly AAII survey.",
+    plain: "A poll of how investors feel about the market's next move.",
+    related: ["bull-bear-spread", "contrarian"],
+    lesson: "3.9.1",
+  },
+  {
+    id: "bull-bear-spread",
+    term: "Bull–bear spread",
+    definition: "The percentage of bullish answers minus the percentage of bearish answers in a sentiment survey.",
+    plain: "How many more people expect a rise than a fall, in percentage points.",
+    related: ["sentiment-survey", "sentiment-extreme"],
+    lesson: "3.9.1",
+  },
+  {
+    id: "contrarian",
+    term: "Contrarian",
+    definition: "Leaning against the crowd when its views or positions are extreme.",
+    plain: "Going the other way when nearly everyone agrees.",
+    related: ["sentiment-extreme", "fade", "crowded-trade"],
+    lesson: "3.9.1",
+  },
+  {
+    id: "cot-report",
+    term: "COT report",
+    definition: "The CFTC's weekly Commitments of Traders report: futures positions by trader category, measured on Tuesday and published on Friday.",
+    plain: "A weekly list of who is long and who is short in each futures market.",
+    related: ["open-interest", "managed-money", "commercial-hedger", "cot-index"],
+    lesson: "3.9.2",
+    aka: ["Commitments of Traders"],
+  },
+  {
+    id: "open-interest",
+    term: "Open interest",
+    definition: "The number of futures or options contracts still open, not yet closed out or delivered.",
+    plain: "How many contracts are still out there.",
+    related: ["futures", "cot-report"],
+    lesson: "3.9.2",
+    aka: ["OI"],
+  },
+  {
+    id: "commercial-hedger",
+    term: "Commercial hedger",
+    definition: "A producer, merchant or user of a commodity who trades futures to reduce business risk, such as locking in a selling price.",
+    plain: "A business using futures as insurance, not as a bet.",
+    related: ["hedger", "hedge", "cot-report"],
+    lesson: "3.9.2",
+  },
+  {
+    id: "managed-money",
+    term: "Managed money",
+    definition: "In the Disaggregated COT report, funds that trade futures for profit, such as CTAs and hedge funds.",
+    plain: "The big funds speculating in futures.",
+    related: ["speculator", "cot-report"],
+    lesson: "3.9.2",
+  },
+  {
+    id: "cot-index",
+    term: "COT index",
+    definition: "Where a group's net position sits within its range over a look-back, usually three years: (net − low) ÷ (high − low) × 100.",
+    plain: "0 means as short as they've been in three years, 100 as long.",
+    related: ["cot-report", "crowded-trade"],
+    lesson: "3.9.2",
+  },
+  {
+    id: "vix",
+    term: "VIX",
+    definition: "The Cboe index of the 30-day volatility priced into S&P 500 options, quoted as an annualised percentage.",
+    plain: "The options market's price of fear: how big it expects moves to be.",
+    related: ["volatility", "put-call-ratio"],
+    lesson: "3.9.3",
+    aka: ["fear index"],
+  },
+  {
+    id: "put-call-ratio",
+    term: "Put/call ratio",
+    definition: "Put volume divided by call volume over a period, for equity options, index options or both.",
+    plain: "How many bets on a fall for every bet on a rise.",
+    related: ["vix", "zero-dte"],
+    lesson: "3.9.3",
+    aka: ["P/C ratio"],
+  },
+  {
+    id: "zero-dte",
+    term: "0DTE",
+    definition: "Options that expire on the same day they are traded.",
+    plain: "Options that live for a single day.",
+    related: ["put-call-ratio"],
+    lesson: "3.9.3",
+    aka: ["zero days to expiry"],
+  },
+  {
+    id: "short-interest",
+    term: "Short interest",
+    definition: "The number of shares currently sold short and not yet bought back, often shown as a % of the float.",
+    plain: "How many shares are borrowed and sold, waiting to be bought back.",
+    related: ["short", "days-to-cover", "short-squeeze"],
+    lesson: "3.9.4",
+  },
+  {
+    id: "days-to-cover",
+    term: "Days to cover",
+    definition: "Short interest divided by average daily volume: how many days of normal trading short sellers would need to buy back.",
+    plain: "How long it would take the shorts to get out.",
+    related: ["short-interest", "short-squeeze"],
+    lesson: "3.9.4",
+    aka: ["short ratio"],
+  },
+  {
+    id: "exit-liquidity",
+    term: "Exit liquidity",
+    definition: "Late buyers whose orders let earlier holders sell, typically near the top of a hyped move.",
+    plain: "The people others sell to on the way out.",
+    related: ["pump-and-dump", "fomo"],
+    lesson: "3.9.4",
+  },
+  {
+    id: "crowded-trade",
+    term: "Crowded trade",
+    definition: "A position held by so many traders that their exit moves the price.",
+    plain: "A trade everyone is in, so the door out is narrow.",
+    related: ["short-squeeze", "cot-index", "sentiment-extreme"],
+    lesson: "3.9.5",
+  },
+  {
+    id: "sentiment-extreme",
+    term: "Sentiment extreme",
+    definition: "A sentiment reading far outside its usual range, often beyond two standard deviations of its own history.",
+    plain: "A reading the survey rarely reaches.",
+    related: ["bull-bear-spread", "contrarian", "standard-deviation"],
+    lesson: "3.9.5",
+  },
+  {
+    id: "turn-of-the-month",
+    term: "Turn of the month",
+    definition: "The last trading day of a month plus the first few days of the next: the window of the best-documented calendar effect.",
+    plain: "The few days around the change of the month.",
+    related: ["sell-in-may", "data-mining"],
+    lesson: "3.9.6",
+    aka: ["TOM"],
+  },
+  {
+    id: "sell-in-may",
+    term: "Sell in May",
+    definition: "The claim that November–April stock returns beat May–October returns, also called the Halloween effect.",
+    plain: "The saying that the summer months are weaker for stocks.",
+    related: ["turn-of-the-month", "data-mining"],
+    lesson: "3.9.6",
+    aka: ["Halloween effect"],
+  },
+  {
+    id: "data-mining",
+    term: "Data mining",
+    definition: "Searching data through many tests until a pattern appears, whether or not it is real.",
+    plain: "Testing until something looks good by luck.",
+    related: ["cherry-picking", "out-of-sample", "sample-size"],
+    lesson: "3.9.6",
+  },
+];
+
+// ─── Concepts ───────────────────────────────────────────────────────────────
+
+const concepts: Concept[] = [
+  {
+    id: "market-sentiment",
+    name: "Market sentiment",
+    category: "scenario_analysis",
+    summary: "How one-sided expectations are; a condition that shifts reversal odds, not a timing trigger.",
+    body: [
+      "Surveys, put/call ratios and positioning data measure how one-sided the crowd's expectations are. Read each against its own history: a bull–bear spread of −30 means little until you know the survey averages +6 with a standard deviation of 15.",
+      "Most survey swings follow price. In five synthetic years the spread correlated 0.8 with the past eight weeks' change and 0.02 with the next eight. Extremes raised the odds of a 5% reversal within eight weeks from 33.6% to 41.7%, and in 4 of 12 cases the reading got more extreme first. Evidence grade C.",
+    ],
+    example: "Bulls 22%, bears 52%: spread −30. With mean +6 and standard deviation 15, z = (−30 − 6) ÷ 15 = −2.4, a bearish extreme for this survey.",
+    related: ["base-rates", "contrarian-signal", "recency-bias"],
+    missions: [],
+    lessons: ["3.9.1", "3.9.5"],
+  },
+  {
+    id: "contrarian-signal",
+    name: "Contrarian signal",
+    category: "decision_making",
+    summary: "A rule that leans against a sentiment or positioning extreme, best combined with a price confirmation.",
+    body: [
+      "A contrarian rule has a condition (a reading beyond about two standard deviations of its own history), a trigger from price, a stop beyond the extreme, an exit, and a size computed from the stop. The extreme alone is not a trigger: in trends, extremes deepen.",
+      "In the course lab, on 30 synthetic markets with LABX costs, the naive fade averaged +0.02R in-sample and hit its stop in 63% of trades; the confirmed fade averaged +0.23R and was stopped in 25%. Confirmation misses fast turns. Real-world evidence is grade C: mixed, better with price confirmation.",
+    ],
+    example: "On a fast turn, selling at once made +1.79R and waiting for a weekly close below the prior week's low made +0.49R. On a slow turn, selling at once was stopped twice, −2R, while the confirmed sale made +1.93R.",
+    related: ["market-sentiment", "anticipation-vs-confirmation", "positioning"],
+    missions: ["M10"],
+    lessons: ["3.9.1", "3.9.5"],
+  },
+  {
+    id: "commitments-of-traders",
+    name: "Commitments of Traders",
+    category: "market_fundamentals",
+    summary: "The weekly CFTC report of futures positions by trader category, measured on Tuesday and published on Friday.",
+    body: [
+      "The CFTC publishes positions in several families: Legacy (commercial, non-commercial, non-reportable), Disaggregated for physical commodities (producer/merchant, swap dealer, managed money, other reportables) and Traders in Financial Futures (dealer, asset manager, leveraged funds, other reportables). Reportable positions usually cover about 70–90% of open interest.",
+      "The COT index places a group's net position inside its three-year range, from 0 to 100. Multi-year extremes are a weak-to-moderate contrarian condition (grade C). As a timer the report is weak: weekly, three days old on release, and each group mixes motives. Commercial shorts are mostly hedges.",
+    ],
+    example: "Managed money in LXO: three-year low −22.0k contracts, high +148.0k, latest +142.1k. COT index = (142.1 + 22.0) ÷ (148.0 + 22.0) × 100 = 96.5, a crowded long.",
+    related: ["positioning", "market-participants"],
+    missions: [],
+    lessons: ["3.9.2"],
+  },
+  {
+    id: "positioning",
+    name: "Positioning",
+    category: "market_fundamentals",
+    summary: "Who holds what and how forced their flows are; crowded positions amplify moves when they unwind.",
+    body: [
+      "Positioning data (COT reports, short interest, days to cover, borrow fees, margin debt) show which side is crowded and how fast it could be forced out. Mechanical flows add to it: trend-following funds, volatility-target funds and dealers' hedging can all amplify a move.",
+      "A crowded position is a condition, not a timer. It tells you who would have to sell, or buy back, if the story changes. The forced flow itself is mechanical; positioning as a forecast is grade C.",
+    ],
+    example: "LABE: 12m shares short, 1.5m traded a day, so 8 days to cover and 30% of a 40m float. A +2% surprise became a +35% squeeze as stops and recalls forced shorts to buy.",
+    related: ["commitments-of-traders", "short-squeeze", "stop-cascade"],
+    missions: [],
+    lessons: ["3.9.2", "3.9.4"],
+  },
+  {
+    id: "vix",
+    name: "VIX",
+    category: "market_fundamentals",
+    summary: "An index of the 30-day volatility priced into S&P 500 options; a measure of priced fear, not a forecast of direction.",
+    body: [
+      "The VIX is computed from a strip of S&P 500 options with 23 to 37 days to expiry and quoted as an annualised volatility. Divide it by √12 for a one-month, one-standard-deviation move, and by √52 for a week.",
+      "It jumps when stocks fall, as investors pay up for protection, then tends to mean-revert. The index can't be bought directly, VIX products often lose on the roll, and a low VIX means cheap protection, not safety. As a measure it's mechanical; as a signal, grade C.",
+    ],
+    example: "VIX 28, index 4,000: weekly move = 28 ÷ √52 = 3.88%, or 155.3 points, so the one-sigma week runs from 3,844.7 to 4,155.3.",
+    related: ["put-call-ratio", "volatility", "volatility-clustering"],
+    missions: [],
+    lessons: ["3.9.3"],
+  },
+  {
+    id: "put-call-ratio",
+    name: "Put/call ratio",
+    category: "market_fundamentals",
+    summary: "Put volume divided by call volume, read against its own shifting baseline and mostly at extremes.",
+    body: [
+      "The index ratio mostly reflects institutional hedging, the equity ratio is the cleaner speculative gauge, and the total blends both. Each runs at its own typical level.",
+      "The total ratio averaged about 0.97 in 2007–2022, with extremes above 1.23 and below 0.72. The rise of same-day (0DTE) options moved the baseline, so fixed thresholds stopped working. Read the ratio against its recent history; as a signal it's grade C.",
+    ],
+    example: "After the 0DTE boom, a total put/call of 1.30 is beyond the old 1.23 extreme, but not necessarily extreme against the new baseline: compare it with recent months before calling it fear.",
+    related: ["vix", "market-sentiment"],
+    missions: [],
+    lessons: ["3.9.3"],
+  },
+  {
+    id: "short-squeeze",
+    name: "Short squeeze",
+    category: "risk_management",
+    summary: "A sharp rise driven by short sellers forced to buy back, often far larger than the news that started it.",
+    body: [
+      "Squeeze fuel is short interest that can't exit fast: a high share of the float, many days to cover, and a rising borrow fee that signals scarce shares and possible recalls. A small surprise triggers stops; the forced buying lifts price, which triggers more stops.",
+      "The forced buying is mechanical; predicting which crowded short squeezes, and when, is grade C. Social-media hype is grade D and easy to fake: late buyers in a pump often become exit liquidity for insiders and early holders.",
+    ],
+    example: "LABE: 30% of float short, 8 days to cover. A +2% news day led to a 27.00 high, +35%, on volume of 9.4m shares, more than six times normal.",
+    related: ["short-selling", "positioning", "stop-cascade"],
+    missions: ["M06"],
+    lessons: ["3.9.4"],
+  },
+  {
+    id: "calendar-effects",
+    name: "Calendar effects",
+    category: "scenario_analysis",
+    summary: "Return patterns tied to dates, such as the turn of the month or seasons, each with its own evidence grade and decay record.",
+    body: [
+      "The turn of the month is the best supported (grade B), yet a Fed working paper finds it gone in S&P futures after 1990. Sell in May is B/C, the January effect C, pre-holiday C/D; the Monday effect, the January barometer, the presidential cycle and crypto calendar effects are D. Across published anomalies, returns shrink after publication (grade A).",
+      "Calendar scans invite data mining: 30 overlapping tests on pure random walks found a 'significant' pattern in 66% of 2,000 simulated histories. A real effect must come back on a hold-out you check once. Commodity seasons are physical, but the futures curve already prices them.",
+    ],
+    example: "Twelve independent tests at 5% on data with no effect: the chance of at least one false hit is 1 − 0.95¹² = 46.0%.",
+    related: ["evidence-grades", "random-walk", "sample-size"],
+    missions: ["M02"],
+    lessons: ["3.9.6"],
+  },
+];
+
+export const UNIT_3_9: UnitContent = { lessons, questions, terms, concepts };
