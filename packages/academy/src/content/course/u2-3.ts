@@ -468,6 +468,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.1",
+      bridge: "In 2.2.10 patterns turned up even in random walks, so a shape alone proves little. Unit 2.3 turns to trend tools. It starts with what 'trend' means: Dow Theory, and the swing rules from 1.5.2 and 1.5.7 made into a test.",
       hook: {
         prompt: "In an uptrend, LABX just made a lower high: 102.00 after 102.20. Has the uptrend ended?",
         figure: {
@@ -596,6 +597,7 @@ const lessons: Lesson[] = [
           "An uptrend ends when a low breaks the last swing low. A lower high is only a warning.",
           "Definitions of trend can disagree on one candle. Choose yours before looking, then keep it.",
         ],
+        next: "Next, 2.3.2: the moving average behind the slope and stack definitions, built by hand, with the lag it always carries.",
       },
     },
   },
@@ -622,6 +624,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.3",
+      bridge: "In 2.3.2 you built an SMA by hand and saw it turn after price, with longer periods lagging more. Here the EMA and WMA weight recent closes more, and you see what that speed costs in whipsaws.",
       hook: {
         prompt: "Same closes as in lesson 2.3.2: 100.00 to 104.00, then 110.00. The 5-period SMA was 104.00. Guess the 5-period EMA.",
         figure: { kind: "chart", chart: { candles: L233_HOOK }, steps: [{ text: "Closes: 100.00, 101.00, 102.00, 103.00, 104.00, then 110.00." }] },
@@ -772,6 +775,7 @@ const lessons: Lesson[] = [
           "WMA weights recent closes most. On one jump: WMA moves furthest, then EMA, then SMA.",
           "Less lag always means more whipsaws. Default periods are conventions; tuning them invites overfitting.",
         ],
+        next: "Next, 2.3.4: two averages crossing, why ranges make so many crossovers, and how costs decide whether a crossover rule pays.",
       },
     },
   },
@@ -798,6 +802,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.4",
+      bridge: "In 2.3.3 faster averages turned sooner but whipsawed more. Here two averages cross, and you price each whipsaw with the spread and commission from 1.1.1 and 1.1.4, in the R of 1.4.2. A marginal rule can lose once costs are in.",
       hook: {
         prompt: "A 10/30 crossover rule makes +0.08R per trade before costs. Each round trip costs 0.10R. What's left per trade, in R?",
         control: {
@@ -952,6 +957,7 @@ const lessons: Lesson[] = [
           "Ranges produce many crossovers, and each one pays spread and commission.",
           "A marginal rule dies at realistic costs: compare its average trade with the round-trip cost.",
         ],
+        next: "Next, 2.3.5: MACD, this lesson's fast-minus-slow line built from two EMAs, with a signal line and a histogram.",
       },
     },
   },
@@ -978,6 +984,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.5",
+      bridge: "In 2.3.4 a crossover became a zero crossing of fast minus slow, and in 2.3.3 you stepped an EMA by hand. MACD is exactly that line: EMA 12 minus EMA 26. Here you calculate it, its signal line and its histogram.",
       hook: {
         prompt: "Instrument A: 26-period EMA 103.50, MACD 0.70. Instrument B: 26-period EMA 10.35, MACD 0.07. Which has stronger momentum?",
         control: {
@@ -1118,6 +1125,7 @@ const lessons: Lesson[] = [
           "A MACD zero cross is the 12/26 EMA cross: the same event, drawn twice.",
           "MACD is in price units. Divide by EMA 26 (PPO) to compare instruments.",
         ],
+        next: "Next, 2.3.6: ADX and DMI, which measure how strong a trend is but not which way it runs.",
       },
     },
   },
@@ -1144,6 +1152,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.6",
+      bridge: "In 2.3.5 MACD showed which way momentum leaned. Here you measure strength apart from direction: Wilder's directional movement by hand, smoothed his way as in 2.3.3, and ADX as a filter for 2.3.1's question, trend or not.",
       hook: {
         prompt: "ADX rose from 15 to 40 while LABX fell 5%. Is the rising ADX a bullish sign?",
         control: {
@@ -1301,6 +1310,7 @@ const lessons: Lesson[] = [
           "DX = 100 × |+DI − −DI| ÷ (+DI + −DI). ADX smooths it and has no direction.",
           "As a regime filter, ADX is late: any threshold trades missed trends against false alarms.",
         ],
+        next: "Next, 2.3.7: Parabolic SAR and SuperTrend, trailing lines that flip sides, and what they cost in a range.",
       },
     },
   },
@@ -1327,6 +1337,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.7",
+      bridge: "In 2.3.6 ADX told you how strong a trend is, but late. Here two lines trail the trend itself, like the trailing stop from 1.3.8, and flip sides when price crosses them. In a range, every flip is a new trade.",
       hook: {
         prompt: "Wilder, who invented the Parabolic SAR, estimated what share of the time markets trend?",
         control: {
@@ -1405,7 +1416,7 @@ const lessons: Lesson[] = [
           title: "A SuperTrend band",
           lines: [
             "[[supertrend|SuperTrend]] starts from the candle's midpoint: (101.00 + 100.00) ÷ 2 = 100.50.",
-            "The band sits a multiple of [[atr|ATR]] away: ATR 0.40 × multiplier 3 = 1.20.",
+            "The band sits a multiple of [[atr|ATR]] (the average true range, a typical candle's size) away: ATR 0.40 × multiplier 3 = 1.20.",
             "Lower band = 100.50 − 1.20 = ?",
           ],
           ask: {
@@ -1461,6 +1472,7 @@ const lessons: Lesson[] = [
           "SuperTrend: candle midpoint minus multiplier × ATR in an uptrend; the band only ratchets up.",
           "Always-in lines flip on every swing in a range, and every flip pays costs.",
         ],
+        next: "Next, 2.3.8: Ichimoku, five lines from highs and lows, and the shifted line that leaks the future into backtests.",
       },
     },
   },
@@ -1487,6 +1499,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.3",
       courseId: "2.3.8",
+      bridge: "In 2.3.3 every indicator was a recipe on past prices, and in 2.3.5 MACD was a 12/26 EMA cross drawn twice. Ichimoku draws five lines from highs and lows. Here you count how many views they give, and find the one that uses the future.",
       hook: {
         prompt: "Ichimoku draws five lines. How many independent pieces of information do they carry?",
         control: {
@@ -1624,6 +1637,7 @@ const lessons: Lesson[] = [
           "Four lines share the same highs and lows: fewer independent views than five lines suggest.",
           "Chikou at candle t is the close of t + 26. Backtests must use as-of values.",
         ],
+        next: "Next: the 2.3 checkpoint, then unit 2.4, Oscillators and volatility, starting with momentum and rate of change.",
       },
     },
   },
@@ -2376,4 +2390,20 @@ const concepts: Concept[] = [
 ];
 
 /** Unit 2.3 · Trend tools (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_2_3: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_2_3: UnitContent = {
+  intro: {
+    summary: "Trend has the best evidence in technical analysis, so trend tools are the first indicators, after structure and patterns. You define trend, then build each tool by hand: moving averages, crossovers, MACD, ADX, SAR, SuperTrend and Ichimoku. For each you learn its formula, why its settings are conventions, what it repeats from others, and how strong its evidence is.",
+    outcomes: [
+      "Decide with the peak-trough rule whether a trend has ended, and fix your definition of trend first.",
+      "Calculate SMA, EMA and WMA by hand, and weigh lag against whipsaws when choosing a period.",
+      "Price a crossover rule's whipsaws with spread and commission, and spot rules that only pay before costs.",
+      "Calculate MACD, DMI and ADX, and a SAR step, and say what each measures and misses.",
+      "Spot indicators that repeat each other, and look-ahead bias such as Ichimoku's Chikou line in a backtest.",
+    ],
+    buildsOn: "Swings, trends and trend ends from 1.5 (1.5.1, 1.5.2, 1.5.7); spread and commission from 1.1.1 and 1.1.4; R and expectancy from 1.4.2 and 1.4.5; trailing stops from 1.3.8; trendlines from 2.2.1.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};

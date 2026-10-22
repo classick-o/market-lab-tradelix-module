@@ -673,6 +673,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.1",
+      bridge: "Unit 2.3 measured trend with averages, crossovers and ADX, and 2.3.1 had you fix one definition of trend. Unit 2.4 asks how fast price is moving. It starts with momentum and rate of change, tested after costs as in 2.3.4.",
       hook: {
         prompt: "The rule 'buy when 12-period ROC is above 0' runs on three simulated markets, with costs. Where does it beat random entries?",
         control: {
@@ -743,14 +744,14 @@ const lessons: Lesson[] = [
           title: "Bounded or unbounded?",
           prompt: "Sort each indicator by its scale.",
           pairs: [
-            { left: "[[rsi|RSI]]", right: "Bounded: a fixed scale", wrong: "RSI can't leave 0–100: it compares average gains with average losses." },
+            { left: "[[rsi|RSI]] (average gains vs losses)", right: "Bounded: a fixed scale", wrong: "RSI can't leave 0–100: it compares average gains with average losses." },
             { left: "Stochastic %K", right: "Bounded: a fixed scale", wrong: "%K places the close inside the recent high–low range, so it runs from 0 to 100." },
             { left: "Williams %R", right: "Bounded: a fixed scale", wrong: "%R runs from 0 down to −100: still a fixed scale." },
-            { left: "[[money-flow-index|Money Flow Index]]", right: "Bounded: a fixed scale", wrong: "MFI runs through RSI's formula, so it stays between 0 and 100." },
+            { left: "[[money-flow-index|Money Flow Index]] (RSI with volume)", right: "Bounded: a fixed scale", wrong: "MFI runs through RSI's formula, so it stays between 0 and 100." },
             { left: "ROC", right: "Unbounded: no fixed scale", wrong: "ROC is a percent change. A strong trend can push it to +6%, a crash to −20%." },
             { left: "MACD", right: "Unbounded: no fixed scale", wrong: "MACD is the gap between two averages, in price units. It grows with price and volatility." },
             { left: "CCI", right: "Unbounded: no fixed scale", wrong: "CCI often sits between −100 and +100, but nothing stops it going far beyond." },
-            { left: "[[obv|OBV]]", right: "Unbounded: no fixed scale", wrong: "OBV is a running total of volume. It can climb or fall without limit." },
+            { left: "[[obv|OBV]] (a running volume total)", right: "Unbounded: no fixed scale", wrong: "OBV is a running total of volume. It can climb or fall without limit." },
           ],
           correct: "Bounded oscillators can carry fixed lines, such as 70 and 30. Unbounded ones can't: +6% ROC is extreme on a calm chart and routine on a wild one.",
           concept: "oscillator",
@@ -807,6 +808,7 @@ const lessons: Lesson[] = [
           "Bounded oscillators have fixed scales; unbounded ones like ROC have no fixed overbought level.",
           "Momentum's strong evidence covers 3–12 months; on hourly candles a ROC rule paid only in a trending market.",
         ],
+        next: "Next, 2.4.2: RSI by hand, an oscillator on a fixed 0–100 scale, and why it can stay above 70 in a trend.",
       },
     },
   },
@@ -833,6 +835,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.2",
+      bridge: "In 2.4.1 ROC measured how far price came, on a scale with no ceiling. Here RSI puts average gains and losses on a fixed 0–100 scale, smoothed Wilder's way as in 2.3.3, and you see why 70 doesn't end a climb.",
       hook: {
         prompt: "Five price changes: +1.00, −0.50, +0.80, +0.40, −0.30. Guess the 5-period RSI.",
         control: {
@@ -960,6 +963,7 @@ const lessons: Lesson[] = [
           "70/30 and 50 are conventions; Brown's ranges sit higher in uptrends, lower in downtrends.",
           "In a strong trend RSI can stay above 70 for many hours while price keeps rising.",
         ],
+        next: "Next, 2.4.3: Stochastic, Williams %R and CCI, and why oscillators that agree are often one signal counted three times.",
       },
     },
   },
@@ -986,6 +990,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.3",
+      bridge: "In 2.4.2 you built RSI from gains and losses and watched it stay above 70 through a climb. Here you build three more oscillators from the same highs, lows and closes, and check how much each one really adds.",
       hook: {
         prompt: "RSI, Stochastic and Williams %R all say 'overbought'. How many independent signals is that?",
         control: {
@@ -1095,7 +1100,7 @@ const lessons: Lesson[] = [
             ],
             answer: "rsiatr",
           },
-          reveal: "RSI and [[atr|ATR]] correlate at −0.13 here: momentum and volatility answer different questions. Bollinger's advice: combine indicators that measure different things, such as momentum with volume or with volatility.",
+          reveal: "RSI and [[atr|ATR]], the average candle range, correlate at −0.13 here: momentum and volatility answer different questions. Bollinger's advice: combine indicators that measure different things, such as momentum with volume or with volatility.",
           concept: "indicator-redundancy",
         },
         {
@@ -1111,6 +1116,7 @@ const lessons: Lesson[] = [
           "Williams %R holds exactly the stochastic's information, on a scale shifted down by 100.",
           "Agreeing oscillators built from the same prices are one signal; add indicators that measure something else.",
         ],
+        next: "Next, 2.4.4: what an overbought reading actually predicts, tested with one RSI rule in a trend and in a range.",
       },
     },
   },
@@ -1137,6 +1143,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.4",
+      bridge: "In 2.4.2 RSI stayed above 70 through a steady climb, and in 2.4.3 three oscillators told one story. Here you test selling overbought in a trend and in a range, the regimes ADX tried to sort in 2.3.6.",
       hook: {
         prompt: "In this course's simulated trend market, RSI(14) crosses above 70. Over the next 10 candles, what happens more often?",
         control: {
@@ -1272,6 +1279,7 @@ const lessons: Lesson[] = [
           "Overbought fails as a sell signal for three reasons: regime, horizon and arbitrary thresholds.",
           "Trend: an extreme shows strength. Range: maybe a fade with a stop. Unclear: do nothing.",
         ],
+        next: "Next, 2.4.5: divergences, where price and an oscillator disagree, and how weak the evidence behind them is.",
       },
     },
   },
@@ -1298,6 +1306,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.5",
+      bridge: "In 2.4.4 an overbought reading described strength rather than forecasting a turn. Here price and RSI disagree at the same swing highs you learned to mark in 1.5.1. You test whether that divergence marks the top, and what confirmation looks like.",
       hook: {
         prompt: "In a strong uptrend, how many bearish RSI divergences usually appear before the real top?",
         control: {
@@ -1421,6 +1430,7 @@ const lessons: Lesson[] = [
           "Act only after confirmation: a break of price structure or RSI crossing 50.",
           "Strong trends often show several divergences before the top; the evidence grade is D.",
         ],
+        next: "Next, 2.4.6: volatility by hand, with true range, ATR and standard deviation, which measure how much price moves, not where.",
       },
     },
   },
@@ -1447,6 +1457,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.6",
+      bridge: "In 2.4.5 oscillators judged direction and earned grade D. Volatility has firmer evidence. You took true range for ADX in 2.3.6. Here you see how it counts gaps like those in 1.3.7, smooth it into ATR as in 2.3.3, and watch volatility cluster.",
       hook: {
         prompt: "ATR(14) was 0.40. A new candle has a true range of 1.10. Guess the new ATR.",
         control: {
@@ -1591,6 +1602,7 @@ const lessons: Lesson[] = [
           "ATR % = ATR ÷ price × 100 compares volatility across instruments and price levels.",
           "Volatility clusters, so ATR forecasts how much price may move, never which way.",
         ],
+        next: "Next, 2.4.7: ATR at work, with a wider stop and a smaller size when volatility rises, and the risk unchanged.",
       },
     },
   },
@@ -1617,6 +1629,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.8",
+      bridge: "In 2.4.7 ATR set your stop and your size, and in 2.4.6 you met standard deviation. Here Bollinger Bands put two standard deviations around the moving average from 2.3.2, and you test what tags and squeezes really predict.",
       hook: {
         prompt: "LABX closes above its upper Bollinger Band. According to John Bollinger's own rules, what does that usually mean at first?",
         control: {
@@ -1765,6 +1778,7 @@ const lessons: Lesson[] = [
           "Tags are not signals: in trends price walks the band, and closes outside start as continuation.",
           "A squeeze predicts a bigger move, not its direction.",
         ],
+        next: "Next, 2.4.9: Keltner and Donchian channels, built from ATR and recent extremes, and a backtest bug that leaks the future.",
       },
     },
   },
@@ -1791,6 +1805,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.4",
       courseId: "2.4.9",
+      bridge: "In 2.4.8 Bollinger Bands set standard deviations around an average, and in 2.3.8 Ichimoku's lines were Donchian midpoints. Here Keltner uses ATR from 2.4.6 instead, Donchian tracks the extremes, and 2.3.8's look-ahead trap returns.",
       hook: {
         prompt: "A 20-candle breakout backtest that includes the current candle in the channel shows huge profits. Why?",
         control: {
@@ -1930,6 +1945,7 @@ const lessons: Lesson[] = [
           "TTM squeeze: both Bollinger Bands sit inside the Keltner Channel.",
           "A channel that includes the current candle leaks the future into a backtest.",
         ],
+        next: "Next: the 2.4 checkpoint, then unit 2.5, Volume, levels and zones, starting with reading volume.",
       },
     },
   },
@@ -2788,4 +2804,20 @@ const concepts: Concept[] = [
   },
 ];
 
-export const UNIT_2_4: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_2_4: UnitContent = {
+  intro: {
+    summary: "Oscillators only make sense once you can tell a trend from a range. This unit builds momentum, RSI, stochastic, %R and CCI by hand, and tests what overbought and divergences really predict. Then it measures volatility, adapts your size to it and wraps it into channels. Direction signals grade weak here; volatility has firmer evidence.",
+    outcomes: [
+      "Calculate ROC, RSI, stochastic %K and Williams %R by hand, and spot oscillators that repeat each other.",
+      "Read an overbought reading by regime: strength in a trend, a possible fade in a range.",
+      "Read a divergence at the same swings, and wait for confirmation before acting on it.",
+      "Calculate true range and ATR, and adapt your stop and size as volatility changes.",
+      "Read Bollinger, Keltner and Donchian channels, and keep the current candle out of channel backtests.",
+    ],
+    buildsOn: "Trend versus range from 1.5.2 and 2.3.1; EMA and Wilder's smoothing from 2.3.3; true range and ADX from 2.3.6; stops beyond noise, sizing from the stop and exposure from 1.4.3, 1.4.4 and 1.4.7.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};
