@@ -131,3 +131,15 @@ npx vitest run packages/academy 2>&1 | tail -30
 ```
 
 Testele verifică pentru fiecare lecție: id-ul și unitatea, întrebările din check, legăturile din glosar, conceptele, lungimile, câmpurile widget-urilor, start/Show me, datele graficelor, unicitatea id-urilor și generatoarele `vary`.
+
+## 10. Pentru agenți: cum lucrezi pe o unitate
+
+- **Citește doar ce-ți trebuie:** acest ghid, secțiunea unității tale și fișele ei din `docs/learn/course/level-*.md` (plus registrele de concepte și termeni din același fișier), `packages/academy/src/types.ts` și **un singur** exemplu apropiat de unitatea ta (de exemplu `content/course/u1-2.ts` pentru grafice, `u1-3.ts` pentru ordine, `u1-6.ts` pentru plan și jurnal). Nu citi fișiere mari întregi dacă nu e nevoie: caută cu grep.
+- **Lucrează pe o ciornă** în folderul tău de scratch. Copiază fișierul în `packages/academy/src/content/course/u<n>-<m>.ts` **doar când e complet** și trece typecheck-ul. Nu lăsa niciodată un fișier pe jumătate în proiect: alți agenți rulează testele în același timp.
+- **Editezi doar fișierul unității tale.** Nu atingi `glossary.ts`, `concepts.ts`, testele sau alte unități; ce ar trebui schimbat acolo scrii în raport.
+- **Termeni și concepte noi** doar dacă fișa sau registrul spun că sunt introduse în unitatea ta și nu există deja (grep în `content/`). Nu lega termeni care nu există.
+- **Dovezile (nota A–F din fișă) se respectă:** pattern-urile și strategiile cu dovezi slabe se predau ca atare, cu rate de bază și costuri reale, niciodată ca semnale care „funcționează”.
+- **Widget lipsă** → beat-uri interactive la finalul fazei Learn (§3); notezi widget-ul în raport.
+- **Cifrele** se verifică cu un script node; ce spune textul trebuie să fie exact ce arată datele.
+- **Validare:** `npm run typecheck` și `npx vitest run packages/academy`, până trec. Fără comenzi git.
+- **Raportul final**, maximum 120 de cuvinte: id-urile lecțiilor, numărul de întrebări, termeni și concepte, widget-urile lipsă, ce ai simplificat și ce trebuie schimbat în fișierele comune.
