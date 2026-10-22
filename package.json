@@ -12,6 +12,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "content:build": "tsx packages/academy/scripts/build-content.ts",
+    "predev": "npm run content:build",
+    "prebuild": "npm run content:build",
+    "pretest": "npm run content:build",
     "dev": "npm run dev -w @market-lab/standalone",
     "build": "npm run build -w @market-lab/standalone",
     "preview": "npm run preview -w @market-lab/standalone",

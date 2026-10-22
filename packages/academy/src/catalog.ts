@@ -4,8 +4,8 @@ import { LESSONS_A } from "./content/lessons-a";
 import { LESSONS_B } from "./content/lessons-b";
 import { QUESTIONS_A } from "./content/questions-a";
 import { QUESTIONS_B } from "./content/questions-b";
-import { COURSE_CONTENT_CONCEPTS, COURSE_CONTENT_LESSONS, COURSE_CONTENT_QUESTIONS, COURSE_CONTENT_TERMS } from "./content/course";
 import { SCRIPTS, SCRIPT_CONCEPTS, SCRIPT_TERMS } from "./content/scripts";
+import COURSE_META from "./generated/course-meta";
 import { assessmentId, checkId } from "./paths";
 import { TOPICS } from "./topics";
 import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId } from "./types";
@@ -14,11 +14,12 @@ import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId }
 export const LESSONS: Lesson[] = [
   ...[...LESSONS_A, ...LESSONS_B].map((l) => (SCRIPTS[l.id] ? { ...l, script: SCRIPTS[l.id] } : l)).sort((a, b) => a.id.localeCompare(b.id)),
   // Lessons written directly in code, in course order (ids are course positions, e.g. "1.1.2").
-  ...COURSE_CONTENT_LESSONS,
+  // Their scripts load on demand (lesson-scripts.ts); the metadata comes from src/generated.
+  ...COURSE_META.lessons,
 ];
-export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B, ...COURSE_CONTENT_QUESTIONS];
-export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS, ...COURSE_CONTENT_CONCEPTS];
-export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS, ...COURSE_CONTENT_TERMS];
+export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B, ...COURSE_META.questions];
+export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS, ...COURSE_META.concepts];
+export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS, ...COURSE_META.terms];
 
 const byId = <T extends { id: string }>(xs: T[]) => new Map(xs.map((x) => [x.id, x]));
 const lessonMap = byId(LESSONS);

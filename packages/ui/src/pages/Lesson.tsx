@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { LESSONS, TOPIC_BY_ID, checkId, conceptsForLesson, getLesson, termsForLesson, type LessonBlock, type PracticeLink } from "@market-lab/academy";
+import { useEffect, useState } from "react";
+import { LESSONS, TOPIC_BY_ID, checkId, conceptsForLesson, getLesson, hasScript, loadLessonScript, termsForLesson, type Lesson, type LessonBlock, type LessonScript, type PracticeLink } from "@market-lab/academy";
 import { getArenaScenario } from "@market-lab/missions";
 import { Diagram } from "../components/Diagrams";
-import { Card, PageHead, ProBadge, Rich } from "../components/Page";
+import { Card, PageHead, ProBadge, Rich, Skeleton } from "../components/Page";
 import { QuizBlock } from "../components/Quiz";
 import { useToast } from "../components/Toast";
 import { Widget } from "../components/Widgets";
@@ -107,6 +107,26 @@ function practiceHref(p: PracticeLink): string {
   return `/learn/checks/${checkId(p.ref)}`;
 }
 
+/** Loads a course lesson's script (one chunk per unit), then opens the player or Read mode. */
+function ScriptedLessonRoute({ lesson, read }: { lesson: Lesson; read: boolean }) {
+  const [script, setScript] = useState<LessonScript | undefined>(lesson.script);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (lesson.script) return;
+    let live = true;
+    loadLessonScript(lesson)
+      .then((s) => live && (s ? setScript(s) : setFailed(true)))
+      .catch(() => live && setFailed(true));
+    return () => {
+      live = false;
+    };
+  }, [lesson]);
+  if (failed) return <Empty title="This lesson couldn't load" action={<Link to="/learn/lessons" className="ml-text-link">All lessons</Link>}>Check your connection and try again.</Empty>;
+  if (!script) return <Skeleton />;
+  const scripted: ScriptedLesson = { ...lesson, script };
+  return read ? <LessonRead lesson={scripted} /> : <LessonPlayer lesson={scripted} />;
+}
+
 export function LessonPage({ lessonId }: { lessonId: string }) {
   const lab = useLab();
   const store = useStore();
@@ -119,11 +139,8 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
     if (lesson && !locked) store.startLesson(lesson.id);
   }, [lesson, locked, store]);
   if (!lesson) return <Empty title="Lesson not found" action={<Link to="/learn/lessons" className="ml-text-link">All lessons</Link>} />;
-  // Interactive lessons open in the player (or on one page in Read mode).
-  if (lesson.script && !locked) {
-    const scripted = lesson as ScriptedLesson;
-    return lab.learnPrefs.mode === "read" ? <LessonRead key={lesson.id} lesson={scripted} /> : <LessonPlayer key={lesson.id} lesson={scripted} />;
-  }
+  // Interactive lessons open in the player (or on one page in Read mode); course lessons load their script first.
+  if (hasScript(lesson) && !locked) return <ScriptedLessonRoute key={lesson.id} lesson={lesson} read={lab.learnPrefs.mode === "read"} />;
 
   const done = Boolean(lab.lessons[lesson.id]?.completedAt);
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);

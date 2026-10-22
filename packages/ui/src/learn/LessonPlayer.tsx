@@ -4,7 +4,7 @@
  * lesson reopens where the learner left it. The rail holds the outline, the lesson's terms and notes.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LESSONS, TOPIC_BY_ID, getCourseUnit, getTerm, termsForLesson, type Beat, type Lesson, type LessonScript } from "@market-lab/academy";
+import { LESSONS, TOPIC_BY_ID, getCourseUnit, getTerm, lessonCourseId, termsForLesson, type Beat, type Lesson, type LessonScript } from "@market-lab/academy";
 import { Rich, termLinks } from "../components/Page";
 import { useMediaQuery } from "../components/Stage";
 import { Term } from "../components/Term";
@@ -63,7 +63,10 @@ export function lessonTerms(lesson: ScriptedLesson): string[] {
 
 /** The next lesson in course order (by course position, then id). */
 export function nextLesson(lesson: ScriptedLesson): Lesson | undefined {
-  const key = (l: Lesson) => (l.script ? l.script.courseId.split(".").map((x) => x.padStart(3, "0")).join(".") : `999.${l.id}`);
+  const key = (l: Lesson) => {
+    const c = lessonCourseId(l);
+    return c ? c.split(".").map((x) => x.padStart(3, "0")).join(".") : `999.${l.id}`;
+  };
   const sorted = [...LESSONS].sort((a, b) => key(a).localeCompare(key(b)));
   return sorted[sorted.findIndex((l) => l.id === lesson.id) + 1];
 }

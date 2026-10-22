@@ -4,6 +4,7 @@
  */
 import { LESSONS, getCheck } from "../catalog";
 import type { KnowledgeCheck, Lesson, TopicId } from "../types";
+import { lessonCheckIds, lessonCourseId } from "../lesson-scripts";
 import { COURSE_LEVELS } from "./map";
 import type { CourseLesson, CourseLevel, CourseUnit } from "./types";
 
@@ -33,7 +34,9 @@ export function appLessonFor(cl: CourseLesson): Lesson | undefined {
 
 /** The course position of an app lesson (by its id or its script). */
 export function courseLessonFor(appId: string): CourseLesson | undefined {
-  return byAppId.get(appId) ?? (appLessons.get(appId)?.script ? lessonById.get(appLessons.get(appId)!.script!.courseId) : undefined);
+  const app = appLessons.get(appId);
+  const courseId = app && lessonCourseId(app);
+  return byAppId.get(appId) ?? (courseId ? lessonById.get(courseId) : undefined);
 }
 
 /** Course lessons in the recommended order: levels, then units, then lessons. */
@@ -94,7 +97,7 @@ export function unitCheckpoint(unitId: string): KnowledgeCheck | undefined {
   const unit = getCourseUnit(unitId);
   if (!unit) return undefined;
   const lessons = unit.lessons.map(appLessonFor).filter((l): l is Lesson => !!l);
-  const questionIds = [...new Set(lessons.flatMap((l) => l.script?.check ?? []))];
+  const questionIds = [...new Set(lessons.flatMap(lessonCheckIds))];
   if (questionIds.length < 3) return undefined;
   const count = new Map<TopicId, number>();
   for (const l of lessons) count.set(l.topic, (count.get(l.topic) ?? 0) + 1);

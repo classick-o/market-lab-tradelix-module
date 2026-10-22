@@ -8,6 +8,7 @@ import {
   dayKey,
   dueReviews,
   getCourseUnit,
+  lessonCheckIds,
   KNOWLEDGE_CHECKS,
   LEARNING_PATHS,
   LESSONS,
@@ -367,7 +368,7 @@ export function LessonsPage() {
   // Lessons whose check questions are due in today's review.
   const dueLessons = useMemo(() => {
     const due = new Set(dueReviews(lab.review, dayKey(Date.now(), lab.settings.timeZone), 1000));
-    return new Set(LESSONS.filter((l) => l.script?.check.some((qid) => due.has(qid))).map((l) => l.id));
+    return new Set(LESSONS.filter((l) => lessonCheckIds(l).some((qid) => due.has(qid))).map((l) => l.id));
   }, [lab.review, lab.settings.timeZone]);
   const q = query.trim().toLowerCase();
   // Course order: levels, units, lessons.

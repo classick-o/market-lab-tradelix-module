@@ -124,6 +124,8 @@ Text de beat ≤ 60 de cuvinte · prompt de hook/task ≤ 40 · pas de figură �
 
 ## 9. Verificare
 
+Lecțiile din `content/course/` ajung în aplicație prin `src/generated/` (metadatele se încarcă imediat, scripturile câte o unitate, la cerere). `npm run content:build` le regenerează; rulează automat înainte de `dev`, `build` și `test`, iar un test pică dacă fișierele generate nu mai corespund sursei.
+
 ```bash
 cd "/d/Proiecte/Tradelix - learning to trade module"
 npm run typecheck 2>&1 | grep -i error | head

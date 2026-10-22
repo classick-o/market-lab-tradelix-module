@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COURSE_LESSONS, COURSE_UNITS, LESSONS, PLAYABLE_LESSONS, appLessonFor, courseLessonFor, getCourseLesson, nextLearnStep } from "../src";
+import { COURSE_LESSONS, COURSE_UNITS, LESSONS, PLAYABLE_LESSONS, appLessonFor, courseLessonFor, getCourseLesson, hasScript, lessonCourseId, nextLearnStep } from "../src";
 
 describe("course map", () => {
   it("has 5 levels, 44 units and 340 lessons with unique ids", () => {
@@ -13,7 +13,7 @@ describe("course map", () => {
   });
 
   it("places every scripted lesson at its course position", () => {
-    for (const l of LESSONS.filter((x) => x.script)) expect(courseLessonFor(l.id)?.id, l.id).toBe(l.script!.courseId);
+    for (const l of LESSONS.filter(hasScript)) expect(courseLessonFor(l.id)?.id, l.id).toBe(lessonCourseId(l));
     expect(PLAYABLE_LESSONS.length).toBe(LESSONS.filter((x) => x.script || courseLessonFor(x.id)).length);
   });
 

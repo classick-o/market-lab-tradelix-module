@@ -84,6 +84,8 @@ export interface Lesson {
   practice: PracticeLink[];
   /** The interactive version: Hook → Learn → Try → Check → Recap. Lessons without it open in Read mode. */
   script?: LessonScript;
+  /** Course lessons: the script is loaded on demand from its unit file (see lesson-scripts.ts). */
+  scriptRef?: { unit: string; courseId: string; check: string[] };
 }
 
 // ─── Interactive lessons (PLAN_LEARN §4, docs/learn) ───────────────────────

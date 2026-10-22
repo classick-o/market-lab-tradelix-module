@@ -31,7 +31,7 @@ Ce s-a făcut din [PLAN_LEARN.md](../../PLAN_LEARN.md) și ce a rămas. Regulile
 
 ## De făcut, în ordinea importanței
 
-1. **Dimensiunea bundle-ului.** Chunk-ul principal are ~5,3 MB (1,6 MB gzip), pentru că tot conținutul cursului e în el. Soluția: lecțiile (scripturile) încărcate pe bucăți, câte o unitate, cu `import()` când se deschide lecția. Metadatele (titluri, id-uri), glosarul și întrebările rămân sincron sau se mută într-un chunk separat.
+1. **Dimensiunea bundle-ului: rezolvată parțial.** Scripturile lecțiilor se încarcă acum pe unități, la cerere (13–33 KB gzip fiecare). Chunk-ul principal a scăzut de la 5,3 MB (1,6 MB gzip) la 2,9 MB (857 KB gzip). Restul vine din întrebări, termeni și concepte (`src/generated/course-meta.js`). Pasul următor, opțional: încărcarea întrebărilor la cerere.
 2. **Widget-urile cerute de fișe.** Aproape fiecare lecție din valurile 2–3 are faza Try făcută din beat-uri interactive, pentru că widget-ul cerut nu există încă. [widgets-backlog.md](widgets-backlog.md) acoperă valul 2; agenții valurilor 3–4 au mai cerut zeci de widget-uri (de exemplu `option-chain`, `payoff-builder`, `strategy-lab-lite`, `regime-switcher`, `footprint-reader`, `dsr-calculator`). Merită construite întâi cele cerute de mai multe unități, apoi o trecere prin lecțiile care le așteaptă.
 3. **Walkthrough complet pe toate cele 340 de lecții:** `scratchpad/e2e/wave-run.sh` cu lista de id-uri, cu serverul de dev pornit. Eșantionul a trecut integral.
 4. **Afirmații de verificat înainte de publicare**, semnalate de agenți:

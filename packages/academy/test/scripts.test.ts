@@ -15,6 +15,7 @@ import {
   type LessonScript,
   type TaskSpec,
 } from "../src";
+import { COURSE_UNITS_CONTENT } from "../src/content/course";
 
 const termIds = new Set(GLOSSARY.map((t) => t.id));
 const conceptIds = new Set(CONCEPTS.map((c) => c.id));
@@ -112,7 +113,8 @@ function scriptOk(id: string, s: LessonScript) {
 }
 
 describe("interactive lesson scripts", () => {
-  const scripted = LESSONS.filter((l) => l.script);
+  // The original lessons carry their scripts; course lessons are checked from their source files.
+  const scripted = [...LESSONS.filter((l) => l.script), ...Object.values(COURSE_UNITS_CONTENT).flatMap((u) => u.lessons).filter((l) => l.script)];
   it("are valid and consistent with the question bank, glossary, concepts and widget contracts", () => {
     for (const l of scripted) scriptOk(l.id, l.script!);
   });
