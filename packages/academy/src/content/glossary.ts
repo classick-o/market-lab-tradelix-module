@@ -185,6 +185,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: "The size of a pullback measured against the move before it, usually as a percentage of that move.",
     plain: "How much of the last move price has given back. If LABX rises from 100.00 to 104.00 and dips to 102.00, it has retraced 50%.",
     related: ["pullback", "trend", "reversal"],
+    lesson: "1.5.3",
   },
   {
     id: "reversal",
