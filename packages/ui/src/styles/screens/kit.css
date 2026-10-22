@@ -1,0 +1,377 @@
+/* Learn Chart Kit: one colour system for every Learn chart, figure and widget (PLAN_LEARN §8.2).
+   Roles, not colours: candles, entry/accent, target/gain, stop/loss, concept (violet), neutral. */
+
+.k-chart {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+.k-chart svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--ml-font);
+}
+
+/* Grid and axis */
+.k-grid line {
+  stroke: var(--ml-grid);
+  stroke-width: 1;
+}
+.k-axis text {
+  fill: var(--ml-text-3);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Candles */
+.k-candle line {
+  stroke-width: 1;
+}
+.k-candle.is-up line,
+.k-candle.is-up rect {
+  stroke: var(--ml-candle-up);
+  fill: var(--ml-candle-up);
+}
+.k-candle.is-down line {
+  stroke: var(--ml-candle-down);
+}
+.k-candle.is-down rect {
+  stroke: var(--ml-candle-down);
+  fill: var(--ml-candle-down);
+}
+.k-candle.is-highlight rect {
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+}
+.k-candle.is-new {
+  animation: k-candle-in 0.22s var(--ml-ease-enter) both;
+}
+@keyframes k-candle-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Veil over the unknown future */
+.k-veil pattern line {
+  stroke: var(--ml-hairline);
+  stroke-width: 1.5;
+}
+.k-veil-edge {
+  stroke: var(--ml-border-strong);
+  stroke-dasharray: 3 3;
+}
+.k-veil text {
+  fill: var(--ml-text-3);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+/* Role colours shared by levels, zones, lines, markers and brackets */
+.role-entry,
+.role-accent {
+  --k-role: var(--ml-accent);
+}
+.role-target,
+.role-up,
+.role-support {
+  --k-role: var(--ml-pos);
+}
+.role-stop,
+.role-down,
+.role-resistance {
+  --k-role: var(--ml-neg);
+}
+.role-concept {
+  --k-role: var(--ml-accent-2);
+}
+.role-neutral {
+  --k-role: var(--ml-text-3);
+}
+
+/* Levels */
+.k-level line {
+  stroke: var(--k-role);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.k-level.is-draggable line {
+  stroke-dasharray: none;
+  stroke-width: 1.5;
+}
+.k-level-label {
+  fill: var(--k-role);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+.k-chip rect {
+  fill: color-mix(in srgb, var(--k-role) 22%, var(--ml-surface));
+  stroke: var(--ml-surface);
+  stroke-width: 2;
+}
+.k-chip text {
+  fill: var(--k-role);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Zones */
+.k-zone rect {
+  fill: color-mix(in srgb, var(--k-role) 12%, transparent);
+  stroke: color-mix(in srgb, var(--k-role) 35%, transparent);
+  stroke-width: 1;
+}
+.k-zone text {
+  fill: var(--k-role);
+  font-size: 10px;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+/* Lines and moving averages */
+.k-line path {
+  fill: none;
+  stroke: var(--k-role);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+}
+.k-line.is-dashed path {
+  stroke-dasharray: 4 4;
+  stroke-width: 1.25;
+}
+.k-line text,
+.k-marker text,
+.k-bracket text {
+  fill: var(--k-role);
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+/* Markers and brackets */
+.k-marker circle {
+  fill: var(--ml-surface);
+  stroke: var(--k-role);
+  stroke-width: 1.5;
+}
+.k-bracket path {
+  fill: none;
+  stroke: var(--k-role);
+  stroke-width: 1;
+}
+
+/* Draggable level */
+.k-drag {
+  cursor: ns-resize;
+  outline: none;
+}
+.k-drag-hit {
+  fill: transparent;
+}
+.k-drag-handle rect {
+  fill: var(--ml-surface-2);
+  stroke: var(--k-role, var(--ml-accent));
+  stroke-width: 1;
+}
+.k-drag-handle path {
+  stroke: var(--ml-text-2);
+  stroke-width: 1;
+}
+.k-drag:focus-visible .k-drag-handle rect,
+.k-drag.is-dragging .k-drag-handle rect {
+  stroke-width: 2;
+  fill: color-mix(in srgb, var(--ml-accent) 18%, var(--ml-surface));
+}
+.k-drag.is-disabled {
+  cursor: default;
+}
+
+/* Hotspots */
+.k-hotspot {
+  cursor: pointer;
+  outline: none;
+}
+.k-hotspot rect {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.k-hotspot:hover rect,
+.k-hotspot:focus-visible rect {
+  stroke: color-mix(in srgb, var(--ml-accent) 55%, transparent);
+  fill: color-mix(in srgb, var(--ml-accent) 6%, transparent);
+}
+.k-hotspot.is-chosen rect {
+  stroke: var(--ml-border-strong);
+  stroke-dasharray: none;
+}
+.k-hotspot.is-correct rect {
+  stroke: var(--ml-accent);
+  stroke-dasharray: none;
+  fill: color-mix(in srgb, var(--ml-accent) 10%, transparent);
+}
+
+/* Formula */
+.k-formula {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.k-formula-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.k-formula-op {
+  font-size: 16px;
+  color: var(--ml-text-3);
+}
+.k-formula-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ml-border);
+  border-radius: 6px;
+  background: var(--ml-surface-2);
+  color: var(--ml-text-3);
+  font-size: 15px;
+  transition:
+    color 0.2s var(--ml-ease),
+    border-color 0.2s var(--ml-ease),
+    background 0.2s var(--ml-ease);
+}
+.k-formula-box.is-lit {
+  border-color: color-mix(in srgb, var(--ml-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--ml-accent) 7%, var(--ml-surface));
+  color: var(--ml-text);
+}
+.k-formula-box input {
+  width: 72px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ml-text);
+  font: inherit;
+  text-align: center;
+}
+.k-formula-box.is-correct {
+  border-color: var(--ml-accent);
+}
+.k-formula-unit {
+  font-size: 12px;
+  color: var(--ml-text-3);
+}
+
+/* Bars */
+.k-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.k-bar-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 160px) 1fr 72px;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.45;
+  transition: opacity 0.2s var(--ml-ease);
+}
+.k-bar-row.is-lit {
+  opacity: 1;
+}
+.k-bar-label {
+  font-size: 12px;
+  color: var(--ml-text-2);
+}
+.k-bar-track {
+  height: 10px;
+  border-radius: 3px;
+  background: var(--ml-surface-2);
+  overflow: hidden;
+}
+.k-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--k-role);
+  transition: width 0.4s var(--ml-ease);
+}
+.k-bar-value {
+  font-size: 12.5px;
+  text-align: right;
+  color: var(--ml-text);
+}
+
+/* Decision flow */
+.k-flow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.k-flow-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ml-border);
+  border-radius: 6px;
+  background: var(--ml-surface);
+  font-size: 13px;
+}
+.k-flow-node.is-current {
+  border-color: color-mix(in srgb, var(--ml-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--ml-accent) 6%, var(--ml-surface));
+}
+.k-flow-node.is-pause {
+  border-color: color-mix(in srgb, var(--ml-accent-2) 45%, transparent);
+}
+.k-flow-node.is-end {
+  border-style: dashed;
+}
+.k-flow-icon {
+  display: inline-flex;
+  color: var(--ml-text-3);
+}
+.k-flow-text {
+  flex: 1;
+}
+.k-flow-chosen {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: var(--ml-accent-fg);
+}
+.k-flow-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.k-flow-miss {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--ml-text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-candle.is-new {
+    animation: none;
+  }
+  .k-formula-box,
+  .k-bar-row,
+  .k-bar-fill {
+    transition: none;
+  }
+}

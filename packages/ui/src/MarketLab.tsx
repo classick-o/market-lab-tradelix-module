@@ -58,6 +58,7 @@ const PathDetail = page(() => import("./pages/Learn"), "PathDetailPage");
 const Lessons = page(() => import("./pages/Learn"), "LessonsPage");
 const Concepts = page(() => import("./pages/Learn"), "ConceptsPage");
 const Glossary = page(() => import("./pages/Learn"), "GlossaryPage");
+const KitGallery = page(() => import("./pages/KitGallery"), "KitGalleryPage");
 const Checks = page(() => import("./pages/Learn"), "ChecksPage");
 const Lesson = page(() => import("./pages/Lesson"), "LessonPage");
 const Check = page(() => import("./pages/CheckRunner"), "CheckPage");
@@ -102,6 +103,7 @@ const ROUTES: [string, (p: Record<string, string>) => ReactNode][] = [
   ["/learn/concepts", () => <Concepts />],
   ["/learn/concepts/:id", (p) => <Concepts conceptId={p.id} />],
   ["/learn/glossary", () => <Glossary />],
+  ["/learn/kit", () => <KitGallery />],
   ["/learn/checks", () => <Checks />],
   ["/learn/checks/:id", (p) => <Check checkId={p.id} />],
   ["/progress/skills", () => <SkillProfile />],

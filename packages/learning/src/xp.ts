@@ -6,7 +6,11 @@ export const XP_RULES = {
   arenaSession: 40,
   placement: 30,
   /** First completion of a lesson. */
-  lesson: 25,
+  lesson: 15,
+  /** Bonus when the lesson's check is 3 of 3 right on the first try. */
+  lessonPerfect: 10,
+  /** A finished daily review session. */
+  review: 15,
   /** First pass of a knowledge check / topic assessment. */
   checkPass: 40,
   assessmentPass: 60,

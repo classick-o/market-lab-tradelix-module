@@ -1,5 +1,17 @@
 import { createContext, useContext, useSyncExternalStore } from "react";
-import { DAILY_XP, WEEKLY_XP, dayKey, getCheck, type TopicId } from "@market-lab/academy";
+import {
+  DAILY_XP,
+  TOPIC_BY_ID,
+  WEEKLY_XP,
+  applyReview,
+  dayKey,
+  getCheck,
+  getQuestion,
+  isCorrect,
+  type ConceptEvidence,
+  type ReviewItem,
+  type TopicId,
+} from "@market-lab/academy";
 import type { LogEntry } from "@market-lab/engine";
 import { riskDisciplineScore, type SkillId } from "@market-lab/evaluation";
 import {
@@ -100,6 +112,24 @@ export interface CheckAttempt {
   answers: Record<string, string>;
 }
 
+/** Progress through one lesson (PLAN_LEARN §4.3, §13.2). */
+export interface LessonProgress {
+  startedAt: number;
+  completedAt?: number;
+  /** Read mode only: the lesson was read but its check wasn't done. */
+  readAt?: number;
+  /** Where to resume: phase 0 Hook, 1 Learn, 2 Try, 3 Check, 4 Recap; beat within the phase. */
+  position?: { phase: number; beat: number };
+  hookAnswer?: string | number;
+  /** The lesson check, first try only. */
+  firstTry?: { correct: number; total: number };
+  quality?: "strong" | "good" | "review";
+  testedOutAt?: number;
+  rating?: { up: boolean; note?: string; at: number };
+  /** Answers to plan fields in a lesson (e.g. the learner's own pause time). */
+  fields?: Record<string, string | number>;
+}
+
 export interface PlanState {
   tier: "free" | "pro";
   billing: "monthly" | "annual" | null;
@@ -148,8 +178,17 @@ export interface LabData {
   xp: { id: string; amount: number; reason: string; ref?: string; at: number }[];
   observed: ObservedBehavior[];
   replaysViewed: Record<string, true>;
-  lessons: Record<string, { startedAt: number; completedAt?: number }>;
+  lessons: Record<string, LessonProgress>;
   checks: Record<string, CheckAttempt[]>;
+  /** Spaced review, by question id. */
+  review: Record<string, ReviewItem>;
+  /** Evidence for concept mastery (most recent last). */
+  evidence: ConceptEvidence[];
+  /** Day a review last moved each topic's skill estimate (once a day per topic). */
+  reviewSkillDay: Record<string, string>;
+  /** Saved lessons, concepts and terms (ids). */
+  bookmarks: string[];
+  learnPrefs: { mode: "learn" | "read"; railOpen: boolean };
   dailies: Record<string, { at: number; correct: number; total: number; answers: Record<string, string> }>;
   weeklies: Record<string, { at: number }>;
   plan: PlanState;
@@ -207,6 +246,11 @@ function fresh(): LabData {
     replaysViewed: {},
     lessons: {},
     checks: {},
+    review: {},
+    evidence: [],
+    reviewSkillDay: {},
+    bookmarks: [],
+    learnPrefs: { mode: "learn", railOpen: true },
     dailies: {},
     weeklies: {},
     plan: { tier: "free", billing: null, status: "active", since: null, renewsAt: null, history: [] },
@@ -232,15 +276,40 @@ function migrate(saved: Partial<LabData>): LabData {
     settings.theme = "black";
     settings.paletteVersion = PALETTE_VERSION;
   }
-  return {
+  const merged = {
     ...f,
     ...saved,
     profile: { ...f.profile, ...saved.profile, goals: { ...f.profile.goals, ...saved.profile?.goals } },
     plan: { ...f.plan, ...saved.plan },
+    learnPrefs: { ...f.learnPrefs, ...saved.learnPrefs },
     // Data saved before achievements existed adopts what is already earned without a burst of toasts.
     seenAchievements: saved.seenAchievements ?? ["*init"],
     settings,
   } as LabData;
+  // Data saved before spaced review existed: earlier check answers seed the review queue and the
+  // mastery evidence, so nothing learned so far is lost.
+  if (!saved.review) Object.assign(merged, seedLearningMemory(merged.checks));
+  return merged;
+}
+
+/** Review items and concept evidence rebuilt from stored check attempts (oldest first). */
+function seedLearningMemory(checks: LabData["checks"]): Pick<LabData, "review" | "evidence"> {
+  const review: Record<string, ReviewItem> = {};
+  const evidence: ConceptEvidence[] = [];
+  const attempts = Object.values(checks)
+    .flat()
+    .sort((a, b) => a.at - b.at);
+  for (const a of attempts) {
+    const day = dayKey(a.at);
+    for (const [qid, answer] of Object.entries(a.answers)) {
+      const q = getQuestion(qid);
+      if (!q) continue;
+      const ok = isCorrect(q, answer);
+      review[qid] = applyReview(review[qid], ok, false, day, a.at);
+      for (const concept of q.concepts ?? []) evidence.push({ concept, at: a.at, score: ok ? 1 : 0, source: "check" });
+    }
+  }
+  return { review, evidence: evidence.slice(-2000) };
 }
 
 function load(key: string): LabData | null {
@@ -580,9 +649,131 @@ export class LabStore {
     const at = Date.now();
     this.update((d) => ({
       ...d,
-      lessons: { ...d.lessons, [id]: { startedAt: d.lessons[id]?.startedAt ?? at, completedAt: at } },
+      lessons: { ...d.lessons, [id]: { ...d.lessons[id], startedAt: d.lessons[id]?.startedAt ?? at, completedAt: at } },
       xp: [...d.xp, this.xpEntry(XP_RULES.lesson, "lesson", id, at)],
     }));
+  }
+
+  private patchLesson(id: string, patch: Partial<LessonProgress>): void {
+    this.update((d) => {
+      const cur = d.lessons[id] ?? { startedAt: Date.now() };
+      return { ...d, lessons: { ...d.lessons, [id]: { ...cur, ...patch } } };
+    });
+  }
+
+  /** Where the learner is in an interactive lesson, so it reopens there. */
+  setLessonPosition(id: string, phase: number, beat: number): void {
+    const cur = this.data.lessons[id]?.position;
+    if (cur && cur.phase === phase && cur.beat === beat) return;
+    this.patchLesson(id, { position: { phase, beat } });
+  }
+
+  saveHookAnswer(id: string, answer: string | number): void {
+    this.patchLesson(id, { hookAnswer: answer });
+  }
+
+  setLessonField(id: string, key: string, value: string | number): void {
+    this.patchLesson(id, { fields: { ...this.data.lessons[id]?.fields, [key]: value } });
+  }
+
+  /** Adds mastery evidence (a task, a beat question, a flashcard). Keeps the most recent 2,000. */
+  recordEvidence(items: Omit<ConceptEvidence, "at">[], at = Date.now()): void {
+    if (!items.length) return;
+    this.update((d) => ({ ...d, evidence: [...d.evidence, ...items.map((e) => ({ ...e, at }))].slice(-2000) }));
+  }
+
+  /**
+   * The lesson's check. Only the first try counts for quality, XP and skill evidence; every answer
+   * enters spaced review (wrong → box 1 tomorrow, right → box 2) and gives concept evidence.
+   */
+  finishLessonCheck(id: string, results: { questionId: string; correct: boolean; hinted?: boolean }[], skill: SkillId): { firstTry: boolean; correct: number; total: number } {
+    const at = Date.now();
+    const correct = results.filter((r) => r.correct).length;
+    const total = results.length;
+    const firstTry = !this.data.lessons[id]?.firstTry;
+    const today = dayKey(at, this.data.settings.timeZone);
+    this.update((d) => {
+      const review = { ...d.review };
+      const evidence = [...d.evidence];
+      for (const r of results) {
+        review[r.questionId] = applyReview(review[r.questionId], r.correct, !!r.hinted, today, at);
+        const q = getQuestion(r.questionId);
+        for (const concept of q?.concepts ?? []) evidence.push({ concept, at, score: r.correct ? (r.hinted ? 0.5 : 1) : 0, source: "lesson" });
+      }
+      const cur = d.lessons[id] ?? { startedAt: at };
+      if (!firstTry) return { ...d, review, evidence: evidence.slice(-2000) };
+      const quality: LessonProgress["quality"] = correct === total ? "strong" : correct >= Math.ceil((total * 2) / 3) ? "good" : "review";
+      const { skills } = this.withEvidence(d, [{ skill, performance: total ? correct / total : 0, difficulty: 1, weight: 0.15 }], at);
+      return { ...d, skills, review, evidence: evidence.slice(-2000), lessons: { ...d.lessons, [id]: { ...cur, firstTry: { correct, total }, quality } } };
+    });
+    return { firstTry, correct, total };
+  }
+
+  /** Marks an interactive lesson complete: 15 XP, plus 10 when its check was 3 of 3 on the first try. */
+  completeScriptedLesson(id: string): number {
+    const cur = this.data.lessons[id];
+    if (cur?.completedAt) return 0;
+    const at = Date.now();
+    const perfect = !!cur?.firstTry && cur.firstTry.total > 0 && cur.firstTry.correct === cur.firstTry.total;
+    const amount = XP_RULES.lesson + (perfect ? XP_RULES.lessonPerfect : 0);
+    this.update((d) => ({
+      ...d,
+      lessons: { ...d.lessons, [id]: { ...(d.lessons[id] ?? { startedAt: at }), completedAt: at, position: { phase: 4, beat: 0 } } },
+      xp: [...d.xp, this.xpEntry(XP_RULES.lesson, "lesson", id, at), ...(perfect ? [this.xpEntry(XP_RULES.lessonPerfect, "lesson-perfect", id, at)] : [])],
+    }));
+    return amount;
+  }
+
+  /** Read mode: the lesson was read, without its check (no lesson XP). */
+  markLessonRead(id: string): void {
+    if (this.data.lessons[id]?.readAt || this.data.lessons[id]?.completedAt) return;
+    this.patchLesson(id, { readAt: Date.now() });
+  }
+
+  rateLesson(id: string, up: boolean, note?: string): void {
+    this.patchLesson(id, { rating: { up, note: note?.slice(0, 500), at: Date.now() } });
+  }
+
+  /** Unit checkpoint passed at 80% or more: its lessons count as done, without lesson XP. */
+  testOutLessons(ids: string[]): void {
+    const at = Date.now();
+    this.update((d) => {
+      const lessons = { ...d.lessons };
+      for (const id of ids) if (!lessons[id]?.completedAt) lessons[id] = { ...(lessons[id] ?? { startedAt: at }), testedOutAt: at };
+      return { ...d, lessons };
+    });
+  }
+
+  /** One answer in a review session. */
+  answerReview(questionId: string, correct: boolean, hinted: boolean): void {
+    const at = Date.now();
+    const today = dayKey(at, this.data.settings.timeZone);
+    this.update((d) => {
+      const q = getQuestion(questionId);
+      const evidence = [...d.evidence, ...(q?.concepts ?? []).map((concept) => ({ concept, at, score: correct ? (hinted ? 0.5 : 1) : 0, source: "review" as const }))];
+      const next: LabData = { ...d, review: { ...d.review, [questionId]: applyReview(d.review[questionId], correct, hinted, today, at) }, evidence: evidence.slice(-2000) };
+      // Review gives a little skill evidence too, at most once a day per topic.
+      if (!q || d.reviewSkillDay[q.topic] === today) return next;
+      const { skills } = this.withEvidence(d, [{ skill: TOPIC_BY_ID[q.topic].skill, performance: correct ? (hinted ? 0.5 : 1) : 0, difficulty: q.difficulty, weight: 0.1 }], at);
+      return { ...next, skills, reviewSkillDay: { ...d.reviewSkillDay, [q.topic]: today } };
+    });
+  }
+
+  /** A finished daily review: 15 XP, once per day. */
+  completeReviewSession(): number {
+    const at = Date.now();
+    const day = dayKey(at, this.data.settings.timeZone);
+    if (this.data.xp.some((x) => x.reason === "review" && x.ref === day)) return 0;
+    this.update((d) => ({ ...d, xp: [...d.xp, this.xpEntry(XP_RULES.review, "review", day, at)] }));
+    return XP_RULES.review;
+  }
+
+  toggleBookmark(id: string): void {
+    this.update((d) => ({ ...d, bookmarks: d.bookmarks.includes(id) ? d.bookmarks.filter((b) => b !== id) : [...d.bookmarks, id] }));
+  }
+
+  setLearnPrefs(patch: Partial<LabData["learnPrefs"]>): void {
+    this.update((d) => ({ ...d, learnPrefs: { ...d.learnPrefs, ...patch } }));
   }
 
   /**
@@ -597,12 +788,23 @@ export class LabStore {
     const attempts = this.data.checks[checkId] ?? [];
     const firstPass = passed && !attempts.some((a) => a.passed);
     const firstToday = !attempts.some((a) => a.at >= startOfDay(at));
+    const today = dayKey(at, this.data.settings.timeZone);
     this.update((d) => {
       const { skills } = firstToday
         ? this.withEvidence(d, [{ skill, performance: total ? correct / total : 0, difficulty: check?.kind === "assessment" ? 3 : 2, weight: check?.kind === "assessment" ? 0.5 : 0.3 }], at)
         : { skills: d.skills };
       const xp = firstPass ? [...d.xp, this.xpEntry(check?.kind === "assessment" ? XP_RULES.assessmentPass : XP_RULES.checkPass, check?.kind === "assessment" ? "assessment" : "check", checkId, at)] : d.xp;
-      return { ...d, skills, xp, checks: { ...d.checks, [checkId]: [...attempts, { at, correct, total, passed, answers }] } };
+      // Every answer feeds spaced review and concept mastery.
+      const review = { ...d.review };
+      const evidence = [...d.evidence];
+      for (const [qid, answer] of Object.entries(answers)) {
+        const q = getQuestion(qid);
+        if (!q) continue;
+        const ok = isCorrect(q, answer);
+        review[qid] = applyReview(review[qid], ok, false, today, at);
+        for (const concept of q.concepts ?? []) evidence.push({ concept, at, score: ok ? 1 : 0, source: check?.kind === "assessment" ? "assessment" : "check" });
+      }
+      return { ...d, skills, xp, review, evidence: evidence.slice(-2000), checks: { ...d.checks, [checkId]: [...attempts, { at, correct, total, passed, answers }] } };
     });
     return { passed, firstPass };
   }
