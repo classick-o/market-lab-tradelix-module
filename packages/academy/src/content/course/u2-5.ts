@@ -480,6 +480,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.1",
+      bridge: "In 2.4.9 you closed unit 2.4 with channels built from price alone. In 1.2.4 you compared each bar's volume with its average. Here that comparison becomes a number, relative volume, and you test whether it confirms the breakouts of 2.2.2.",
       hook: {
         prompt: "A [[breakout]] happens on three times normal [[volume]]. Is it more likely to hold?",
         control: {
@@ -585,6 +586,7 @@ const lessons: Lesson[] = [
           "Volume shows participation, not direction: every unit bought was also sold.",
           "'Volume confirms breakouts' is mixed evidence. Test it against the same breakouts without the filter.",
         ],
+        next: "Next, 2.5.2: running totals of volume, OBV and A/D, which try to give volume a direction.",
       },
     },
   },
@@ -611,6 +613,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.2",
+      bridge: "In 2.5.1 you divided one candle's volume by its 20-candle average. Here volume piles up: OBV adds or subtracts each candle's volume, A/D weights it by where the close sits, and money flow runs volume through the RSI recipe from 2.4.2.",
       hook: {
         prompt: "LABX closed at 105.00. Today it gaps down to open at 99.00, trades between 98.00 and 100.00 and closes at 99.80. Does the [[accumulation-distribution-line|A/D line]] record accumulation or distribution?",
         control: {
@@ -746,6 +749,7 @@ const lessons: Lesson[] = [
           "One huge candle can shift OBV for a long time, and A/D never sees a gap.",
           "The level of OBV or A/D is arbitrary; read only its direction.",
         ],
+        next: "Next, 2.5.3: VWAP, which uses volume to weight price, and its real job as an execution benchmark.",
       },
     },
   },
@@ -772,6 +776,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.3",
+      bridge: "In 2.5.2 volume built running totals, and in 1.3.6 and 1.3.7 your orders filled and slipped. Here volume weights price instead: VWAP is the average price paid in the session, a yardstick for judging your own fills.",
       hook: {
         prompt: "You must buy 3,000 units during today's session. Your average fill ends up below the session [[vwap|VWAP]]. Is that good or bad execution?",
         control: {
@@ -884,6 +889,7 @@ const lessons: Lesson[] = [
           "VWAP is an execution benchmark that resets each session; as support or resistance it's unproven.",
           "Anchored VWAP starts at an event you choose: the average price paid since then.",
         ],
+        next: "Next, 2.5.4: volume sorted by price instead of time, the volume profile and its point of control.",
       },
     },
   },
@@ -910,6 +916,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.4",
+      bridge: "In 2.5.3 VWAP squeezed a session's prices and volumes into one average. Here you keep the detail: a volume profile counts the volume from 2.5.1 at each price, and its busiest price, the point of control, becomes a level of its own.",
       hook: {
         prompt: "This session traded 4,000 units of LABX. Tap the price where you think the most volume traded.",
         control: {
@@ -1072,6 +1079,7 @@ const lessons: Lesson[] = [
           "High-volume nodes are claimed as support, low-volume nodes as fast zones; neither claim is tested.",
           "Build a profile only from candles before the turn you study, or you're using look-ahead.",
         ],
+        next: "Next, 2.5.5: pivot points, levels calculated from yesterday's high, low and close, with no volume at all.",
       },
     },
   },
@@ -1098,6 +1106,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.5",
+      bridge: "In 1.5.4 you drew support and resistance from turns on the chart, and in 2.5.3 VWAP reset with each session. Pivot points are session levels you calculate instead, from yesterday's high, low and close. Half an ATR, from 2.4.6, decides when price is near one.",
       hook: {
         prompt: "Yesterday's session: high 102.00, low 98.00, close 101.00. Guess today's central [[pivot-point|pivot]].",
         control: {
@@ -1230,6 +1239,7 @@ const lessons: Lesson[] = [
           "Fibonacci, Camarilla, Woodie and DeMark reuse the same inputs with different recipes.",
           "Plot enough pivot systems and some line is always near price: a grid, not evidence.",
         ],
+        next: "Next, 2.5.6: gaps, the jumps from one candle to the next, their four kinds and whether they all fill.",
       },
     },
   },
@@ -1256,6 +1266,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.6",
+      bridge: "In 1.3.7 a gap jumped past your stop, and in 2.1.6 two gaps cut off an abandoned baby. Here you name each gap by where it sits in a move, with the volume of 2.5.1 as a clue, and test 'all gaps get filled'.",
       hook: {
         prompt: "\"All gaps get filled.\" True or false?",
         control: {
@@ -1353,6 +1364,7 @@ const lessons: Lesson[] = [
           "A gap fills when price returns to the last pre-gap extreme; breakaway gaps often never do.",
           "An island is cut off by two gaps; an abandoned baby is a one-candle island.",
         ],
+        next: "Next, 2.5.7: supply and demand zones, drawn from the quiet base before a strong move away.",
       },
     },
   },
@@ -1379,6 +1391,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.7",
+      bridge: "In 1.5.4 you drew support and resistance as zones from repeated turns. Here a zone comes from a base instead: a few quiet candles, each narrower than 0.6 ATR (2.4.6), before a strong move away. Then you test it against random zones.",
       hook: {
         prompt: "A price zone has now been tested three times. Is it stronger or weaker?",
         control: {
@@ -1515,6 +1528,7 @@ const lessons: Lesson[] = [
           "'More touches, stronger' and 'fresh is best' contradict each other, and neither is tested.",
           "Judge your zones against random zones of the same width, at the first touch.",
         ],
+        next: "Next, 2.5.8: Fibonacci levels, and why many lines piling up at one price prove less than they seem.",
       },
     },
   },
@@ -1541,6 +1555,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.5",
       courseId: "2.5.8",
+      bridge: "In 2.5.5 four pivot systems put a line near almost every close, and in 2.5.7 your zones faced random ones. Here Fibonacci measures the pullbacks of 1.5.3, extensions echo the measured move of 2.2.7, and you count the lines near one price.",
       hook: {
         prompt: "Take the price 106.40 on this chart. How many Fibonacci, pivot, moving-average and round-number lines lie within 0.5 ATR, 0.38, of it? Guess.",
         control: {
@@ -1703,6 +1718,7 @@ const lessons: Lesson[] = [
           "50% isn't a Fibonacci ratio, and the 38.2–61.8% zone catches most pullbacks anyway.",
           "Lines near a price are cheap. Confluence needs independent factors that each predict on their own.",
         ],
+        next: "Next: the 2.5 checkpoint, then unit 2.6, Price action bar by bar, where you read the chart one bar at a time.",
       },
     },
   },
@@ -2561,4 +2577,20 @@ const concepts: Concept[] = [
 ];
 
 /** Unit 2.5 · Volume, levels and zones (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_2_5: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_2_5: UnitContent = {
+  intro: {
+    summary: "Volume is a third family of tools, beside the trend tools of 2.3 and the oscillators of 2.4: it measures participation, not direction. This unit reads volume, builds VWAP and volume profiles, then turns to the levels traders draw, pivots, gaps, supply and demand zones and Fibonacci, and asks what evidence each one has.",
+    outcomes: [
+      "Measure relative volume, OBV and A/D, and read volume as participation, never as direction.",
+      "Calculate VWAP and anchored VWAP, and use VWAP to grade your own fills.",
+      "Build a volume profile and find its point of control and value area without look-ahead.",
+      "Calculate pivots, Fibonacci levels and supply and demand zones, and classify a gap by where it sits.",
+      "Compare any level with random lines before you call a reaction there evidence.",
+    ],
+    buildsOn: "Volume and gaps on the chart from 1.2.4 and 1.2.5; support, resistance and round numbers from 1.5.4 and 1.5.5; breakouts from 2.2.2; RSI from 2.4.2; ATR from 2.4.6.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};

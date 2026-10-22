@@ -308,6 +308,7 @@ const L261: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.1",
+    bridge: "Unit 2.5 ended in 2.5.8 with lines near every price. Here you set them aside and read each bar. In 2.1.1 you measured a candle against its neighbours; now body and close sort bars, and overlap separates the trends and ranges of 1.5.2.",
     hook: {
       prompt: "Six bars in a row overlap heavily and have small bodies. Trend or range?",
       figure: { kind: "chart", chart: { candles: L261_HOOK }, steps: [{ text: "Six bars, each mostly inside the one before. The bodies are small next to the ranges." }] },
@@ -448,6 +449,7 @@ const L261: Lesson = {
         "Average overlap under 30% suggests a trend, over 50% a range. Runs of trend bars show urgency.",
         "In a trend, a big trend bar adds to a run; inside a range it needs follow-through to mean much.",
       ],
+      next: "Next, 2.6.2: one bar becomes a signal bar, the next an entry bar, and the trader's equation says whether it's worth it.",
     },
   },
 };
@@ -473,6 +475,7 @@ const L262: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.2",
+    bridge: "In 2.6.1 you sorted bars by body and close. Here one bar becomes a signal: you grade it, buy one tick above it with the stop entry from 1.3.3, and check the trade with the break-even maths of 1.4.6, costs included.",
     hook: {
       prompt: "A setup wins 40% of the time. What is the smallest reward-to-risk that breaks even, before costs?",
       control: {
@@ -599,6 +602,7 @@ const L262: Lesson = {
         "Buy stop one tick above the signal bar, protective stop one tick below: the gap is your risk.",
         "Trader's equation: win chance × reward − loss chance × risk − costs must stay above zero.",
       ],
+      next: "Next, 2.6.3: inside, outside and narrow-range bars, where one quiet bar sets up stop entries on both sides.",
     },
   },
 };
@@ -624,6 +628,7 @@ const L263: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.3",
+    bridge: "In 2.6.2 you bought one tick above a signal bar. Here the signal is a quiet bar: an inside bar, the range version of the 2.1.4 harami, or an NR7, a small squeeze as in 2.4.8. You bracket it with OCO entries from 1.3.4.",
     hook: {
       prompt: "Two inside bars in a row: the range has shrunk to half the ATR. Is the next move more likely to be bigger or smaller than usual?",
       control: {
@@ -762,6 +767,7 @@ const L263: Lesson = {
         "Bracket an inside bar with OCO stop entries, each stopped at the other side; size from the larger distance.",
         "Hikkake: an inside bar, a false break one way, then a close beyond the other side.",
       ],
+      next: "Next, 2.6.4: pullbacks in two legs, and counting H1 and H2 to time the second entry.",
     },
   },
 };
@@ -787,6 +793,7 @@ const L264: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.4",
+    bridge: "In 1.5.3 a pullback was a fall inside an uptrend, and in 2.6.2 you entered one tick beyond a signal bar. Here you count the pullback's bars, H1 and H2, and place that same stop entry on the second leg.",
     hook: {
       prompt: "During this pullback in an uptrend, tap the first bar whose high goes above the previous bar's high.",
       control: {
@@ -916,6 +923,7 @@ const L264: Lesson = {
         "H2 entry: buy stop one tick above the signal bar; stop one tick under the pullback low.",
         "A second entry can trap counter-trend traders. In a range, counts appear everywhere and mean little.",
       ],
+      next: "Next, 2.6.5: channels and wedges bar by bar, where the size of the pullbacks grades the trend.",
     },
   },
 };
@@ -941,6 +949,7 @@ const L265: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.5",
+    bridge: "In 2.2.1 you drew channels and in 2.2.8 wedges, as whole patterns; in 2.6.4 you counted a pullback's legs. Here you grade a trend by its pullbacks, tight, broad or micro, and count three pushes into a wedge, bar by bar.",
     hook: {
       prompt: "For 8 bars in a row, no bar's low went below the previous bar's low. Is this uptrend strong or weak?",
       figure: {
@@ -1066,6 +1075,7 @@ const L265: Lesson = {
         "A three-push wedge has fading pushes; three pushes against the trend make a wedge flag, H3 or L3.",
         "Touches before you drew a line are its anchors, not evidence. Count only the later ones.",
       ],
+      next: "Next, 2.6.6: traps and failed breakouts, where the traders who chased a break fuel the move back.",
     },
   },
 };
@@ -1091,6 +1101,7 @@ const L266: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.6",
+    bridge: "In 2.2.10 a pattern failed on a close back inside, and in 1.5.6 so did a false breakout. Here you find where the trapped traders' stops sit, and decide only at the bar's close: buy, fade or stand aside, with the invalidation written down.",
     hook: {
       prompt: "Al Brooks estimates what share of attempts to break out of a trading range fail?",
       control: {
@@ -1205,6 +1216,7 @@ const L266: Lesson = {
         "Trapped breakout buyers' stops sit back inside the range; their stop sells can fuel the drop.",
         "Decide only after the bar closes, and write the invalidation for the choice you make.",
       ],
+      next: "Next, 2.6.7: one huge bar after a long move, and whether it shows momentum or exhaustion.",
     },
   },
 };
@@ -1230,6 +1242,7 @@ const L267: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.7",
+    bridge: "In 2.6.1 runs of trend bars showed urgency, and in 2.4.6 ATR measured a normal bar. Here you score a move's strength against its exhaustion, flag climax bars of 2.5 ATR or more, use the distance from the EMA 20 (2.3.3), and state a probability.",
     hook: {
       prompt: "A bar three times the ATR closes at its high after a long rally. Breakout or climax?",
       figure: {
@@ -1392,6 +1405,7 @@ const L267: Lesson = {
         "Climax flag: a bar at least 2.5 ATR tall after 20 or more trend bars.",
         "A big bar can start or end a move. State a probability, then track your Brier score.",
       ],
+      next: "Next, 2.6.8: when the daily and the hourly chart disagree, a rule written in advance decides which one wins.",
     },
   },
 };
@@ -1417,6 +1431,7 @@ const L268: Lesson = {
   script: {
     unit: "2.6",
     courseId: "2.6.8",
+    bridge: "In 1.5.8 you read the trend on a higher timeframe before timing the entry, and in 2.3.1 Dow Theory ran three trends at once. Here you pick three timeframes 4–6 times apart, write which one wins before trading, and spot timeframe shopping.",
     hook: {
       prompt: "The daily chart is in an uptrend. The hourly chart is falling. Which one wins?",
       control: {
@@ -1518,6 +1533,7 @@ const L268: Lesson = {
         "Write the hierarchy before trading: the lower timeframe times entries and never overrules the higher.",
         "Switching charts after a loss, or to find agreement, is timeframe shopping. Change rules only in review.",
       ],
+      next: "Next: the 2.6 checkpoint, then unit 2.7, Managing the trade, where signal bars and structure become entries, stops and exits.",
     },
   },
 };
@@ -2327,6 +2343,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 2.6 · Price action bar by bar (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_6: UnitContent = {
+  intro: {
+    summary: "Price action reads the chart one bar at a time, in Al Brooks's vocabulary, with fixed rules where he leaves judgement. The candles of 2.1 become bars with jobs, the patterns of 2.2 unfold live, and the stop entries and OCO orders of 1.3 get setups. It comes before 2.7 because entries and exits start from signal bars.",
+    outcomes: [
+      "Classify trend and doji bars, and read the overlap between bars as a sign of trend or range.",
+      "Grade a signal bar, enter one tick beyond it, and check the trade with the trader's equation.",
+      "Bracket an inside bar with OCO stop entries, and count H1 and H2 in a two-legged pullback.",
+      "Call a breakout failed only at the close, and score a move's momentum against its exhaustion.",
+      "Rank three timeframes with a rule written before the trade, and spot timeframe shopping.",
+    ],
+    buildsOn: "Candle anatomy from 2.1.1 and 2.1.4; channels, wedges and failed patterns from 2.2.1, 2.2.8 and 2.2.10; EMA and ATR from 2.3.3 and 2.4.6; stop entries and OCO from 1.3.3 and 1.3.4; structure from 1.5.",
+  },
   lessons: [L261, L262, L263, L264, L265, L266, L267, L268],
   questions: QUESTIONS,
   terms: TERMS,
