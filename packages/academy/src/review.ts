@@ -3,6 +3,7 @@
  * Pure functions; the UI stores the review items and the evidence list and calls these to read them.
  */
 import { addDays, dayIndex } from "./calendar";
+import { evaluate, renderTemplate, type Env } from "./expr";
 import type { Question, TopicId } from "./types";
 
 /** Days until a question in each box comes back: box 1 → 1 day, … box 5 → 30 days. */
@@ -156,4 +157,37 @@ export function checkPool(questions: Question[], topic: TopicId, seen: ReadonlyS
     taken.add(q.id);
   }
   return out.slice(0, size).sort((a, b) => a.difficulty - b.difficulty).map((q) => q.id);
+}
+
+// ─── Fresh numbers for numeric questions ─────────────────────────────────
+
+export interface QuestionVariant {
+  prompt: string;
+  explanation: string;
+  hint?: string;
+  answer: number;
+  values: Env;
+}
+
+/**
+ * A new version of a numeric question with `vary`: fields drawn from their ranges until every
+ * constraint holds (up to 200 draws), then prompt, explanation, hint and answer computed from them.
+ * Returns null for questions without `vary` or when no draw satisfies the constraints.
+ */
+export function varyQuestion(q: Question, rand: () => number): QuestionVariant | null {
+  const spec = q.vary;
+  if (!spec) return null;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const values: Env = {};
+    for (const [name, [min, max, step]] of Object.entries(spec.fields)) {
+      const n = Math.floor((max - min) / step + 1e-9) + 1;
+      values[name] = Number((min + Math.floor(rand() * n) * step).toFixed(6));
+    }
+    if (!(spec.constraints ?? []).every((c) => evaluate(c, values) !== 0)) continue;
+    const answer = evaluate(spec.answer, values);
+    if (!Number.isFinite(answer)) continue;
+    const env = { ...values, answer };
+    return { prompt: renderTemplate(spec.prompt, env), explanation: renderTemplate(spec.explanation, env), hint: spec.hint ? renderTemplate(spec.hint, env) : undefined, answer, values };
+  }
+  return null;
 }

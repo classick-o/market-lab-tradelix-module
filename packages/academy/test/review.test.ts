@@ -120,3 +120,45 @@ describe("task conditions", () => {
     expect(pickFeedback(cases, { stop: 97.6 })).toBeUndefined();
   });
 });
+
+describe("expressions and question variants", () => {
+  it("evaluates arithmetic, functions and comparisons safely", async () => {
+    const { evaluate, renderTemplate } = await import("../src");
+    expect(evaluate("floor(budget / (entry - stop))", { budget: 100, entry: 100, stop: 98 })).toBe(50);
+    expect(evaluate("round(0.4 * 2.5 - 0.6 * 1, 2)", {})).toBe(0.4);
+    expect(evaluate("commission(4700)", {})).toBe(2.35);
+    expect(evaluate("commission(4606)", {})).toBe(2.31);
+    expect(evaluate("entry > stop && stop >= 90", { entry: 100, stop: 95 })).toBe(1);
+    expect(evaluate("2 × 3 ÷ 4 − 1", {})).toBe(0.5);
+    expect(renderTemplate("Buy {units} at {entry:2}, budget {units * entry:2}", { units: 47, entry: 100 })).toBe("Buy 47 at 100.00, budget 4,700.00");
+    expect(() => evaluate("alert(1)", {})).toThrow();
+    expect(() => evaluate("x", {})).toThrow();
+  });
+
+  it("draws variants that meet the constraints", async () => {
+    const { varyQuestion } = await import("../src");
+    const q = {
+      id: "t",
+      topic: "position_sizing" as const,
+      kind: "numeric" as const,
+      difficulty: 1 as const,
+      prompt: "",
+      explanation: "",
+      lesson: "L09",
+      numeric: { answer: 50, tolerance: 0, unit: "units" },
+      vary: {
+        fields: { account: [5000, 20000, 1000] as [number, number, number], dist: [1, 4, 0.5] as [number, number, number] },
+        constraints: ["account * 0.01 / dist == floor(account * 0.01 / dist)"],
+        answer: "account * 0.01 / dist",
+        prompt: "Account {account:2}, stop {dist:2} away: how many units for 1% risk?",
+        explanation: "{account * 0.01:2} ÷ {dist:2} = {answer} units.",
+      },
+    };
+    const rand = seededRandom(3);
+    for (let i = 0; i < 20; i++) {
+      const v = varyQuestion(q, rand)!;
+      expect(Number.isInteger(v.answer)).toBe(true);
+      expect(v.prompt).toMatch(/^Account [\d,]+\.00, stop \d\.\d0 away/);
+    }
+  });
+});

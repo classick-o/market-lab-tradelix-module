@@ -1,16 +1,21 @@
-import { CONCEPTS } from "./content/concepts";
-import { GLOSSARY } from "./content/glossary";
+import { CONCEPTS as BASE_CONCEPTS } from "./content/concepts";
+import { GLOSSARY as BASE_GLOSSARY } from "./content/glossary";
 import { LESSONS_A } from "./content/lessons-a";
 import { LESSONS_B } from "./content/lessons-b";
 import { QUESTIONS_A } from "./content/questions-a";
 import { QUESTIONS_B } from "./content/questions-b";
+import { SCRIPTS, SCRIPT_CONCEPTS, SCRIPT_TERMS } from "./content/scripts";
 import { assessmentId, checkId } from "./paths";
 import { TOPICS } from "./topics";
 import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId } from "./types";
 
-export const LESSONS: Lesson[] = [...LESSONS_A, ...LESSONS_B].sort((a, b) => a.id.localeCompare(b.id));
+/** Lessons, each with its interactive script when one exists. */
+export const LESSONS: Lesson[] = [...LESSONS_A, ...LESSONS_B]
+  .map((l) => (SCRIPTS[l.id] ? { ...l, script: SCRIPTS[l.id] } : l))
+  .sort((a, b) => a.id.localeCompare(b.id));
 export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B];
-export { CONCEPTS, GLOSSARY };
+export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS];
+export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS];
 
 const byId = <T extends { id: string }>(xs: T[]) => new Map(xs.map((x) => [x.id, x]));
 const lessonMap = byId(LESSONS);
