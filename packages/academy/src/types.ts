@@ -120,8 +120,14 @@ export interface ChartSpec {
   range?: [number, number];
   /** Chart height in px (default 240). */
   height?: number;
-  /** Draw only the layers (a line chart); the candles still set the time axis and slots. */
+  /** Draw only the layers; the candles still set the time axis and slots. */
   hideCandles?: boolean;
+  /** How prices are drawn: candles (default), OHLC bars, or a line through the closes. */
+  style?: "candle" | "bar" | "line";
+  /** Price scale; "log" spaces prices by ratio, so equal percentage moves are equal heights. */
+  scale?: "linear" | "log";
+  /** A volume pane under the prices, from each candle's `v`. */
+  volume?: boolean;
   /** Screen-reader description; generated from the data when absent. */
   describe?: string;
 }
@@ -132,6 +138,9 @@ export interface FigureStep {
   layers?: ChartLayer[];
   /** Candles visible from this step on. */
   visible?: number;
+  /** Switch the chart style or scale from this step on (e.g. candles to a line, linear to log). */
+  style?: "candle" | "bar" | "line";
+  scale?: "linear" | "log";
 }
 
 export interface FormulaBox {

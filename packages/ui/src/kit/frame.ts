@@ -35,7 +35,7 @@ export function niceStep(range: number, ticks: number): number {
   return (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
 }
 
-export function makeFrame(width: number, height: number, slots: number, min: number, max: number): Frame {
+export function makeFrame(width: number, height: number, slots: number, min: number, max: number, log = false): Frame {
   const plotLeft = PAD.left;
   const plotRight = Math.max(plotLeft + 40, width - PAD.right);
   const plotTop = PAD.top;
@@ -44,8 +44,21 @@ export function makeFrame(width: number, height: number, slots: number, min: num
   const slot = (plotRight - plotLeft) / n;
   const span = max - min || 1;
   const step = niceStep(span, Math.max(2, Math.round((plotBottom - plotTop) / 48)));
-  const ticks: number[] = [];
+  let ticks: number[] = [];
   for (let t = Math.ceil(min / step) * step; t <= max + 1e-9; t += step) ticks.push(Number(t.toFixed(6)));
+  // Log scale: positions by ln(price); ticks at 1, 2 and 5 times powers of ten.
+  const useLog = log && min > 0;
+  const lmin = Math.log(useLog ? min : 1);
+  const lspan = useLog ? Math.log(max) - lmin || 1 : 1;
+  if (useLog) {
+    ticks = [];
+    for (let e = Math.floor(Math.log10(min)); e <= Math.ceil(Math.log10(max)); e++)
+      for (const m of [1, 2, 5]) {
+        const v = m * 10 ** e;
+        if (v >= min - 1e-9 && v <= max + 1e-9) ticks.push(Number(v.toFixed(6)));
+      }
+  }
+  const h = plotBottom - plotTop;
   return {
     width,
     height,
@@ -58,8 +71,8 @@ export function makeFrame(width: number, height: number, slots: number, min: num
     plotTop,
     plotBottom,
     x: (i) => plotLeft + slot * (i + 0.5),
-    y: (p) => plotBottom - ((p - min) / span) * (plotBottom - plotTop),
-    price: (y) => min + ((plotBottom - y) / (plotBottom - plotTop)) * span,
+    y: (p) => (useLog ? plotBottom - ((Math.log(Math.max(p, 1e-9)) - lmin) / lspan) * h : plotBottom - ((p - min) / span) * h),
+    price: (y) => (useLog ? Math.exp(lmin + ((plotBottom - y) / h) * lspan) : min + ((plotBottom - y) / h) * span),
     index: (x) => Math.min(n - 1, Math.max(0, Math.floor((x - plotLeft) / slot))),
     ticks,
   };
@@ -100,7 +113,8 @@ function layerPrices(l: ChartLayer, candles: readonly CandleData[]): number[] {
 export function fitRange(spec: ChartSpec, extra: readonly ChartLayer[] = []): [number, number] {
   if (spec.range) return spec.range;
   const prices: number[] = [];
-  for (const c of spec.candles) prices.push(c.h, c.l);
+  // A line chart is scaled to its closes.
+  for (const c of spec.candles) spec.style === "line" ? prices.push(c.c) : prices.push(c.h, c.l);
   for (const l of [...(spec.layers ?? []), ...extra]) prices.push(...layerPrices(l, spec.candles));
   if (!prices.length) return [99, 101];
   let lo = Math.min(...prices);

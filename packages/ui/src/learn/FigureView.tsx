@@ -3,7 +3,7 @@
  * one sentence under it. Tap, Space or Enter shows the next step; the last step completes the figure.
  */
 import { useEffect, useMemo, useState } from "react";
-import type { ChartLayer, FigureSpec } from "@market-lab/academy";
+import type { ChartLayer, ChartSpec, FigureSpec } from "@market-lab/academy";
 import { Rich } from "../components/Page";
 import { Icon, cx } from "../components/ui";
 import { Bars, Flow, Formula, LearnChart, formulaCorrect } from "../kit";
@@ -76,7 +76,9 @@ export function FigureView({
   const caption = f.kind === "chart" ? f.steps[step]?.text : f.kind !== "diagram" ? f.steps?.[step] : f.caption;
 
   let body: React.ReactNode = null;
-  if (f.kind === "chart") body = <LearnChart spec={f.chart} layers={layers} visible={visible} />;
+  const stepStyle = f.kind === "chart" && !base ? f.steps.slice(0, step + 1).reduce<ChartSpec["style"]>((v, s) => s.style ?? v, undefined) : undefined;
+  const stepScale = f.kind === "chart" && !base ? f.steps.slice(0, step + 1).reduce<ChartSpec["scale"]>((v, s) => s.scale ?? v, undefined) : undefined;
+  if (f.kind === "chart") body = <LearnChart spec={f.chart} layers={layers} visible={visible} style={stepStyle} scale={stepScale} />;
   else if (f.kind === "formula") {
     const lit = n ? Math.round(((step + 1) / n) * f.boxes.length) : f.boxes.length;
     body = (

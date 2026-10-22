@@ -430,3 +430,26 @@
   fill: transparent !important;
   stroke: transparent !important;
 }
+
+/* Price styles: OHLC bars and a line through the closes; the volume pane */
+.k-ohlc line {
+  stroke-width: 1.4;
+}
+.k-ohlc.is-up line {
+  stroke: var(--ml-candle-up);
+}
+.k-ohlc.is-down line {
+  stroke: var(--ml-candle-down);
+}
+.k-ohlc.is-highlight line {
+  stroke: var(--ml-accent);
+}
+.k-price-line path {
+  stroke-width: 1.8;
+}
+.k-volume rect.is-up {
+  fill: var(--ml-volume-up);
+}
+.k-volume rect.is-down {
+  fill: var(--ml-volume-down);
+}

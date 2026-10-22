@@ -43,9 +43,12 @@ export interface LearnChartProps {
   label?: string;
   /** Highlight one candle (e.g. the answer of a hotspot). */
   highlight?: number | null;
+  /** Overrides of the spec's style and scale (figure steps switch them). */
+  style?: ChartSpec["style"];
+  scale?: ChartSpec["scale"];
 }
 
-export function LearnChart({ spec, layers = [], visible, height, include = [], className, children, label, highlight = null }: LearnChartProps) {
+export function LearnChart({ spec, layers = [], visible, height, include = [], className, children, label, highlight = null, style, scale }: LearnChartProps) {
   const [wrap, width] = useWidth<HTMLDivElement>();
   const h = height ?? spec.height ?? 240;
   const all = useMemo(() => [...(spec.layers ?? []), ...layers], [spec.layers, layers]);
@@ -53,7 +56,12 @@ export function LearnChart({ spec, layers = [], visible, height, include = [], c
     const [a, b] = fitRange(spec, all);
     return [Math.min(a, ...include), Math.max(b, ...include)];
   }, [spec, all, include]);
-  const frame = useMemo(() => makeFrame(width, h, spec.candles.length, lo, hi), [width, h, spec.candles.length, lo, hi]);
+  const drawStyle = style ?? spec.style ?? "candle";
+  const log = (scale ?? spec.scale) === "log";
+  // A volume pane takes the bottom quarter; prices use the rest.
+  const volH = spec.volume ? Math.round(h * 0.24) : 0;
+  const frame = useMemo(() => makeFrame(width, h - volH, spec.candles.length, lo, hi, log), [width, h, volH, spec.candles.length, lo, hi, log]);
+  const maxVol = spec.volume ? Math.max(1, ...spec.candles.map((c) => c.v ?? 0)) : 1;
   const shown = Math.min(spec.candles.length, visible ?? spec.visible ?? spec.candles.length);
   const titleId = useId();
   const desc = label ?? describeChart(spec, all, shown);
@@ -68,7 +76,7 @@ export function LearnChart({ spec, layers = [], visible, height, include = [], c
 
   return (
     <div ref={wrap} className={cx("k-chart", className)}>
-      <svg width={frame.width} height={frame.height} viewBox={`0 0 ${frame.width} ${frame.height}`} role="img" aria-labelledby={titleId}>
+      <svg width={frame.width} height={h} viewBox={`0 0 ${frame.width} ${h}`} role="img" aria-labelledby={titleId}>
         <title id={titleId}>{desc}</title>
         <Grid frame={frame} />
         {/* The axis goes under the layers, so price chips cover the tick labels they sit on. */}
@@ -76,8 +84,37 @@ export function LearnChart({ spec, layers = [], visible, height, include = [], c
         {all.filter((l) => l.kind === "zone").map((l, i) => (
           <Layer key={`z${i}`} layer={l} frame={frame} spec={spec} />
         ))}
+        {!spec.hideCandles && drawStyle === "line" && shown > 1 && (
+          <g className="k-line k-price-line role-accent">
+            <path d={linePath(spec.candles.slice(0, shown).map((c, i) => ({ x: frame.x(i), y: frame.y(c.c) })))} />
+          </g>
+        )}
+        {!spec.hideCandles && drawStyle === "bar" && (
+          <g className="k-bars-ohlc">
+            {spec.candles.slice(0, shown).map((c, i) => {
+              const x = frame.x(i);
+              const t = Math.max(2, Math.min(6, frame.slot * 0.3));
+              return (
+                <g key={i} className={cx("k-ohlc", c.c >= c.o ? "is-up" : "is-down", highlight === i && "is-highlight")}>
+                  <line x1={x} x2={x} y1={frame.y(c.h)} y2={frame.y(c.l)} />
+                  <line x1={x - t} x2={x} y1={frame.y(c.o)} y2={frame.y(c.o)} />
+                  <line x1={x} x2={x + t} y1={frame.y(c.c)} y2={frame.y(c.c)} />
+                </g>
+              );
+            })}
+          </g>
+        )}
+        {spec.volume && (
+          <g className="k-volume" aria-hidden="true">
+            {spec.candles.slice(0, shown).map((c, i) => {
+              const bh = ((c.v ?? 0) / maxVol) * (volH - 8);
+              const bw = Math.max(2, Math.min(14, frame.slot * 0.62));
+              return <rect key={i} className={c.c >= c.o ? "is-up" : "is-down"} x={frame.x(i) - bw / 2} y={h - 4 - bh} width={bw} height={Math.max(0.5, bh)} />;
+            })}
+          </g>
+        )}
         <g className="k-candles">
-          {!spec.hideCandles && spec.candles.slice(0, shown).map((c, i) => {
+          {!spec.hideCandles && drawStyle === "candle" && spec.candles.slice(0, shown).map((c, i) => {
             const up = c.c >= c.o;
             const x = frame.x(i);
             const bw = Math.max(2, Math.min(14, frame.slot * 0.62));
