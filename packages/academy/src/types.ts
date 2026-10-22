@@ -120,6 +120,8 @@ export interface ChartSpec {
   range?: [number, number];
   /** Chart height in px (default 240). */
   height?: number;
+  /** Draw only the layers (a line chart); the candles still set the time axis and slots. */
+  hideCandles?: boolean;
   /** Screen-reader description; generated from the data when absent. */
   describe?: string;
 }

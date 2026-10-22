@@ -77,7 +77,7 @@ export function LearnChart({ spec, layers = [], visible, height, include = [], c
           <Layer key={`z${i}`} layer={l} frame={frame} spec={spec} />
         ))}
         <g className="k-candles">
-          {spec.candles.slice(0, shown).map((c, i) => {
+          {!spec.hideCandles && spec.candles.slice(0, shown).map((c, i) => {
             const up = c.c >= c.o;
             const x = frame.x(i);
             const bw = Math.max(2, Math.min(14, frame.slot * 0.62));
