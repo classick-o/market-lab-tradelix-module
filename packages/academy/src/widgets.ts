@@ -83,6 +83,6 @@ export const WIDGET_CONTRACTS: Record<string, WidgetContract> = {
   "bias-spotter": {
     title: "Name the bias",
     controls: {},
-    outputs: { solved: "cards answered correctly (0–4)", firstTry: "cards right on the first try" },
+    outputs: { solved: "cards answered correctly (0 to the number of cards)", firstTry: "cards right on the first try" },
   },
 };
