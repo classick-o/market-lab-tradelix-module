@@ -279,6 +279,7 @@ const L_2_13_2: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.2",
+    bridge: "In 2.13.1 you listed the paths for one chart, each with a trigger and an action. A playbook fixes that once per setup: a card with checkable fields, built from 2.8's strategies or your plan v1 (1.6.2), and judged with 2.11.7's intervals.",
     hook: {
       prompt: "Your journal has 60 trades tagged with 9 different setup names. On average, how many trades does each setup have to be judged on?",
       control: {
@@ -430,6 +431,7 @@ const L_2_13_2: Lesson = {
         "Write every field as a level, count, time or yes-or-no, so two people would agree.",
         "Judge each setup on its own trades and interval; at 30 trades, most intervals still include zero.",
       ],
+      next: "Next, 2.13.3: the pre-market routine, the same short steps before every session, to catch what makes today different.",
     },
   },
 };
@@ -457,6 +459,7 @@ const L_2_13_3: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.3",
+    bridge: "In 2.13.2 each setup got a card. Before a session you still need to know whether today allows it: an event on the calendar (2.10.2), a loss limit half used (2.11.4), a changed regime. The routine checks them in order and ends in 2.13.1's scenarios.",
     hook: {
       prompt: "It's 14:50 in Bucharest, in July. US CPI comes out at 15:30 Bucharest time. You plan to open a LABX swing trade at 15:00 with a stop 0.80 away. What does a routine catch?",
       control: {
@@ -578,6 +581,7 @@ const L_2_13_3: Lesson = {
         "The routine's job is to catch today's event or limit before the first order.",
         "End it in writing, with two or three if-then scenarios, one for every scheduled release.",
       ],
+      next: "Next, 2.13.4: if-then plans, turning the routine's scenarios into rules with one trigger and one action each.",
     },
   },
 };
@@ -605,6 +609,7 @@ const L_2_13_4: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.4",
+    bridge: "2.13.3's routine ended with if-then scenarios. In 1.7.6 you wrote such rules for urges, and in 2.12.7 guard-rails against tilt. Here the rules cover the whole session, market events and your own states, and you count how often you followed them.",
     hook: {
       prompt: "Which plan is easier to follow under pressure? A: 'Be careful around news.' B: 'If a red event is within 15 minutes, then I place no new orders.'",
       control: {
@@ -740,6 +745,7 @@ const L_2_13_4: Lesson = {
         "Write rules for market events and for your own states, such as two losses in a row.",
         "After each session, mark rules fired and followed. Adherence = followed ÷ fired.",
       ],
+      next: "Next, 2.13.5: the error taxonomy, a fixed list of codes for the rules you didn't follow, each priced in R.",
     },
   },
 };
@@ -767,6 +773,7 @@ const L_2_13_5: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.5",
+    bridge: "In 2.13.4 you counted rules fired but not followed. Each costs something. In 1.6.6 you sorted mistakes from variance; here every mistake gets a code from a fixed list and a price in R, so 2.12's biases show up as numbers you can rank.",
     hook: {
       prompt: "This month: 40 trades, net −3.0R. Trades tagged 'stop widened' cost −6.4R compared with the same trades done by the rules. What would the month have been without that one error?",
       control: {
@@ -906,6 +913,7 @@ const L_2_13_5: Lesson = {
         "Error cost = result as traded minus the same trade done by the rules, in R.",
         "Mistakes get a tag and a drill; variance gets nothing. Fix the biggest bar first.",
       ],
+      next: "Next, 2.13.6: daily and weekly reviews, where the tags and their costs become one process goal for next week.",
     },
   },
 };
@@ -933,6 +941,7 @@ const L_2_13_6: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.6",
+    bridge: "In 2.13.5 you priced a month of errors. The reviews are where that happens. They extend 1.6.5's decision review: daily in minutes, weekly by setup, time and error tag, with 2.11.6's metrics, ending in one process goal.",
     hook: {
       prompt: "Monday's best trade made +2.6R. The best decision of the day was skipping a trade that would have broken your rules. Which goes in the review as 'best'?",
       control: {
@@ -1039,6 +1048,7 @@ const L_2_13_6: Lesson = {
         "Weekly: slice by setup, time and error tag; end with one process goal from the biggest cost.",
         "Replay blind: grade the decision on what you could see, not on the outcome.",
       ],
+      next: "Next, 2.13.7: KPIs and goals, what to measure, what to aim for, and how to change a rule safely.",
     },
   },
 };
@@ -1066,6 +1076,7 @@ const L_2_13_7: Lesson = {
   script: {
     unit: "2.13",
     courseId: "2.13.7",
+    bridge: "In 2.13.6 each weekly review ended with one process goal. Here you choose what to measure: 1.6.7's process KPIs as the grade, 2.11.6's outcome metrics as diagnostics with 2.11.7's intervals, and a written process before any rule changes.",
     hook: {
       prompt: "Which goal can you fully control this week?",
       control: {
@@ -1194,6 +1205,7 @@ const L_2_13_7: Lesson = {
         "Set weekly goals you fully control, each with a number the app can measure.",
         "Change a rule only through idea, hypothesis, evidence bar, test and a new plan version.",
       ],
+      next: "Next: the 2.13 checkpoint. Then unit 2.14, Instruments I, where stocks, forex and CFDs change your sizing, costs and risk.",
     },
   },
 };
@@ -1699,6 +1711,19 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 2.13 · Playbook, routine and review (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_13: UnitContent = {
+  intro: {
+    summary:
+      "The process loop of Level 2: you plan in scenarios, write each setup as a checkable card, run one routine before every session, turn plans into if-then rules, price your errors in R, review daily and weekly, and grade yourself on process. It comes now because it joins 2.8's setups, 2.9–2.10's time and news, 2.11's limits and 2.12's guard-rails.",
+    outcomes: [
+      "Plan a trade in scenarios, and write each setup as a card two traders would check alike.",
+      "Run a pre-market routine that catches today's event, limit or regime before the first order.",
+      "Turn intentions into if-then rules for market events and your own states, and track adherence.",
+      "Tag process errors from a fixed list, price each one in R, and fix the costliest first.",
+      "Review daily and weekly, grade yourself on process KPIs, and change rules only through a written process.",
+    ],
+    buildsOn:
+      "Builds on 1.6 (plan v1, journal, review, mistake or variance, process KPIs), the if-then rules of 1.7.6, 2.8's strategies, the calendar (2.10.2), loss limits (2.11.4), metrics and intervals (2.11.6, 2.11.7) and the guard-rails of 2.12.7.",
+  },
   lessons: [L_2_13_2, L_2_13_3, L_2_13_4, L_2_13_5, L_2_13_6, L_2_13_7],
   questions: QUESTIONS,
   terms: TERMS,

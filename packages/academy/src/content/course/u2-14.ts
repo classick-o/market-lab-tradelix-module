@@ -69,6 +69,7 @@ const L_2_14_1: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.1",
+    bridge: "Unit 2.13 ended in 2.13.7 with a complete process. The instrument now changes its sizing, costs and risk. You start with stocks and ETFs: the exchange hours of 2.9.1, the rhythm of 2.9.3 and the prices and costs of 1.1, plus dividends and splits.",
     hook: {
       prompt: "LABX, as a stock, closes at 50.00 and pays a 1.00 dividend; tomorrow is the ex-dividend date. You buy today to 'collect' it. If nothing else changes, what is each share worth at tomorrow's open, dividend included?",
       control: {
@@ -212,6 +213,7 @@ const L_2_14_1: Lesson = {
         "On the ex-date price drops by the dividend; buying for it pays costs: −14.95 here.",
         "A 2× daily ETF doubles each day's move: +10%, then −9.09%, leaves it −1.82%.",
       ],
+      next: "Next, 2.14.2: short selling a real stock, with borrowed shares, a borrow fee, dividends owed and no cap on the loss.",
     },
   },
 };
@@ -239,6 +241,7 @@ const L_2_14_2: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.2",
+    bridge: "In 2.14.1 you bought shares. Here you sell ones you don't own: the short from 1.1.2, done on a real stock with borrowed shares. It pays a borrow fee and every dividend, and, like 2.9.8's weekend hold, an overnight gap can skip its stop.",
     hook: {
       prompt: "Long LABX at 50.00: the most you can lose is 50.00 per unit. Short at 50.00: what is the most?",
       control: {
@@ -366,6 +369,7 @@ const L_2_14_2: Lesson = {
         "Size shorts for the gap: 48 units risk 98.45 at the stop, 290.55 at a 56.00 open.",
         "US rules: locate before the sale; after a 10% fall, shorts sell only above the bid.",
       ],
+      next: "Next, 2.14.3: forex mechanics, where quotes, pips and lots turn a stop into a position size.",
     },
   },
 };
@@ -393,6 +397,7 @@ const L_2_14_3: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.3",
+    bridge: "In 2.14.2 you sized in shares. Forex counts in lots and pips, the units of 1.1.6, traded over the counter through the sessions of 2.9.2. Here you turn a stop in pips into lots, sizing from the stop as in 1.4.4.",
     hook: {
       prompt: "Account 10,000.00 vUSD, risk 1% = 100.00. vEUR/vUSD, stop 25 pips. How many lots?",
       control: {
@@ -520,6 +525,7 @@ const L_2_14_3: Lesson = {
         "Pip value per lot: 10.00 when vUSD is the quote; otherwise convert, 6.67 at 150.00.",
         "Lots = risk ÷ (stop pips × pip value), rounded down: 100.00 ÷ 250.00 = 0.40.",
       ],
+      next: "Next, 2.14.4: swap and rollover, the cost of holding an FX position overnight, counted in R.",
     },
   },
 };
@@ -544,6 +550,7 @@ const L_2_14_4: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.4",
+    bridge: "In 2.14.3 you sized an FX trade. Hold it past 2.9.8's daily rollover, 17:00 New York, and each night adds a cost or a credit: the swap. Here you count the nights, Wednesday's triple included, and put the total in R.",
     hook: {
       prompt: "You hold an FX position from Monday morning to the next Monday morning. How many nights of swap do you pay?",
       control: {
@@ -673,6 +680,7 @@ const L_2_14_4: Lesson = {
         "Wednesday counts three nights: Monday to Monday is 7, Tuesday to Friday morning 5.",
         "Put swap in R: 22.40 is 0.22R. Carry's steady income hides rare crashes.",
       ],
+      next: "Next, 2.14.5: indices and CFDs, the four ways to trade an index and the funding a CFD pays each night.",
     },
   },
 };
@@ -697,6 +705,7 @@ const L_2_14_5: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.5",
+    bridge: "In 2.14.4 an FX position paid financing every night. A CFD on an index pays it too. Here you see how indices are built, the four ways to trade one, and compare a CFD with an index ETF (2.14.1) over 180 days.",
     hook: {
       prompt: "You hold 10,000.00 vUSD of LABIX exposure through a CFD. Funding is 5.5% a year: a 3% benchmark plus a 2.5% markup. What does it cost over 180 days?",
       control: {
@@ -823,6 +832,7 @@ const L_2_14_5: Lesson = {
         "A CFD is an OTC contract: the provider is your counterparty and its feed your price.",
         "Funding = exposure × rate × days ÷ 365: 271.23 for 180 days at 5.5%.",
       ],
+      next: "Next, 2.14.6: margin, margin call and negative balance protection, where a CFD's leverage meets your account.",
     },
   },
 };
@@ -850,6 +860,7 @@ const L_2_14_6: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.6",
+    bridge: "In 2.14.3 leverage didn't change a well-sized trade's risk; in 2.14.5 a CFD tied up only margin. Here you read the margin panel, find the close-out price, and see what negative balance protection covers when a shock gaps past your stop, as in 2.10.9.",
     hook: {
       prompt: "You have 5,000.00 vUSD and buy 1 standard lot of vEUR/vUSD at 1.1000, with 30:1 maximum leverage. How far can price fall before the 50% close-out?",
       control: {
@@ -980,6 +991,7 @@ const L_2_14_6: Lesson = {
         "With 5,000.00, one lot from 1.1000 is closed out near 1.0683: 63% of the account gone.",
         "Size from the stop and close-outs stay far away. NBP stops the balance at zero, nothing more.",
       ],
+      next: "Next, 2.14.7: costs by instrument, every layer of the stack, and which vehicle is cheaper for your holding period.",
     },
   },
 };
@@ -1007,6 +1019,7 @@ const L_2_14_7: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.7",
+    bridge: "Each instrument added its own cost: a borrow fee (2.14.2), swap (2.14.4), CFD funding (2.14.5). Here you stack them with spread and commission, rank instruments by movement per unit of cost, as with 2.9.7's cost wall, and choose stock or CFD by holding period.",
     hook: {
       prompt: "Which gives the most movement per unit of cost: LABX (ATR 2.00, cost 0.20), vEUR/vUSD (ATR 60 pips, cost 1.2 pips) or the LABIX CFD (ATR 40 points, spread 1.0)?",
       control: {
@@ -1115,6 +1128,7 @@ const L_2_14_7: Lesson = {
         "Tradability ratio = ATR ÷ cost: 50 for vEUR/vUSD, 10 for LABX.",
         "On 5,000.00 of LABX, the CFD is cheaper only until day 7.",
       ],
+      next: "Next, 2.14.8: rules by jurisdiction, how leverage caps, close-outs and day-trading rules differ by place and date.",
     },
   },
 };
@@ -1139,6 +1153,7 @@ const L_2_14_8: Lesson = {
   script: {
     unit: "2.14",
     courseId: "2.14.8",
+    bridge: "The 30:1 cap, the 50% close-out and negative balance protection in 2.14.6 are rules, and rules differ by place and date. Here you compare EU, UK and US retail rules, size a position under each, and check a licence at the source, as in 1.8.4.",
     hook: {
       prompt: "A course from 2024 says: 'In the US you need 25,000 dollars to day trade often.' Is that still the rule in late 2026?",
       control: {
@@ -1279,6 +1294,7 @@ const L_2_14_8: Lesson = {
         "The US pattern day trader rule was replaced in 2026 by intraday margin; brokers phase in until 2027.",
         "Check a licence on the regulator's own register, never just on the broker's website.",
       ],
+      next: "Next: the 2.14 checkpoint closes Level 2. Level 3 opens with unit 3.1, Liquidity and stops: where resting orders and stops really sit.",
     },
   },
 };
@@ -2063,6 +2079,19 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 2.14 · Instruments I: stocks, forex, CFDs (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_14: UnitContent = {
+  intro: {
+    summary:
+      "How the instrument changes a trade: stocks and ETFs, short selling, forex quotes and lots, swap, indices and CFDs, margin and close-out, costs by instrument and rules by jurisdiction. After 2.13 your process is complete; the instrument changes its sizing, costs and risk. It closes Level 2, so you can take it when you move to a specific market.",
+    outcomes: [
+      "Read what dividends, splits and leveraged ETFs do to your holding.",
+      "Size a stock short for the gap, counting borrow fees, dividends and recall.",
+      "Turn a forex stop in pips into lots, and count swap nights in R.",
+      "Read the margin panel, find the close-out price, and size so it stays far away.",
+      "Compare costs by instrument and holding period, and check each rule's jurisdiction and date.",
+    ],
+    buildsOn:
+      "Builds on 1.1 (quotes, long and short, the cost stack, pips), sizing from the stop (1.4.4), market hours (2.9.1), weekend gaps and rollover (2.9.8), broker checks (1.8.4) and the leverage illusion (1.8.5).",
+  },
   lessons: [L_2_14_1, L_2_14_2, L_2_14_3, L_2_14_4, L_2_14_5, L_2_14_6, L_2_14_7, L_2_14_8],
   questions: QUESTIONS,
   terms: TERMS,
