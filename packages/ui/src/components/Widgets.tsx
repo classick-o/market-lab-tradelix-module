@@ -39,6 +39,13 @@ function Out({ items }: { items: { label: string; value: string; strong?: boolea
 
 const p2 = (v: number) => v.toFixed(2);
 
+/** A signed number whose sign is decided after rounding, so zero never shows as "−0.00". */
+function signed(v: number, digits: number): string {
+  const text = Math.abs(v).toFixed(digits);
+  if (Number(text) === 0) return text;
+  return `${v > 0 ? "+" : "−"}${text}`;
+}
+
 function CandleBuilder() {
   const [o, setO] = useState(100);
   const [c, setC] = useState(101);
@@ -66,8 +73,9 @@ function CandleBuilder() {
     <div className="ml-widget-grid">
       <div className="ml-stack-2">
         <Slider label="Open" value={o} min={97} max={103} step={0.1} onChange={setO} format={p2} />
-        <Slider label="High" value={hi} min={97} max={103} step={0.1} onChange={setHi} format={p2} />
-        <Slider label="Low" value={lo} min={97} max={103} step={0.1} onChange={setLo} format={p2} />
+        {/* High and low show the values actually drawn: a candle's high can't sit below its body. */}
+        <Slider label="High" value={h} min={97} max={103} step={0.1} onChange={setHi} format={p2} />
+        <Slider label="Low" value={l} min={97} max={103} step={0.1} onChange={setLo} format={p2} />
         <Slider label="Close" value={c} min={97} max={103} step={0.1} onChange={setC} format={p2} />
       </div>
       <div className="ml-widget-visual">
@@ -193,7 +201,8 @@ function Expectancy() {
   const [win, setWin] = useState(45);
   const [avgWin, setAvgWin] = useState(2);
   const [avgLoss, setAvgLoss] = useState(1);
-  const e = (win / 100) * avgWin - (1 - win / 100) * avgLoss;
+  // Integer maths (percent × tenths of R), so a break-even setting shows 0.00R rather than −0.00R.
+  const e = (win * Math.round(avgWin * 10) - (100 - win) * Math.round(avgLoss * 10)) / 1000;
   return (
     <div className="ml-widget-grid">
       <div className="ml-stack-2">
@@ -203,9 +212,9 @@ function Expectancy() {
       </div>
       <Out
         items={[
-          { label: "Expectancy per trade", value: `${e >= 0 ? "+" : "−"}${Math.abs(e).toFixed(2)}R`, strong: true, tone: e >= 0 ? "pos" : "neg" },
-          { label: "Over 100 trades", value: `${e >= 0 ? "+" : "−"}${Math.abs(e * 100).toFixed(0)}R` },
-          { label: "At 1% risk per trade, roughly", value: `${e >= 0 ? "+" : "−"}${Math.abs(e * 100).toFixed(0)}% of the account, before compounding and costs` },
+          { label: "Expectancy per trade", value: `${signed(e, 2)}R`, strong: true, tone: e > 0.0049 ? "pos" : e < -0.0049 ? "neg" : undefined },
+          { label: "Over 100 trades", value: `${signed(e * 100, 0)}R` },
+          { label: "At 1% risk per trade, roughly", value: `${signed(e * 100, 0)}% of the account, before compounding and costs` },
         ]}
       />
       <p className="ml-widget-note">These are averages over many trades. Any short run can look very different, and real win rates aren't known in advance.</p>
@@ -246,7 +255,7 @@ function LossRecoveryWidget() {
       <Out
         items={[
           { label: "Left of the account", value: `${100 - dd}%` },
-          { label: "Gain needed to recover", value: `+${need.toFixed(1)}%`, strong: true, tone: "neg" },
+          { label: "Gain needed to recover", value: `+${need.toFixed(1)}%`, strong: true },
           { label: "Losing trades of 1% to get there", value: `${Math.ceil(Math.log(1 - dd / 100) / Math.log(0.99))} in a row` },
         ]}
       />

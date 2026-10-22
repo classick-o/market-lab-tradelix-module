@@ -14,6 +14,7 @@ import {
   dailyChallenge,
   gradeChallengeItem,
   isCorrect,
+  parseNumericAnswer,
   streakInfo,
   weekKey,
   weeklyChallenge,
@@ -106,6 +107,31 @@ describe("content integrity", () => {
     expect(isCorrect(q, q.numeric!.answer)).toBe(true);
     expect(isCorrect(q, String(q.numeric!.answer))).toBe(true);
     expect(isCorrect(q, q.numeric!.answer + q.numeric!.tolerance + 1)).toBe(false);
+  });
+});
+
+describe("numeric answers", () => {
+  it("reads decimal commas, thousands separators, units and the typographic minus", () => {
+    const cases: [string, number | null][] = [
+      ["42.9", 42.9],
+      ["42,9", 42.9],
+      ["185,00", 185],
+      ["9,250.00", 9250],
+      ["1,234", 1234],
+      ["1.234,56", 1234.56],
+      ["25%", 25],
+      ["0,26R", 0.26],
+      ["1.6 R", 1.6],
+      ["100.00 vUSD", 100],
+      ["47 units", 47],
+      ["−0.30", -0.3],
+      ["-0.30", -0.3],
+      [".5", 0.5],
+      ["", null],
+      ["abc", null],
+      ["1-2", null],
+    ];
+    for (const [raw, want] of cases) expect(parseNumericAnswer(raw), raw).toBe(want);
   });
 });
 

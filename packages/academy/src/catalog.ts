@@ -74,12 +74,35 @@ export function termsForLesson(lessonId: string): GlossaryTerm[] {
   return GLOSSARY.filter((t) => t.lesson === lessonId);
 }
 
+/**
+ * Reads a typed number the way people write it: "42,9" and "42.9" are the same, "9,250.00" and
+ * "1.234,56" use thousands separators, a trailing unit ("%", "R", "vUSD", "units") is ignored and the
+ * typographic minus counts as a minus. Returns null when the text is not a number.
+ */
+export function parseNumericAnswer(raw: string | number): number | null {
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
+  let s = raw.trim().replace(/−/g, "-").replace(/\s+/g, "");
+  s = s.replace(/(vusd|usd|units|unit|r|%|×|x)$/i, "");
+  const comma = s.lastIndexOf(",");
+  const dot = s.lastIndexOf(".");
+  if (comma >= 0 && dot >= 0) {
+    // Whichever separator comes last is the decimal one.
+    s = comma > dot ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  } else if (comma >= 0) {
+    // A single comma followed by one or two digits is a decimal comma; otherwise commas group thousands.
+    s = /^-?\d+,\d{1,2}$/.test(s) ? s.replace(",", ".") : s.replace(/,/g, "");
+  }
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
 /** Grades an answer to a question. Numeric answers accept the stated tolerance. */
 export function isCorrect(q: Question, answer: string | number | undefined): boolean {
   if (answer === undefined || answer === "") return false;
   if (q.kind === "numeric" && q.numeric) {
-    const n = typeof answer === "number" ? answer : Number(String(answer).replace(/,/g, "").trim());
-    return Number.isFinite(n) && Math.abs(n - q.numeric.answer) <= q.numeric.tolerance + 1e-9;
+    const n = parseNumericAnswer(answer);
+    return n !== null && Math.abs(n - q.numeric.answer) <= q.numeric.tolerance + 1e-9;
   }
   return answer === q.correct;
 }

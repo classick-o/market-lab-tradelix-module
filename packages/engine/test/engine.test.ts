@@ -155,6 +155,13 @@ describe("sizing", () => {
     expect(r.simpleQty).toBe(48);
     expect(maxQtyForRisk({ equity: 1_000_000, riskPct: 1, side: "long", entry: 10000, stop: 9800, commissionBps: 0 }).qty).toBe(50);
   });
+
+  it("caps by buying power including the entry commission, so the engine accepts the order", () => {
+    // 100 units at 100.00 cost 10,000.00 plus 5.00 commission, more than the 10,000.00 available.
+    const r = maxQtyForRisk({ equity: 1_000_000, riskPct: 1, side: "long", entry: 10000, stop: 9995, commissionBps: 5, maxNotional: 1_000_000 });
+    expect(r.qty).toBe(99);
+    expect(r.cappedByBuyingPower).toBe(true);
+  });
 });
 
 // ─── Property tests (seeded, deterministic) ───────────────────────────────

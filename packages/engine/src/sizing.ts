@@ -1,5 +1,6 @@
 import { riskAmount } from "./engine";
 import type { PositionSide } from "./types";
+import { commission } from "./units";
 
 export interface SizingInput {
   equity: number;
@@ -9,7 +10,7 @@ export interface SizingInput {
   entry: number;
   stop: number;
   commissionBps: number;
-  /** Optional cap on position notional (buying power). */
+  /** Optional cap on buying power. The entry commission must fit under it too, as the order check requires. */
   maxNotional?: number;
 }
 
@@ -41,7 +42,9 @@ export function maxQtyForRisk(i: SizingInput): SizingResult {
 
   let cappedByBuyingPower = false;
   if (i.maxNotional !== undefined) {
-    const cap = Math.floor(i.maxNotional / i.entry);
+    let cap = Math.floor(i.maxNotional / i.entry);
+    // The order preview needs room for the entry commission as well (notional + fee ≤ buying power).
+    while (cap > 0 && cap * i.entry + commission(cap * i.entry, i.commissionBps) > i.maxNotional) cap--;
     if (cap < qty) {
       qty = Math.max(0, cap);
       cappedByBuyingPower = true;
