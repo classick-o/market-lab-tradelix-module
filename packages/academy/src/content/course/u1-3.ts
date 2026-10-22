@@ -1,4 +1,4 @@
-import type { CandleData, ChartLayer, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, ChartLayer, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /** Unit 1.3 · Orders and execution (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 
@@ -283,6 +283,7 @@ const L133: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.3",
+    bridge: "In 1.3.2 you used a stop to get out: once touched, it became a market order. Here the same trigger gets you in, with a buy stop above a range, and you meet the stop-limit, whose price cap a gap can skip.",
     hook: {
       prompt: "LABX is ranging below 102.00. You want to buy only if price breaks above it. Which order?",
       control: {
@@ -422,6 +423,7 @@ const L133: Lesson = {
     ],
     check: ["q-1.3.3-1", "q-1.3.3-2", "q-1.3.3-3"],
     recap: {
+      next: "Next, 1.3.4: brackets and OCO orders, which link a stop and a target so that one cancels the other.",
       takeaways: [
         "A buy stop sits above the price and enters only if price breaks up to it.",
         "A triggered stop fills at market: after a gap, at the open, beyond the trigger.",
@@ -452,6 +454,7 @@ const L134: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.4",
+    bridge: "In 1.3.3 you placed single stop orders, to enter or to exit. Here you link them: a bracket attaches the stop and the target from 1.3.2 to an entry, and when one exit fills, the other is cancelled.",
     hook: {
       prompt: "Your long has a stop at 98.00 and a target at 104.00, set as a bracket. The target fills. Days later, price falls to 98.00. What happens?",
       control: {
@@ -572,6 +575,7 @@ const L134: Lesson = {
     ],
     check: ["q-1.3.4-1", "q-1.3.4-2", "q-1.3.4-3"],
     recap: {
+      next: "Next, 1.3.5: time in force, how long each of these orders stays alive once you place it.",
       takeaways: [
         "A bracket's life: pending entry, fill, stop and target live, one exits, the other is cancelled.",
         "An OCO pair can enter a breakout either way: when one leg fills, the other is cancelled.",
@@ -602,6 +606,7 @@ const L135: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.5",
+    bridge: "In 1.3.4 a linked order cancelled itself, but a leftover order lived on and opened a trade you never chose. Here you decide how long every order lives: one session, until a date, until cancelled, or only an instant.",
     hook: {
       prompt: "Three weeks ago you left a buy limit at 95.00, good till cancelled, and forgot it. Today LABX gaps from 97.00 to 94.50 on bad news. What happens?",
       control: {
@@ -699,6 +704,7 @@ const L135: Lesson = {
     ],
     check: ["q-1.3.5-1", "q-1.3.5-2", "q-1.3.5-3"],
     recap: {
+      next: "Next, 1.3.6: fills, partial fills and the queue, and why price touching your level isn't a fill.",
       takeaways: [
         "Day expires with the session, GTC waits until cancelled, GTD until a date.",
         "IOC fills what's there now and cancels the rest; FOK fills all now or nothing.",
@@ -729,6 +735,7 @@ const L136: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.6",
+    bridge: "In 1.3.5 an IOC order filled 320 of 500 units and cancelled the rest. Here you see why: the order book queues orders by price, then by time, and a large order walks through several prices to fill.",
     hook: {
       prompt: "Your buy limit sits at 99.00 with 300 units queued ahead of you. Sellers trade 200 units at 99.00, then price rises. Were you filled?",
       control: {
@@ -852,6 +859,7 @@ const L136: Lesson = {
     ],
     check: ["q-1.3.6-1", "q-1.3.6-2", "q-1.3.6-3"],
     recap: {
+      next: "Next, 1.3.7: slippage and gaps, when the fill you get lands far from the one you planned.",
       takeaways: [
         "Books fill by price, then time: the best price first, then the oldest order.",
         "Touching your price isn't a fill. The queue ahead of you must trade first.",
@@ -882,6 +890,7 @@ const L137: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.7",
+    bridge: "In 1.3.6 a large order walked the book to a worse average price. The distance between the fill you expect and the one you get is slippage. Here you measure it, and what a gap through your 1.3.2 stop does to the planned loss.",
     hook: {
       prompt: "Long 50 at 100.00 with a stop at 98.00: 100.00 at risk, 1R, before costs. The market gaps and the stop fills at 97.00. What's the result in R?",
       control: {
@@ -990,6 +999,7 @@ const L137: Lesson = {
     },
     check: ["q-1.3.7-1", "q-1.3.7-2", "q-1.3.7-3"],
     recap: {
+      next: "Next, 1.3.8: trailing stops, which move the stop as price moves your way, and never back.",
       takeaways: [
         "Slippage = expected fill − actual fill. Name your reference: decision price or trigger.",
         "Measure a gap loss in R: actual loss ÷ planned risk. 150.00 ÷ 100.00 = −1.5R.",
@@ -1020,6 +1030,7 @@ const L138: Lesson = {
   script: {
     unit: "1.3",
     courseId: "1.3.8",
+    bridge: "In 1.3.2 you set a stop once, and in 1.3.7 a gap pushed its fill past it. Here the stop moves: it follows price in your favour by a rule fixed before entry, sized against the normal candle from 1.2.5.",
     hook: {
       prompt: "Long from 100.00, stop at 98.00. Price has climbed to 104.00, making higher lows along the way. Where should the stop be now?",
       control: {
@@ -1203,6 +1214,7 @@ const L138: Lesson = {
     ],
     check: ["q-1.3.8-1", "q-1.3.8-2", "q-1.3.8-3"],
     recap: {
+      next: "Next, the Unit 1.3 checkpoint. Then Unit 1.4, Risk comes first: how much each of these stops may cost you.",
       takeaways: [
         "Move a stop only towards price: up for a long, never further away.",
         "No trail wins on every path: tight keeps more on quick reversals, wide on long trends.",
@@ -1783,4 +1795,17 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
-export const UNIT_1_3: UnitContent = { lessons: [L133, L134, L135, L136, L137, L138], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "Orders turn a plan into a trade. This unit covers each basic order, from market and limit to brackets and trailing stops, and how it really fills: the queue, partial fills, slippage and gaps. It comes now because you can read quotes and candles, and because risk, in Unit 1.4, starts from the stop.",
+  outcomes: [
+    "Choose the order a plan needs: market, limit, stop entry, stop-limit, bracket or OCO.",
+    "Place a stop-loss and a take-profit, and predict where each fills after a gap.",
+    "Set how long an order lives, and clear leftover orders after every exit.",
+    "Predict partial fills and slippage, and measure a gap through your stop in R.",
+    "Trail a stop by a rule set before entry, never moving it further away.",
+  ],
+  buildsOn: "Unit 1.1: the bid, the ask and the cost of a round trip (1.1.1, 1.1.5). And 1.2.5: normal candle size and gaps. Every fill in this unit follows from those prices.",
+};
+
+export const UNIT_1_3: UnitContent = { intro: INTRO, lessons: [L133, L134, L135, L136, L137, L138], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };

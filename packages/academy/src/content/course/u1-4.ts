@@ -1,4 +1,4 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /**
  * Unit 1.4 · Risk comes first (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce.
@@ -35,6 +35,7 @@ const L_1_4_2: Lesson = {
   script: {
     unit: "1.4",
     courseId: "1.4.2",
+    bridge: "In 1.4.1 you fixed the most a trade may lose, as a share of the account, costs included. That amount is 1R. Here it becomes the unit for every result, so trades of any size can be compared.",
     hook: {
       prompt: "Trade A risked 100.00 and made 150.00. Trade B risked 400.00 and made 300.00. Which did better for what it risked?",
       control: {
@@ -108,7 +109,7 @@ const L_1_4_2: Lesson = {
       {
         kind: "explain",
         title: "Why measure in R",
-        text: "R compares trades of any size, from any account. Make 200.00 on a 100.00 risk or 2,000.00 on a 1,000.00 risk: both are +2R. Your [[journal]], your [[expectancy]] and your scores all speak in R. Results in money change with the size; results in R show how well the trade worked.",
+        text: "R compares trades of any size, from any account. Make 200.00 on a 100.00 risk or 2,000.00 on a 1,000.00 risk: both are +2R. Your [[journal]] (your trade record), your [[expectancy]] (the average result per trade) and your scores all speak in R. Results in money change with the size; results in R show how well the trade worked.",
       },
       {
         kind: "callout",
@@ -134,6 +135,7 @@ const L_1_4_2: Lesson = {
     ],
     check: ["q-1.4.2-1", "q-1.4.2-2", "q-1.4.2-3"],
     recap: {
+      next: "Next, 1.4.3: where a stop belongs. 1R starts at the stop, so its place comes before the size.",
       takeaways: [
         "1R is the loss at the initial stop: units × distance, plus both commissions.",
         "Result in R = result ÷ 1R. 120.00 on a 60.00 risk is +2R.",
@@ -166,6 +168,7 @@ const L_1_4_6: Lesson = {
   script: {
     unit: "1.4",
     courseId: "1.4.6",
+    bridge: "In 1.4.5 a 2:1 plan broke even at a 33.3% win rate, before costs, and in 1.1.5 you priced a round trip. Here the two meet: costs take a fixed slice of every R, and that slice raises the break-even.",
     hook: {
       prompt: "Two plans on LABX at 100.00, both 2:1. Plan A: stop 2.00 away. Plan B: stop 0.20 away. A round trip costs about 0.20 per unit. Which needs the higher win rate to break even?",
       control: {
@@ -308,6 +311,7 @@ const L_1_4_6: Lesson = {
     },
     check: ["q-1.4.6-1", "q-1.4.6-2", "q-1.4.6-3"],
     recap: {
+      next: "Next, 1.4.7: exposure and leverage, where the whole position's value, not just its R, meets a gap.",
       takeaways: [
         "Costs ÷ stop distance is the share of every R lost to costs: 0.20 ÷ 0.50 = 40%.",
         "Break-even after costs = (stop + costs) ÷ (stop + target): 36.7% for a 2.00 stop at 2:1.",
@@ -340,6 +344,7 @@ const L_1_4_8: Lesson = {
   script: {
     unit: "1.4",
     courseId: "1.4.8",
+    bridge: "In 1.4.7 you measured how much of the account moves with price on one trade. Here you look across many trades: how far equity falls from its peak in a normal losing run, like the streaks of 0.2.3, and how long recovery takes.",
     hook: {
       prompt: "Your account went 10,000.00 → 12,000.00 → 9,600.00 → 12,500.00. What was the maximum drawdown?",
       control: {
@@ -494,7 +499,7 @@ const L_1_4_8: Lesson = {
       {
         kind: "callout",
         tone: "key",
-        text: "A drawdown inside the normal range is [[variance]], not a broken method. Write in your plan, in advance, the depth at which you stop and review. Then a losing run triggers a review, not a panic.",
+        text: "A drawdown inside the normal range is [[variance]], the swing in results that chance alone produces, not a broken method. Write in your plan, in advance, the depth at which you stop and review. Then a losing run triggers a review, not a panic.",
       },
     ],
     task: {
@@ -515,6 +520,7 @@ const L_1_4_8: Lesson = {
     },
     check: ["q-1.4.8-1", "q-1.4.8-2", "q-1.4.8-3"],
     recap: {
+      next: "Next, 1.4.9: daily loss limits, a rule that ends a bad day before it digs a deep drawdown.",
       takeaways: [
         "Measure drawdown from the equity peak: 12,000.00 to 9,600.00 is 20%, not 4%.",
         "At a 40% win rate, 8 losses in a row is normal. At 1% risk it costs 7.7%.",
@@ -547,6 +553,7 @@ const L_1_4_9: Lesson = {
   script: {
     unit: "1.4",
     courseId: "1.4.9",
+    bridge: "In 1.4.8 losing runs dug drawdowns over many trades. Here you cap a single day: a limit set before the session and checked before each entry against the trade's full risk, the 1R you sized in 1.4.4.",
     hook: {
       prompt: "Your plan risks 1% per trade and you take six trades a day. At a 40% win rate, how often does a day bring at least three losses in a row?",
       control: {
@@ -623,7 +630,7 @@ const L_1_4_9: Lesson = {
       {
         kind: "explain",
         title: "Why a daily limit",
-        text: "Mistakes cluster after losses: [[revenge-trading|revenge trades]], bigger sizes, setups that aren't in the plan. A daily limit stops a bad day before it becomes a bad week, and it decides before your emotions get a vote. Prop trading firms hold their traders to the same kind of rule; you'll meet them in 2.11.",
+        text: "Mistakes cluster after losses: [[revenge-trading|revenge trades]] (trades made to win a loss back), bigger sizes, setups that aren't in the plan. A daily limit stops a bad day before it becomes a bad week, and it decides before your emotions get a vote. Prop trading firms hold their traders to the same kind of rule; you'll meet them in 2.11.",
       },
       {
         kind: "match",
@@ -696,6 +703,7 @@ const L_1_4_9: Lesson = {
     ],
     check: ["q-1.4.9-1", "q-1.4.9-2", "q-1.4.9-3"],
     recap: {
+      next: "Next, the Unit 1.4 checkpoint. Then Unit 1.5, Market structure basics, where every read ends with a stop and a size.",
       takeaways: [
         "Set the daily limit before the session: 3% of 10,000.00 is 300.00, about 3R.",
         "Before each entry, check its full risk fits the room left. If not, the day is over.",
@@ -1029,5 +1037,18 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "Before any setup, decide what a trade may cost. This unit fixes your risk per trade, turns it into R, puts the stop where the idea fails and sizes the position from it, then adds costs, leverage, drawdowns and a daily limit. It comes before market structure so every read in 1.5 ends with a stop and a size.",
+  outcomes: [
+    "Set your risk per trade and express every result in R, costs included.",
+    "Place the stop where the idea is wrong, then size the position from it.",
+    "Judge a plan by its expectancy and its break-even win rate after costs.",
+    "Tell risk from exposure, and see what leverage does to a gap.",
+    "Plan for normal drawdowns and stop the day at a loss limit set in advance.",
+  ],
+  buildsOn: "The stop-loss of 1.3.2 and the gap measured in R in 1.3.7, the costs and break-even of 1.1.5, the normal candle of 1.2.5, and expected value and losing streaks from 0.2.2 and 0.2.3.",
+};
+
 /** Unit 1.4 · Risk comes first (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_4: UnitContent = { lessons: [L_1_4_2, L_1_4_6, L_1_4_8, L_1_4_9], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_1_4: UnitContent = { intro: INTRO, lessons: [L_1_4_2, L_1_4_6, L_1_4_8, L_1_4_9], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
