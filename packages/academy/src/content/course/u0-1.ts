@@ -310,8 +310,9 @@ const L011: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.1",
+    bridge: "This is where the course begins. Before any chart or order, you need one idea: where a price comes from. Here you run a small auction and watch buyers and sellers make the price.",
     hook: {
-      prompt: "LABX last traded at 100.00. A buyer arrives who wants 200 [[unit|units]] right now, and only a few sellers are offering. Where will the next trades print?",
+      prompt: "LABX, this course's practice instrument, last traded at 100.00. A buyer arrives who wants 200 [[unit|units]], or pieces of LABX, right now, and only a few sellers are offering. Where will the next trades print?",
       control: {
         kind: "choice",
         choices: [
@@ -434,6 +435,7 @@ const L011: Lesson = {
         "The auction price is where the most units trade: count buyers and sellers willing, take the smaller.",
         "When buyers are in more of a hurry, they take sellers' prices and the price rises.",
       ],
+      next: "Next, 0.1.2: who those buyers and sellers are, and why each of them trades.",
     },
   },
 };
@@ -456,6 +458,7 @@ const L012: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.2",
+    bridge: "In 0.1.1 you ran an auction and saw a price come out of buyers' and sellers' orders. Here you meet the people behind those orders, and why the one across from you trades.",
     hook: {
       prompt: "Every time you buy 50 LABX, someone sells you 50. Who is most likely on the other side?",
       control: {
@@ -487,7 +490,7 @@ const L012: Lesson = {
         columns: ["Reason", "Participant"],
         pairs: [
           { left: "Locks in next year's fuel cost", right: "Hedger" },
-          { left: "Earns the spread, ends the day flat", right: "Market maker" },
+          { left: "Earns the spread, ends the day flat (holding nothing)", right: "Market maker" },
           { left: "Holds for decades for dividends and growth", right: "Investor" },
           { left: "Buys because it expects a rise this week", right: "Speculator" },
           { left: "Splits a huge order over the day to avoid moving the price", right: "Institution" },
@@ -503,7 +506,7 @@ const L012: Lesson = {
       {
         kind: "predict",
         title: "Who hunted the stop?",
-        prompt: "A trader says: 'They hunted my stop.' Who is 'they'?",
+        prompt: "A trader says: 'They hunted my stop,' the order that closed their trade at a preset loss. Who is 'they'?",
         control: {
           kind: "choice",
           choices: [
@@ -538,6 +541,7 @@ const L012: Lesson = {
         "Every trade has a counterparty with its own horizon, need and information. The chart doesn't show who.",
         "Across from you are full-time firms with better tools and lower costs. Plan with that in mind.",
       ],
+      next: "Next, 0.1.3: the markets they trade in, from stocks to crypto, and how their hours and costs differ.",
     },
   },
 };
@@ -560,6 +564,7 @@ const L013: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.3",
+    bridge: "In 0.1.2 you met who trades and why. Here you tour where they trade: stocks, forex, futures, CFDs, bonds and crypto, and what carries over from LABX, the instrument you practise on.",
     hook: {
       prompt: "It's Saturday. Which of these can you trade right now?",
       control: {
@@ -584,7 +589,7 @@ const L013: Lesson = {
       {
         kind: "figure",
         title: "Hours open in a normal week",
-        text: "Fewer hours means more time when price can move while you can't trade. When trading reopens, price can jump: a [[gap]] past your stop.",
+        text: "Fewer hours means more time when price can move while you can't trade. When trading reopens, price can jump: a [[gap]] past your stop, the price where you planned to get out.",
         figure: {
           kind: "bars",
           unit: " h",
@@ -606,7 +611,7 @@ const L013: Lesson = {
       {
         kind: "explain",
         title: "Leverage, costs and who's across",
-        text: "Classes differ in [[leverage]] too. Since 2018, EU retail CFD leverage has been capped between 30:1 and 2:1 by asset. Costs differ: futures add a roll, shorting stocks needs borrowed shares, CFDs charge overnight funding. And so does the counterparty: an exchange's clearing house for futures, the provider itself for a CFD.",
+        text: "Classes differ in [[leverage]] (borrowing to trade bigger) too. Since 2018, EU retail CFD leverage has been capped between 30:1 and 2:1 by asset. Costs differ: futures add a roll, shorting stocks (betting on a fall) needs borrowed shares, CFDs charge overnight funding. And so does the counterparty: an exchange's clearing house for futures, the provider itself for a CFD.",
       },
       {
         kind: "match",
@@ -662,6 +667,7 @@ const L013: Lesson = {
         "Classes differ in trading hours, leverage, costs, gap risk and who your counterparty is.",
         "From LABX the habits transfer: bid and ask, costs, stops, sizing. Hours, leverage and expiry change.",
       ],
+      next: "Next, 0.1.4: what any trading result in these markets has to beat: buy-and-hold, after costs.",
     },
   },
 };
@@ -687,6 +693,7 @@ const L014: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.4",
+    bridge: "In 0.1.3 you saw that each asset class has its own hours and costs. Here those costs meet a benchmark: buying and holding the same market, which every trading result has to beat.",
     hook: {
       prompt: "Over one year, Dana traded LABX 40 times and finished +6.0% after costs. [[buy-and-hold|Buying on day one and holding]] finished +9.0%. Who did better?",
       control: {
@@ -705,7 +712,7 @@ const L014: Lesson = {
       {
         kind: "explain",
         title: "Two ways to use a market",
-        text: "**Investing** means holding assets for their return over years: dividends, coupons and growth, with few trades. **Trading** seeks profit from price changes over shorter horizons, and only works with a specific edge. Investing earns what the market pays. Trading adds value only if it beats that.",
+        text: "**Investing** means holding assets for their return over years: dividends, coupons and growth, with few trades. **Trading** seeks profit from price changes over shorter horizons, and only works with a specific edge, an advantage that pays after costs. Investing earns what the market pays. Trading adds value only if it beats that.",
       },
       {
         kind: "match",
@@ -742,7 +749,7 @@ const L014: Lesson = {
           steps: [
             { text: "The ghost: buy LABX on day one and hold. After costs, +9.0% at year end.", layers: [{ kind: "line", values: GHOST, role: "neutral", dashed: true, label: "GHOST" }] },
             { text: "Dana's 40 trades before costs (GROSS): +14.0%. On paper, she beat the ghost.", layers: [{ kind: "line", values: DANA_GROSS, role: "concept", dashed: true, label: "GROSS" }] },
-            { text: "Each round trip costs about 0.2%. Forty of them: 8.0 points. After costs (NET): +6.0%.", layers: [{ kind: "line", values: DANA_NET, role: "accent", label: "NET" }] },
+            { text: "Each round trip (buy, then sell) costs about 0.2%. Forty of them: 8.0 points. After costs (NET): +6.0%.", layers: [{ kind: "line", values: DANA_NET, role: "accent", label: "NET" }] },
             { text: "After costs, Dana is 3.0 points behind the ghost.", layers: [{ kind: "bracket", from: 6.0, to: 9.0, index: 12, label: "−3.0" }] },
           ],
         },
@@ -812,6 +819,7 @@ const L014: Lesson = {
         "Compare any result with buy-and-hold on the same market, after costs: the benchmark ghost.",
         "Every round trip costs something, so the more you trade, the larger the edge you need.",
       ],
+      next: "Next, 0.1.5: how most retail traders actually do against that benchmark, in the regulators' own numbers.",
     },
   },
 };
@@ -837,6 +845,7 @@ const L015: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.5",
+    bridge: "In 0.1.4 you saw Dana beat the market before costs and trail it after. Here you see how whole populations of retail traders do, and the common reasons most of them lose.",
     hook: {
       prompt: "Out of every 100 retail CFD accounts in the EU, how many lose money?",
       control: { kind: "slider", min: 0, max: 100, step: 1, start: 50, answer: 81.5, tolerance: 7.5 },
@@ -933,6 +942,7 @@ const L015: Lesson = {
         "Most failures are no stop, oversizing, costs, revenge and small samples. Each has a unit here.",
         "Deciding not to trade real money, or to invest passively, is a valid result of this course.",
       ],
+      next: "Next, 0.1.6: how this course and its simulator work, built as an answer to these numbers.",
     },
   },
 };
@@ -958,6 +968,7 @@ const L016: Lesson = {
   script: {
     unit: "0.1",
     courseId: "0.1.6",
+    bridge: "In 0.1.5 you matched the common reasons traders fail to units of this course. Here you see how the course and the simulator work: the LABX world, the three scores and the evidence grades.",
     hook: {
       prompt: "Your Arena account grows from 10,000.00 to 12,000.00 vUSD in one week. Which score does that raise?",
       control: {
@@ -976,7 +987,7 @@ const L016: Lesson = {
       {
         kind: "explain",
         title: "The simulated world",
-        text: "You trade **LABX**, a synthetic instrument, in **vUSD**, from a 10,000.00 account. Each candle is one hour. The [[spread]] is 0.10: bid = mid − 0.05, ask = mid + 0.05. Every fill pays 0.05% [[commission]], rounded up to the cent. Risk is 1% per trade in missions and 2% in the Arena. No leverage.",
+        text: "You trade **LABX**, a synthetic instrument, in **vUSD**, from a 10,000.00 account. Each candle (chart bar) is one hour. The [[spread]] is 0.10: bid = mid − 0.05, ask = mid + 0.05. Every fill pays 0.05% [[commission]], a broker fee, rounded up to the cent. Risk is 1% per trade in missions and 2% in the Arena. No leverage.",
       },
       {
         kind: "explain",
@@ -1080,6 +1091,7 @@ const L016: Lesson = {
         "Decision Quality and Risk Discipline grade your process. Simulated Outcome shows profit but is never graded.",
         "An evidence grade says how well an idea held up when tested, not that it will work.",
       ],
+      next: "Next comes the Unit 0.1 checkpoint, then unit 0.2, Thinking in probabilities, starting with process versus outcome.",
     },
   },
 };
@@ -1831,6 +1843,19 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 0.1 · Welcome to the markets (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_0_1: UnitContent = {
+  intro: {
+    summary:
+      "Your first unit, before any chart or order. You'll see where a price comes from, who trades and in which markets, what any result has to beat after costs, how most retail traders really do, and how this course grades you. Mechanics and honest numbers come first, so every later lesson stands on them.",
+    outcomes: [
+      "Explain a price as the point where a buyer and a seller last agreed.",
+      "Name who trades, in which asset classes, and how those classes differ.",
+      "Compare any trading result with buy-and-hold on the same market, after costs.",
+      "Quote the honest loss rates for retail traders and say where they come from.",
+      "Tell the three simulator scores apart and read an evidence grade.",
+    ],
+    buildsOn:
+      "Nothing yet: this is the first unit of the course. You need no trading terms and no maths beyond percentages, multiplication and division.",
+  },
   lessons: [L011, L012, L013, L014, L015, L016],
   questions: QUESTIONS,
   terms: TERMS,

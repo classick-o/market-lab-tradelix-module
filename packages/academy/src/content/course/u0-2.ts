@@ -153,6 +153,7 @@ const L_0_2_1: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.1",
+    bridge: "In 0.1.6 you saw that Decision Quality grades your reasoning while Simulated Outcome is never graded. Here is why: one result can't tell a good decision from a lucky one.",
     hook: {
       prompt: "A dice game: you win 10.00 if a 6 comes up and lose 10.00 on anything else. Ana plays once and wins. Bogdan declines. Who made the better decision?",
       control: {
@@ -254,7 +255,7 @@ const L_0_2_1: Lesson = {
       {
         kind: "callout",
         tone: "key",
-        text: "In MARKET//LAB the process grade, [[decision-quality|Decision Quality]], comes first and the outcome second. A good decision that lost is still a good decision.",
+        text: "In MARKET//LAB the process grade, [[decision-quality|Decision Quality]], which rates your reasoning at the time, comes first and the outcome second. A good decision that lost is still a good decision.",
       },
     ],
     task: {
@@ -278,6 +279,7 @@ const L_0_2_1: Lesson = {
         "Four boxes: deserved success, bad luck, dumb luck, poetic justice. Dumb luck is the dangerous one.",
         "Outcomes sway everyone's grades, even people who know better. That's why the process is graded first.",
       ],
+      next: "Next, 0.2.2: expected value, the tool for judging a decision before its result is known.",
     },
   },
 };
@@ -302,6 +304,7 @@ const L_0_2_2: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.2",
+    bridge: "In 0.2.1 you judged decisions apart from their outcomes. To do that with numbers, you need expected value: what a choice returns on average over many plays. Here you calculate it for two games.",
     hook: {
       prompt: "Game A: a coin flip, win 15.00 or lose 10.00. Game B: win 1.00 nine times in ten, lose 12.00 once in ten. Which would you rather play 100 times?",
       control: {
@@ -357,7 +360,7 @@ const L_0_2_2: Lesson = {
       {
         kind: "explain",
         title: "Likely isn't expected",
-        text: "**Likely** isn't the same as **expected**. Game B wins nine times in ten and still loses money on average, because its rare loss is large. You'll meet this pattern again in 1.4.5, with win rates and targets, and in 1.8.1, with doubling after losses.",
+        text: "**Likely** isn't the same as **expected**. Game B wins nine times in ten and still loses money on average, because its rare loss is large. You'll meet this pattern again in 1.4.5, with win rates and profit targets, and in 1.8.1, with doubling after losses.",
       },
       {
         kind: "predict",
@@ -393,7 +396,7 @@ const L_0_2_2: Lesson = {
     ],
     task: {
       widget: "expectancy",
-      goal: "This game wins 70% of the time and pays 1.00. Find the smallest loss, in steps of 0.10, that makes its expected value negative. The widget writes 1.00 as 1.0R.",
+      goal: "This game wins 70% of the time and pays 1.00. Find the smallest loss, in steps of 0.10, that makes its expected value negative. The widget writes 1.00 as 1.0R, using R as a unit worth 1.00.",
       start: { winRate: 70, avgWin: 1.0, avgLoss: 1.0, runLength: 5 },
       locked: ["winRate", "avgWin", "runLength"],
       hidden: ["runProb"],
@@ -420,6 +423,7 @@ const L_0_2_2: Lesson = {
         "A game can win most of the time and still lose on average, when its losses are large.",
         "Expected value describes many plays. The next play can always lose, even with an edge.",
       ],
+      next: "Next, 0.2.3: why real runs of a good game still stray far from its expected value.",
     },
   },
 };
@@ -444,6 +448,7 @@ const L_0_2_3: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.3",
+    bridge: "In 0.2.2 you found that game A makes +2.50 per play on average. Here you play it in runs of 20 and watch results scatter around that average, with longer losing streaks than most people expect.",
     hook: {
       prompt: "You flip a fair coin 100 times. What's the longest run of tails in a row you expect to see?",
       control: { kind: "slider", min: 2, max: 15, step: 1, start: 2, unit: "in a row", answer: 6, tolerance: 1 },
@@ -588,6 +593,7 @@ const L_0_2_3: Lesson = {
         "Over 100 fair flips, a run of 5 tails appears 81% of the time. Expect long streaks.",
         "A streak alone isn't evidence that anything changed, and it doesn't make a win due.",
       ],
+      next: "Next, 0.2.4: how many trades it takes before a win rate really tells you something.",
     },
   },
 };
@@ -612,6 +618,7 @@ const L_0_2_4: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.4",
+    bridge: "In 0.2.3 you saw streaks and swings in a game whose odds you knew. In trading you don't know them. Here you see how many trades it takes to measure a win rate.",
     hook: {
       prompt: "A method won 12 of its first 20 trades: 60%. What is its true win rate?",
       control: {
@@ -756,6 +763,7 @@ const L_0_2_4: Lesson = {
         "The range narrows slowly: four times the trades halves its width. About 93 trades separate 60% from 50%.",
         "Judge methods on hundreds of trades; judge each single trade on whether it followed the plan.",
       ],
+      next: "Next, 0.2.5: how coin flips draw trends and levels on a chart, and how to test a pattern against chance.",
     },
   },
 };
@@ -783,6 +791,7 @@ const L_0_2_5: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.5",
+    bridge: "In 0.2.4 you saw 20 trades make a method with no edge look good. Charts fool you the same way: here coin flips draw trends, ranges and levels that look real.",
     hook: {
       prompt: "Here are 60 hours of LABX. Was this chart made by a real market, or by flipping coins?",
       figure: {
@@ -821,7 +830,7 @@ const L_0_2_5: Lesson = {
               layers: [{ kind: "path", points: [{ index: 4, price: 99.4 }, { index: 13, price: 104.4 }], role: "concept", label: "TREND?" }],
             },
             {
-              text: "Hours 19 to 28 stay between 104.60 and 105.60, topping out three times. Then a 'breakout'.",
+              text: "Hours 19 to 28 stay between 104.60 and 105.60, topping out three times. Then a 'breakout' above it.",
               layers: [{ kind: "zone", from: 104.6, to: 105.6, role: "concept", label: "RANGE?" }],
             },
           ],
@@ -854,7 +863,7 @@ const L_0_2_5: Lesson = {
       {
         kind: "explain",
         title: "Compared with what?",
-        text: "So count against chance. A popular rule says chart [[gap|gaps]] 'fill'. In one test they were revisited 83.4% of the time; random levels the same distance away, 83.5%. In currency markets, price bounced at published support and resistance levels 60.8% of the time, against 56.2% at random levels (Osler). More in 1.5.5.",
+        text: "So count against chance. A popular rule says chart [[gap|gaps]], jumps that skip prices, 'fill'. In one test they were revisited 83.4% of the time; random levels the same distance away, 83.5%. In currency markets, price bounced at published support and resistance levels (floors and ceilings) 60.8% of the time, against 56.2% at random levels (Osler). More in 1.5.5.",
       },
       {
         kind: "order",
@@ -904,6 +913,7 @@ const L_0_2_5: Lesson = {
         "If a chart can't be told apart from a random one, 'can't tell' is the honest answer.",
         "Before trusting a pattern, ask: does it work more often than on random data, after costs?",
       ],
+      next: "Next, 0.2.6: how luck makes star traders, and what evidence actually points to skill.",
     },
   },
 };
@@ -928,6 +938,7 @@ const L_0_2_6: Lesson = {
   script: {
     unit: "0.2",
     courseId: "0.2.6",
+    bridge: "In 0.2.5 coin flips drew convincing charts. Here they make convincing traders: among 1,000 people flipping coins, some look like stars. The sample sizes from 0.2.4 help you tell luck from skill.",
     hook: {
       prompt: "1,000 people 'predict' LABX for 10 days by flipping a coin. How many get at least 8 days right by luck alone?",
       control: { kind: "slider", min: 0, max: 200, step: 1, start: 0, unit: "people", answer: 55, tolerance: 10 },
@@ -1060,6 +1071,7 @@ const L_0_2_6: Lesson = {
         "Seeing only the winners, in ads or online, makes luck look like skill: survivorship bias.",
         "Skill shows as the same process over many trades, with results after costs, next to the benchmark.",
       ],
+      next: "Next comes the Unit 0.2 checkpoint, then unit 1.1, Prices, quotes and costs, starting with 1.1.1: bid, ask and the spread.",
     },
   },
 };
@@ -1623,6 +1635,19 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_0_2: UnitContent = {
+  intro: {
+    summary:
+      "Trading results are noisy, so before any pattern or indicator you learn to think in probabilities: judge decisions apart from their results, weigh outcomes by their odds, expect long losing streaks, distrust small samples, and test patterns and star traders against chance.",
+    outcomes: [
+      "Judge a decision by what you knew then, not by how it turned out.",
+      "Calculate the expected value of a simple game, and spot one that wins often but loses on average.",
+      "Expect long losing streaks, and know how many trades a win rate needs.",
+      "Ask whether a pattern beats random data, after costs, before you trust it.",
+      "Tell luck from skill by sample size, fixed rules and results after costs.",
+    ],
+    buildsOn:
+      "Builds on unit 0.1, mainly 0.1.6, where Decision Quality grades your reasoning and the outcome is never graded. The benchmark (0.1.4) and the honest numbers (0.1.5) showed why raw results mislead.",
+  },
   lessons: [L_0_2_1, L_0_2_2, L_0_2_3, L_0_2_4, L_0_2_5, L_0_2_6],
   questions: QUESTIONS,
   terms: TERMS,
