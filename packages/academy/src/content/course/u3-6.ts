@@ -496,6 +496,7 @@ const L361: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.1",
+    bridge: "Unit 3.5 tested chart vocabulary against data. Unit 3.6 starts with rates. In 2.10.6 central banks set short rates; in 2.14.4 you paid or earned the interest difference overnight. Here you price bonds from yields and see why rate gaps move currencies.",
     hook: {
       prompt: "The 10-year yield rises from 4% to 5%. By roughly how much does a 10-year zero-coupon bond fall in price?",
       control: {
@@ -642,6 +643,7 @@ const L361: Lesson = {
         "Real yield = nominal yield − expected inflation: 4.50% − 2.50% = 2.00%.",
         "A wider rate differential tends to lift the currency (grade B). Ask why yields moved.",
       ],
+      next: "Next, 3.6.2: the yield curve, yields across maturities, and what its slope does and doesn't warn of.",
     },
   },
 };
@@ -667,6 +669,7 @@ const L362: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.2",
+    bridge: "In 3.6.1 a one-point rise in yield cost the 10-year zero 9.1% and the 2-year only 1.9%. Here you line up yields across maturities into a curve, read its slope as 10y minus 2y, and check what an inversion has warned of.",
     hook: {
       prompt: "The 10y–2y curve has been inverted for a year, and there is still no recession. Is the signal broken?",
       control: {
@@ -771,6 +774,7 @@ const L362: Lesson = {
         "Bull or bear: yields fell or rose. Steepener or flattener: the spread widened or narrowed.",
         "An inversion warns of recession with a long, variable lag and false alarms. It doesn't time stocks.",
       ],
+      next: "Next, 3.6.3: inflation and regimes, where the same data move assets differently through the central bank's reaction.",
     },
   },
 };
@@ -796,6 +800,7 @@ const L363: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.3",
+    bridge: "In 3.6.1 you asked why yields moved; 3.6.2's curve reflected expected policy. In 2.10.4 and 2.10.5 you called jobs and CPI hot or cold. Here the same hot print lifts or sinks stocks, depending on what the central bank is fighting.",
     hook: {
       prompt: "Payrolls beat expectations by a wide margin. What do equities do?",
       control: {
@@ -891,6 +896,7 @@ const L363: Lesson = {
         "Bonds hedge stocks when growth shocks dominate, not when inflation does, as in 2022.",
         "Read the regime from how markets reacted to recent data, then predict.",
       ],
+      next: "Next, 3.6.4: the dollar, driven by rate gaps in calm times and by haven demand in stress.",
     },
   },
 };
@@ -916,6 +922,7 @@ const L364: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.4",
+    bridge: "In 3.6.3 the regime set how stocks and bonds reacted. Now the dollar. 3.6.1's rate differential tends to drive it over months; in a global crisis, haven demand takes over. The dollar smile joins the two, and you'll see the crisis that breaks it.",
     hook: {
       prompt: "A global crisis starts. Does the dollar tend to rise or fall?",
       control: {
@@ -1002,6 +1009,7 @@ const L364: Lesson = {
         "The smile: LDX up in US booms and global crises, down in synchronised growth.",
         "A funding-currency unwind can sink LDX in risk-off. Write that exception into your plan.",
       ],
+      next: "Next, 3.6.5: commodities and commodity currencies, where oil, copper and gold each answer to a different driver.",
     },
   },
 };
@@ -1027,6 +1035,7 @@ const L365: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.5",
+    bridge: "In 3.6.4 the dollar followed rate gaps and haven demand. Commodities add their own drivers. Gold pays nothing, so 3.6.1's real yield is the cost of holding it. And an exporter's currency can track its main export, loosely, through the terms of trade.",
     hook: {
       prompt: "Oil jumps 10% on a supply shock. Is that good for the stock index?",
       control: {
@@ -1138,6 +1147,7 @@ const L365: Lesson = {
         "Dearer exports improve the terms of trade, and the exporter's currency tends to follow, loosely.",
         "Gold rose with positive real yields from 2022 as central banks bought. Relationships drift.",
       ],
+      next: "Next, 3.6.6: risk-on, risk-off and carry, when assets move as one and steady carry meets its crash.",
     },
   },
 };
@@ -1163,6 +1173,7 @@ const L366: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.6",
+    bridge: "In 3.6.5 each commodity had its own driver. In stress, one driver takes over: risky assets fall together, as 2.11.3 warned correlations would. And 2.14.4's swap returns as carry: 3.6.4's funding-currency unwind is the crash that steady swap income pays for.",
     hook: {
       prompt: "You earn 2,000 vUSD a year of carry on a 50,000 vUSD position. The funding currency jumps 5% in a day. How many months of carry are gone?",
       control: {
@@ -1289,6 +1300,7 @@ const L366: Lesson = {
         "In crises, forced selling pushes correlations toward 1. Diversification thins out when you need it.",
         "Carry earns small and loses big: size it for the jump, 4,000 vUSD, not the swap.",
       ],
+      next: "Next, 3.6.7: the business cycle and sector rotation, and why phases are clear only in hindsight.",
     },
   },
 };
@@ -1314,6 +1326,7 @@ const L367: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.7",
+    bridge: "In 3.6.6 you read risk-on and risk-off from a meter. The business cycle is slower, measured in years. Its clues include 3.6.2's curve and 3.6.3's inflation regimes. Here you place a phase from leading data, then price sector rotation after costs.",
     hook: {
       prompt: "Since 1945, how long has a US economic expansion lasted on average?",
       control: {
@@ -1428,6 +1441,7 @@ const L367: Lesson = {
         "Textbook leaders: cyclicals early, tech mid, energy and materials late, defensives in recession.",
         "Rotation's 2.4-point edge shrank to 0.2 after costs and late calls.",
       ],
+      next: "Next, 3.6.8: when correlations flip, and how to size a hedged book for the day both legs fall.",
     },
   },
 };
@@ -1453,6 +1467,7 @@ const L368: Lesson = {
   script: {
     unit: "3.6",
     courseId: "3.6.8",
+    bridge: "In 3.6.7 phases were clear only in hindsight; correlation flips also show up late. You've met three: 3.6.3's stock–bond sign change, 3.6.5's gold and real yields, 3.6.6's forced selling. Here you track a rolling correlation and size the hedge with 2.11.2's portfolio heat.",
     hook: {
       prompt: "You're long LABX and long LBND, 5,000 vUSD each. Is that a hedge?",
       control: {
@@ -1576,6 +1591,7 @@ const L368: Lesson = {
         "Stock–bond in 2022, gold–real yields, the yen: correlations flip when the dominant shock changes.",
         "Size hedged books as if correlation were 1: a joint 10% fall within 2%.",
       ],
+      next: "Next, the Unit 3.6 checkpoint. Then Unit 3.7, Central banks and event trading, built on these yields, curves and regimes.",
     },
   },
 };
@@ -2613,6 +2629,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_3_6: UnitContent = {
+  intro: {
+    summary: "This unit follows a data surprise through rate expectations to yields, the dollar, stocks and commodities. You read the regime, see why cross-market relationships change sign, and size for when they do. It comes after 2.10's surprises and central banks and 2.11's correlation, and before 3.7, which needs yields, the curve and regimes.",
+    outcomes: [
+      "Price a zero-coupon bond from its yield, compute a real yield, and link rate differentials to currencies.",
+      "Read the yield curve's slope and moves, and treat an inversion as a warning, not a timing signal.",
+      "Name the inflation regime before predicting how stocks, bonds and the dollar react to data.",
+      "Explain the dollar smile, commodity links and risk-off, and size carry for the crash, not the swap.",
+      "Track a rolling correlation, spot when it flips, and size hedged books as if correlation were 1.",
+    ],
+    buildsOn: "Surprise against consensus and central-bank basics (2.10.1, 2.10.6), CPI (2.10.5), forex mechanics and swap (2.14.3, 2.14.4), correlation and portfolio heat (2.11.2, 2.11.3), and sample size (0.2.4).",
+  },
   lessons: [L361, L362, L363, L364, L365, L366, L367, L368],
   questions: QUESTIONS,
   terms: TERMS,

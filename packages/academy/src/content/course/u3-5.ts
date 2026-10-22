@@ -251,6 +251,7 @@ const L351: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.1",
+    bridge: "Unit 3.4 ended in 3.4.8, where 3.4.1's protocol rejected the full-moon claim. SMC is a newer retail vocabulary, and its liquidity words reuse the stop clusters of 3.1. Before testing any of it, you sort each claim: mechanics, tendency or narrative.",
     hook: {
       prompt: "\"Smart money engineered liquidity above the highs, then delivered price to the order block.\" Which part could you check on a chart?",
       control: {
@@ -343,6 +344,7 @@ const L351: Lesson = {
         "Sort each claim: mechanics hold always, tendencies have base rates, narratives fit any outcome.",
         "Courses, paid indicators and prop-challenge links earn whether or not the method works.",
       ],
+      next: "Next, 3.5.2: structure words. BOS, CHoCH, MSS and displacement, mapped back to the Dow structure you already know.",
     },
   },
 };
@@ -375,6 +377,7 @@ const L352: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.2",
+    bridge: "In 3.5.1 you sorted claims into three layers. Now structure. In 1.5.7 an uptrend broke at the first close below its last higher low: Dow's peak-trough rule from 2.3.1. SMC renames it a CHoCH, and the label shifts with swing length and close rule.",
     hook: {
       prompt: "An uptrend. Its last higher low, with N = 3, is 100.55. Candle 30 dips to 100.48 and closes at 100.68. Is this a change of character?",
       figure: {
@@ -548,6 +551,7 @@ const L352: Lesson = {
         "Labels change with N and with close versus wick: from 3 CHoCH to none on one chart.",
         "On a random walk a CHoCH predicted nothing: 49.8% against 49.7%. Grade D for reversal.",
       ],
+      next: "Next, 3.5.3: liquidity words. BSL, SSL, sweeps and inducement rename the stop clusters and failed breakouts of 3.1.",
     },
   },
 };
@@ -635,6 +639,7 @@ const L353: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.3",
+    bridge: "In 3.5.2 a CHoCH predicted nothing on a random walk. Liquidity words lean on firmer ground: in 3.1.2 stops clustered beyond round numbers, in 3.1.3 sweeps closed back inside, in 3.1.4 equal highs needed a tolerance. Here you split what's real from what's contradicted.",
     hook: {
       prompt: "\"They swept the lows, now we go up.\" The only systematic test our research found looked at swept levels in G10 currencies. What did it find?",
       control: {
@@ -752,6 +757,7 @@ const L353: Lesson = {
         "Stops cluster and speed price up (B). \"Sweep, then reverse\" is contradicted (D).",
         "H1 names an event, a 10-candle outcome, a random-candle baseline and three markets.",
       ],
+      next: "Next, 3.5.4: zone words. Order blocks, FVGs, premium and discount, set against random zones at the same distance.",
     },
   },
 };
@@ -834,6 +840,7 @@ const L354: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.4",
+    bridge: "In 3.5.3 you wrote H1 for sweeps. Zone words come next, and most have a classical twin: 3.1.6's supply and demand zones, 3.1.5's three-candle gaps, 3.4.2's Fibonacci ratios. Order blocks add 3.5.2's displacement. Then, as in 3.1.6, the zones face random ones.",
     hook: {
       prompt: "An order block fails: price closes straight through it. In SMC language, the block now becomes…",
       control: {
@@ -990,6 +997,7 @@ const L354: Lesson = {
         "Premium and discount is the 50% rule; OTE is Fibonacci 61.8–78.6%. Both grade D.",
         "Strict blocks reacted like random zones at the same distance: 50.3% against 49.6%.",
       ],
+      next: "Next, 3.5.5: time and algorithm words. Killzones, PO3, IPDA and SMT, checked against the session clock of 2.9.",
     },
   },
 };
@@ -1068,6 +1076,7 @@ const L355: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.5",
+    bridge: "In 3.5.4 strict order blocks reacted like random zones. The last words are about time and an algorithm. In 2.9.2 volatility followed the sessions; 3.4.5's Wyckoff cycle returns as PO3; and 3.2.1 showed FX has no central book. 3.5.1's three layers sort them.",
     hook: {
       prompt: "Breakouts during the London-open window travel further than breakouts at other hours. Does that make their direction more predictable?",
       control: {
@@ -1198,6 +1207,7 @@ const L355: Lesson = {
         "Volatility follows the clock (A). Direction by window isn't shown (D).",
         "IPDA can't be falsified and clashes with a fragmented, dealer-internalised FX market.",
       ],
+      next: "Next, 3.5.6: the SMC claim-test lab, where you freeze one claim's rules and run the whole test yourself.",
     },
   },
 };
@@ -1271,6 +1281,7 @@ const L356: Lesson = {
   script: {
     unit: "3.5",
     courseId: "3.5.6",
+    bridge: "From 3.5.2 to 3.5.5 the lessons ran the tests: CHoCH, sweeps, order blocks, killzones. Now you run one. 3.4.1's rule holds: fix rules, parameters and sample size before any result. Then in-sample, out-of-sample, the random walk and costs, and you grade it.",
     hook: {
       prompt: "You tune an order-block rule across 72 variants until one wins 65% in-sample. What win rate do you expect out-of-sample?",
       control: {
@@ -1416,6 +1427,7 @@ const L356: Lesson = {
         "Report N, in-sample, out-of-sample, the random walk and the result after costs.",
         "Grade it yourself, and write the result that would change your mind.",
       ],
+      next: "Next, the Unit 3.5 checkpoint. Then Unit 3.6, Macro and intermarket: from chart vocabulary to rates, the dollar and commodities.",
     },
   },
 };
@@ -2216,4 +2228,20 @@ const CONCEPTS: Concept[] = [
 ];
 
 /** Unit 3.5 · Smart money concepts, decoded (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_5: UnitContent = { lessons: [L351, L352, L353, L354, L355, L356], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_3_5: UnitContent = {
+  intro: {
+    summary: "You'll meet SMC and ICT words everywhere. This unit decodes them: for each term, the mechanical fact behind it, the classical idea it renames, and a claim you can test against R0. It comes after 3.1's liquidity evidence, 3.3's real order flow and 3.4's testing protocol, so every word meets data, not authority.",
+    outcomes: [
+      "Sort any trading claim into mechanics, statistical tendency or narrative, and check who earns from selling it.",
+      "Map structure, liquidity, zone and time words to the Dow, stop-cluster, supply-demand and session ideas they rename.",
+      "Show how labels like CHoCH or order block change with swing length, close rule and author.",
+      "Separate what's documented, such as stop clustering and session volatility, from claims the evidence contradicts or can't test.",
+      "Turn one SMC claim into frozen rules, test it out-of-sample, on R0 and after costs, then grade it.",
+    ],
+    buildsOn: "Stop clusters and sweeps (3.1.1–3.1.4), gaps and zones (3.1.5, 3.1.6), real order flow (3.3), the testing protocol (3.4.1), Fibonacci (3.4.2) and Wyckoff (3.4.5); also market structure (1.5), Dow theory (2.3.1) and FX sessions (2.9.2).",
+  },
+  lessons: [L351, L352, L353, L354, L355, L356],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};
