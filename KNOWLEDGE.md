@@ -52,6 +52,17 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 - Cât e deschisă o lecție, sidebar-ul se strânge la rail, iar pe telefon bara de jos dispare.
 - În cod: `packages/ui/src/learn/` (`LessonPlayer`, `CheckPhase`, `Recap`, `LessonRead`), `finishLessonCheck` și `completeScriptedLesson` din `packages/ui/src/store.ts`.
 
+### Continuitatea
+
+- Fiecare lecție începe cu poziția ei: „Unit X · titlu · lesson n of N”.
+- Prima lecție a unei unități arată și introducerea unității: rezumatul, ce vei putea face la final și pe ce se bazează unitatea.
+- Sub ea apare legătura cu lecția anterioară (`bridge`), apoi „Builds on”: până la 3 lecții anterioare din prerechizitele hărții, cu link și bifă dacă sunt terminate.
+- Recap-ul anunță lecția următoare (`recap.next`). La ultima lecție a unei unități apare „Unit complete”, cu checkpoint-ul unității și unitatea următoare.
+- Un termen folosit înaintea lecției care îl predă are o explicație scurtă în text, iar cardul lui spune „You'll learn this properly in …”.
+- Pagina Lessons grupează lecțiile pe unități, în ordinea cursului. Panoul unității din Course arată aceeași introducere.
+- Regulile de scriere sunt în `docs/learn/AUTHORING.md` §11.
+- În cod: `LessonContextCard` din `packages/ui/src/learn/LessonContext.tsx`, `UNIT_INTROS` din `packages/academy/src/catalog.ts`, `Term.tsx`, `Recap.tsx`.
+
 ### Checkpoint-ul unității
 
 - Fiecare unitate cu lecții scrise are un checkpoint: toate întrebările din check-urile lecțiilor ei. La 80% sau mai mult, lecțiile unității se marchează „Tested out”: contează ca terminate pentru progres și pentru „Next step”, dar nu dau XP de lecție.
