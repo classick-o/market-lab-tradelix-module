@@ -315,6 +315,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.1",
+      bridge: "Level 1 ended in 1.8 with the traps that empty accounts. Level 2 opens on the candle you read in 1.2.1. In 1.2.5 you averaged ranges into a normal candle; here the last 10 candles decide whether a body is long, short or doji.",
       hook: {
         prompt: "This LABX [[candle]] opened at 100.00 and closed at 100.50. Is it a long candle?",
         control: {
@@ -461,6 +462,7 @@ const lessons: Lesson[] = [
           "Marubozu, spinning top, high-wave and the doji types are set by body and wick sizes.",
           "The same 0.50 body is long in a calm market and short in a busy one.",
         ],
+        next: "Next, 2.1.2: long shadows. Hammers and shooting stars, named by the trend before them and checked against tested rates.",
       },
     },
   },
@@ -487,6 +489,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.2",
+      bridge: "In 2.1.1 you measured bodies and shadows against the last 10 candles. Here two long-shadow shapes get four names, set by the trend before them, the trends of 1.5.2. Then 0.2.5's question: does each do better than chance?",
       hook: {
         prompt: "Out of 100 [[hammer|hammers]] after a decline, in how many does price break upward first?",
         control: {
@@ -635,6 +638,7 @@ const lessons: Lesson[] = [
           "The hanging man and the inverted hammer mostly did the opposite of their names in testing.",
           "Hammer 60%, shooting star 59%: close to a coin flip, before costs, in US stocks.",
         ],
+        next: "Next, 2.1.3: context first, the checks a hammer must pass before it counts, and what waiting for confirmation costs.",
       },
     },
   },
@@ -661,6 +665,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.3",
+      bridge: "In 2.1.2, 60 of 100 tested hammers broke upward first: near a coin flip. Here you add what the name leaves out: a trend to reverse, a zone from 1.5.4 and a confirming close. Then you price that wait in R, as in 1.4.5.",
       hook: {
         prompt: "Two identical [[hammer|hammers]]. A forms after a 10-candle decline, at a support zone. B forms in the middle of a sideways range. Which would you trade?",
         control: {
@@ -803,6 +808,7 @@ const lessons: Lesson[] = [
           "Waiting for confirmation moved the entry from 99.55 to 99.95 and R:R from 1.86 to 1.07.",
           "On a random walk the hammer rule did no better than any candle: about 50%.",
         ],
+        next: "Next, 2.1.4: engulfing and harami, two-candle patterns that face the same three checks.",
       },
     },
   },
@@ -828,6 +834,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.4",
+      bridge: "In 2.1.3 a single candle had to pass three checks. Now two candles: engulfing and harami, read from the real bodies you measured in 2.1.1. And 1.4.5's expectancy returns: a high hit rate can still rank low after costs.",
       hook: {
         prompt: "Bearish [[engulfing-pattern|engulfing patterns]] reverse price about 79% of the time. Where do they rank among 103 candle patterns for overall performance?",
         control: {
@@ -968,6 +975,7 @@ const lessons: Lesson[] = [
           "A harami is a small body inside the last body; an inside bar compares whole ranges.",
           "A high hit rate with small moves can rank low and lose after costs.",
         ],
+        next: "Next, 2.1.5: piercing and dark cloud, where the depth of candle 2's close sets the name.",
       },
     },
   },
@@ -994,6 +1002,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.5",
+      bridge: "In 2.1.4 an engulfing body covered the whole body before it. Here candle 2 may close only part of the way in, and the depth sets the name, from on-neck to piercing. The checks of 2.1.3 still decide whether any of them counts.",
       hook: {
         prompt: "A long bearish candle ran from 101.00 down to 100.00. The next candle opens at 99.70. Where must it close before you'd call it bullish?",
         control: { kind: "slider", min: 99.8, max: 101.2, step: 0.01, start: 100.2, answer: 100.5 },
@@ -1105,6 +1114,7 @@ const lessons: Lesson[] = [
           "On-neck, in-neck, thrusting, piercing, engulfing: one scale, and theory flips at the middle.",
           "Piercing 64%, dark cloud 60%; tweezers and kickers sit near a coin flip.",
         ],
+        next: "Next, 2.1.6: stars, three-candle turns with a small middle candle that gaps away.",
       },
     },
   },
@@ -1131,6 +1141,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.6",
+      bridge: "In 2.1.5 candle 2's close was measured against candle 1. Stars add a small middle candle, sized as in 2.1.1, that gaps away. In 1.2.5 a gap meant nothing traded between two prices; here you see what the rule finds where gaps are rare.",
       hook: {
         prompt: "Candle 1 fell from 102.00 to 101.00. Candle 2 is a small star below it. Where must candle 3 close to complete a [[morning-star|morning star]]?",
         control: { kind: "slider", min: 100.8, max: 102.2, step: 0.01, start: 101.1, answer: 101.5 },
@@ -1255,6 +1266,7 @@ const lessons: Lesson[] = [
           "The middle candle decides: small body, star; doji, doji star; gaps beyond both wicks, abandoned baby.",
           "Without gaps the strict rule finds nothing; relaxing it makes a different, untested pattern.",
         ],
+        next: "Next, 2.1.7: patterns whose last candle confirms the turn, and what that later entry costs.",
       },
     },
   },
@@ -1280,6 +1292,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.7",
+      bridge: "In 2.1.6 candle 3 had to close at least halfway into body 1. Here the last candle is the confirmation: a 2.1.4 harami plus one candle becomes three inside up. The price is the one from 2.1.3: a later entry and a worse R:R.",
       hook: {
         prompt: "A bullish [[harami]] reverses about 53% of the time. Add one confirming candle and it becomes three inside up. Guess the new rate.",
         control: { kind: "slider", min: 40, max: 90, step: 1, unit: "%", start: 53, answer: 65 },
@@ -1421,6 +1434,7 @@ const lessons: Lesson[] = [
           "Their higher rates are partly built in: the last candle is already part of the move.",
           "Soldiers into resistance at 103.00: risk 2.35 for 0.95 of reward, R:R 0.40.",
         ],
+        next: "Next, 2.1.8: patterns that tested against their own names, and five questions for judging any pattern.",
       },
     },
   },
@@ -1447,6 +1461,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.8",
+      bridge: "In 2.1.7 rates looked higher partly because the last candle was already in the move. Here names meet data: 2.1.2's hanging man mostly did the opposite of its name. Then five questions for any pattern, and named shapes on 0.2.5's random walk.",
       hook: {
         prompt: "The bearish [[three-line-strike|three-line strike]] is taught as a signal that the fall continues. In Bulkowski's data, which way does price usually break?",
         control: {
@@ -1576,6 +1591,7 @@ const lessons: Lesson[] = [
           "Judge any pattern by rule, case count, rate against 50%, result after costs, and scope.",
           "On a random walk, named and unnamed shapes did the same: about 50%.",
         ],
+        next: "Next, 2.1.9: Heikin-Ashi, Renko and point & figure, other ways to draw price, and what each hides.",
       },
     },
   },
@@ -1602,6 +1618,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "2.1",
       courseId: "2.1.9",
+      bridge: "Until 2.1.8 every pattern was read from the candles of 1.2.1. In 1.2.2 a line chart dropped all but the closes. Here three charts redraw price: Heikin-Ashi averages candles, Renko and point & figure drop time. Fills still happen at real prices.",
       hook: {
         prompt: "Real candle 7 closed red, down 0.80 from its open. Will the [[heikin-ashi|Heikin-Ashi]] candle 7 be red too?",
         control: {
@@ -1757,6 +1774,7 @@ const lessons: Lesson[] = [
           "Renko draws a brick per full box move; P&F starts a column after a 3-box reversal.",
           "Stops, fills and backtests use real prices: HA and Renko values were never traded.",
         ],
+        next: "Next, the Unit 2.1 checkpoint. Then Unit 2.2, Chart patterns, where context, confirmation and base rates scale up to larger shapes.",
       },
     },
   },
@@ -2832,4 +2850,20 @@ const concepts: Concept[] = [
 ];
 
 /** Unit 2.1 · Candlesticks in context (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_2_1: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_2_1: UnitContent = {
+  intro: {
+    summary: "Level 1 closed in 1.8 with claims that fall apart once checked. Level 2 starts by checking some of charting's best-known claims: candle patterns. You size a candle against its neighbours, name patterns by exact rules, and judge each by trend, zone, confirmation and tested rate. It follows 1.5 because a reversal needs a trend and a zone.",
+    outcomes: [
+      "Classify a candle as long, short or doji against the last 10 candles, and name its shape.",
+      "Name one-, two- and three-candle patterns by exact rules: shadows, engulfing, penetration depth, stars.",
+      "Check a reversal pattern for a prior trend, a zone and a confirming close, and price the later entry.",
+      "Judge any pattern by its rule, case count, rate against 50%, result after costs and scope.",
+      "Read Heikin-Ashi, Renko and point & figure, and keep stops and fills on real prices.",
+    ],
+    buildsOn: "Candle anatomy, normal size and gaps (1.2.1, 1.2.5); swings, trends and zones (1.5.1, 1.5.2, 1.5.4); stops and reward-to-risk (1.4.3, 1.4.5); random walks (0.2.5); and 1.8.3's habit of checking a claim before believing it.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};

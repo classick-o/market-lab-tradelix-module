@@ -309,6 +309,7 @@ const L_2_2_1: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.1",
+    bridge: "Unit 2.1 judged candle patterns by context, confirmation and base rate. Now the lines that patterns are built from. In 1.5.1 you marked swings with one fixed rule; here two swing lows draw a trendline, and fixed rules stop you drawing it to fit.",
     hook: {
       prompt: "Ten analysts draw support and resistance on the same chart. How often do their levels match?",
       control: {
@@ -447,6 +448,7 @@ const L_2_2_1: Lesson = {
         "A parallel channel stays fixed once drawn; a regression channel refits and reads future candles.",
         "A trendline break is a warning. Confirm it with a close under the last swing low.",
       ],
+      next: "Next, 2.2.2: the anatomy every chart pattern shares, from prior trend to breakout filter and scaled target.",
     },
   },
 };
@@ -474,6 +476,7 @@ const L_2_2_2: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.2",
+    bridge: "In 2.2.1 lines drew the trend, and a break was a warning to confirm. Patterns are built from such lines. Here each gets the same eight parts, a filter for the breakouts of 1.5.4, and a target weighed against risk as in 1.4.5.",
     hook: {
       prompt: "Textbooks project a head-and-shoulders top's full height below the neckline. How often did price actually get there?",
       control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", start: 80, answer: 51, tolerance: 8 },
@@ -653,6 +656,7 @@ const L_2_2_2: Lesson = {
         "Confirm with a close past a filter. On LABX 1H an ATR margin fits; 3% doesn't.",
         "Scale the target: height × the share that reached it. Then check the R:R.",
       ],
+      next: "Next, 2.2.3: double tops and bottoms, the first full pattern taken through all eight parts.",
     },
   },
 };
@@ -680,6 +684,7 @@ const L_2_2_3: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.3",
+    bridge: "In 2.2.2 every pattern got eight parts, a filter and a scaled target. Now the first full one: a double top exists only after a close under the valley, like 2.1.3's confirming close. Early and confirmed entries are compared by 1.4.5's expectancy.",
     hook: {
       prompt: "Two peaks at almost the same price. No close below the valley yet. How often does price keep rising instead?",
       control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", start: 20, answer: 60, tolerance: 8 },
@@ -839,6 +844,7 @@ const L_2_2_3: Lesson = {
         "Early entries pay more per win but win less often. Compare them by expectancy, not win rate.",
         "Scaled target: height × hit rate from the confirmation level, here 99.00 + 1.95 = 100.95.",
       ],
+      next: "Next, 2.2.4: head and shoulders, three peaks and a neckline that may slope.",
     },
   },
 };
@@ -866,6 +872,7 @@ const L_2_2_4: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.4",
+    bridge: "In 2.2.3 two peaks became a double top only after a close under the valley. Head and shoulders has three peaks, the middle one highest, and a neckline through the lows between them, drawn by 2.2.1's rules. When it slopes, the confirmation moves.",
     hook: {
       prompt: "Three peaks, the middle one highest, and price is still above the lows between them. Is this a head-and-shoulders top?",
       figure: { kind: "chart", chart: { candles: HS1.slice(0, 29) }, steps: [{ text: "Peaks 104.80, 106.00 and 104.70. The lows between them: 103.00 and 103.00." }] },
@@ -1027,6 +1034,7 @@ const L_2_2_4: Lesson = {
         "Confirm on a close under the neckline; if it slopes down, under the right-hand low.",
         "Target: head to neckline, × 51% for tops and × 71% for inverse patterns.",
       ],
+      next: "Next, 2.2.5: triple tops, triple bottoms and rectangles, ranges that stay ranges until a close beyond them.",
     },
   },
 };
@@ -1054,6 +1062,7 @@ const L_2_2_5: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.5",
+    bridge: "In 2.2.4 the middle of three peaks stood highest. Put all three at one price and it's a triple top: like 2.2.3's double top, only a range until a close under the lowest valley. A rectangle is that box between 1.5.4's support and resistance.",
     hook: {
       prompt: "Price has touched the same ceiling three times. Which way will it break out?",
       figure: { kind: "chart", chart: { candles: TT1.slice(0, 27) }, steps: [{ text: "Highs: 102.00, 101.95 and 102.00. Lows: 100.05 and 100.00." }] },
@@ -1189,6 +1198,7 @@ const L_2_2_5: Lesson = {
         "A rectangle needs three touches on one side and two on the other; measure it both ways.",
         "Partial rises and declines tilt the odds; about a fifth to a quarter break the other way.",
       ],
+      next: "Next, 2.2.6: triangles, where the boundaries converge and the breakout bias comes from data.",
     },
   },
 };
@@ -1280,6 +1290,7 @@ const L_2_2_6: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.6",
+    bridge: "In 2.2.5 the boundaries were flat, and a rectangle could break either way. Tilt one or both lines, drawn by 2.2.1's rules, and they converge into a triangle. The anatomy of 2.2.2 still applies, but the breakout bias comes from data, not the shape.",
     hook: {
       prompt: "Descending triangles are taught as bearish. Guess the share that break out upward.",
       control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", start: 25, answer: 53, tolerance: 8 },
@@ -1411,6 +1422,7 @@ const L_2_2_6: Lesson = {
         "Bias from the data: ascending 63% up, symmetrical 60%, descending 53%, a coin flip.",
         "Near the apex the lines sit closer than a candle's range, so crossings there mean little.",
       ],
+      next: "Next, 2.2.7: flags and pennants, short pauses after a steep move, and measured moves.",
     },
   },
 };
@@ -1438,6 +1450,7 @@ const L_2_2_7: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.7",
+    bridge: "In 2.2.6 two converging lines made a triangle. After a steep pole, a brief pause shaped like a small triangle is a pennant; a parallel one is a flag. Their half-mast targets get scaled as in 2.2.2, by how often they were reached.",
     hook: {
       prompt: "The flagpole was 4.00 tall. The 'half-mast' rule says price travels another 4.00 after the flag. How often does it get there?",
       control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", start: 75, answer: 46, tolerance: 8 },
@@ -1582,6 +1595,7 @@ const L_2_2_7: Lesson = {
         "Half-mast targets were met by 46% of flags and 35% of pennants. Scale the pole.",
         "Measured move: D = C + AB. Plan for 60% of AB; 100% is the stretch.",
       ],
+      next: "Next, 2.2.8: wedges, which converge as both lines slope one way, and broadening formations that widen.",
     },
   },
 };
@@ -1673,6 +1687,7 @@ const L_2_2_8: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.8",
+    bridge: "In 2.2.7 flags sloped back against the pole between parallel lines. A wedge also slopes, but its lines converge like 2.2.6's triangles, both pointing the same way. Parallel lines would make a 2.2.1 channel. Then shapes that widen: megaphones and diamonds.",
     hook: {
       prompt: "Rising wedges are taught as bearish. Of those that do break down, how many fail to fall even 5%?",
       control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", start: 15, answer: 51, tolerance: 8 },
@@ -1815,6 +1830,7 @@ const L_2_2_8: Lesson = {
         "Rising wedges broke down 60% of the time, and half of those breakdowns failed.",
         "Megaphones and diamonds are rare, subjective and wide: hard to stop, harder to trust.",
       ],
+      next: "Next, 2.2.9: turns drawn as curves, slow rounding bottoms and cups, and sharp V's.",
     },
   },
 };
@@ -1842,6 +1858,7 @@ const L_2_2_9: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.9",
+    bridge: "In 2.2.8 megaphones and diamonds were rare and hard to trust. Here the turns are curves: slow bowls and cups, sharp V's. Like 2.2.3's double bottom, a bowl counts only after a close above its rim, which comes late. Rare ones need their sample checked.",
     hook: {
       prompt: "You see the left half of a slow bowl. Is it a rounding bottom?",
       figure: { kind: "chart", chart: { candles: RB1.slice(0, 20) }, steps: [{ text: "A slow slide from 102.20 to 98.00 over 17 candles." }] },
@@ -1983,6 +2000,7 @@ const L_2_2_9: Lesson = {
         "A V's low looks like any pause in a fall until later candles show which it was.",
         "For a rare pattern, check failure rate, rank and sample size, and how it's drawn.",
       ],
+      next: "Next, 2.2.10: patterns that fail or bust, how often shapes appear in random data, and the plan to write first.",
     },
   },
 };
@@ -2063,6 +2081,7 @@ const L_2_2_10: Lesson = {
   script: {
     unit: "2.2",
     courseId: "2.2.10",
+    bridge: "In 2.2.9 a V couldn't be told from a pause until later. Every pattern carries that doubt. In 1.5.6 you planned two endings for a breakout; here you write three, works, fails and busts, into the plan of 1.6.2, and scan 0.2.5's random walks.",
     hook: {
       prompt: "We generate 10,000 purely random price paths. How many head-and-shoulders patterns will a scanner find in them?",
       control: {
@@ -2216,6 +2235,7 @@ const L_2_2_10: Lesson = {
         "Random walks are full of patterns, and what follows them there is the base rate.",
         "Failure rates doubled from the 1990s to the 2000s. Every published rate has an era.",
       ],
+      next: "Next, the Unit 2.2 checkpoint. Then Unit 2.3, Trend tools, starting with Dow Theory and what a trend is.",
     },
   },
 };
@@ -3237,4 +3257,20 @@ const concepts: Concept[] = [
 ];
 
 /** Unit 2.2 · Chart patterns (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_2_2: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_2_2: UnitContent = {
+  intro: {
+    summary: "This unit scales up from candles to shapes drawn with lines: trendlines and channels, then double tops, head and shoulders, triangles, flags and wedges. Each is confirmed with a filter, measured with a scaled target and planned for failure. It comes before indicators because it needs only 1.5's swings and zones, plus 2.1's habit: context, confirmation, base rate.",
+    outcomes: [
+      "Draw trendlines and channels by fixed rules, and treat a break as a warning to confirm.",
+      "Break any chart pattern into its eight parts and find the close that confirms it.",
+      "Confirm a breakout with a close past a margin sized to the market's normal candle range.",
+      "Scale a pattern's target by how often it was reached, then check the reward-to-risk.",
+      "Write what you'll do if a pattern works, fails or busts, before the breakout comes.",
+    ],
+    buildsOn: "Swings, zones, breakouts and retests (1.5.1, 1.5.4, 1.5.6); stops at invalidation and reward-to-risk (1.4.3, 1.4.5); the log scale (1.2.6); 2.1.3's context and confirmation; and random walks (0.2.5).",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};
