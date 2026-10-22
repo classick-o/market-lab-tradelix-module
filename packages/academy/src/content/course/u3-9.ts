@@ -299,6 +299,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.1",
+      bridge: "Unit 3.8 read one company; now you read the crowd. In 2.12.4 recency let the last few trades outweigh the base rate, and investors do the same. Here you read a weekly survey against its own history and test whether its extremes lead price.",
       hook: {
         prompt: "A weekly investor survey shows 70% bears, the most in its history. Over the next four weeks, the index will most likely…",
         control: {
@@ -386,7 +387,7 @@ const lessons: Lesson[] = [
             ],
             correct: "Right: −36 ÷ 15 = −2.4. Beyond −2: a bearish extreme for this survey.",
           },
-          after: "A raw −30 says little on its own. Against this survey's +6 average and its usual swing of 15, it's a [[sentiment-extreme|sentiment extreme]].",
+          after: "A raw −30 says little on its own. Against this survey's +6 average and its usual swing of 15, it's a [[sentiment-extreme|sentiment extreme]], a reading this survey rarely reaches.",
           concept: "market-sentiment",
         },
         {
@@ -441,6 +442,7 @@ const lessons: Lesson[] = [
           "Extremes raised reversal odds from 33.6% to 41.7% in our sample, with no date attached.",
           "Surveys mostly echo the last weeks of price; treat sentiment as a condition, never the trigger.",
         ],
+        next: "Next, 3.9.2: the Commitments of Traders report, which shows what futures traders hold, not what they say.",
       },
     },
   },
@@ -467,6 +469,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.2",
+      bridge: "In 3.9.1 a survey told you what investors say. Positions show what they do. Here you read the CFTC's Commitments of Traders report, turn net positions into a three-year COT index, and check how old the data is when you read it.",
       hook: {
         prompt: "Speculators' net long in synthetic crude is at a three-year high. You read the report on Friday, the day it comes out. On which day were these positions measured?",
         control: {
@@ -589,6 +592,7 @@ const lessons: Lesson[] = [
           "COT index = (net − 3-year low) ÷ (3-year high − low) × 100; 96.5 marks a crowded long.",
           "Tuesday's positions arrive Friday; a hedger's short protects a business, it isn't a bet on falling prices.",
         ],
+        next: "Next, 3.9.3: fear priced in options, the VIX and put/call ratios, read as an expected range rather than a mood.",
       },
     },
   },
@@ -615,6 +619,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.3",
+      bridge: "In 3.9.2 positions showed how crowded futures were. Options show how much people pay for protection. In 3.8.7 a straddle priced one stock's earnings move. Here you turn the VIX into the index's expected range, and read put/call against its own baseline.",
       hook: {
         prompt: "The VIX reads 20. Roughly what one-month move, one standard deviation, does the options market price for the index?",
         control: {
@@ -761,6 +766,7 @@ const lessons: Lesson[] = [
           "The VIX jumps when stocks fall, as protection gets bid, then mean-reverts as the selling fades.",
           "Read put/call against its own recent baseline; 0DTE trading broke the old fixed thresholds.",
         ],
+        next: "Next, 3.9.4: crowded shorts in single stocks, days to cover, and how forced buying turns small news into a squeeze.",
       },
     },
   },
@@ -787,6 +793,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.4",
+      bridge: "In 3.9.2 futures showed crowded positions, and in 3.9.3 options priced fear. In 2.14.2 a lender could recall borrowed shares. Here you gauge a stock's crowded short by days to cover, watch forced buying feed a squeeze, and spot 1.7.2's FOMO in late buyers.",
       hook: {
         prompt: "LABE has 12 million shares sold short and trades 1.5 million shares a day. How many days of normal volume would all short sellers need to buy back?",
         control: {
@@ -914,6 +921,7 @@ const lessons: Lesson[] = [
           "Forced buying, from stops and recalls, turned 2% news into a 35% squeeze.",
           "Social hype is grade D; late buyers in a pump become insiders' exit liquidity.",
         ],
+        next: "Next, 3.9.5: turning any of these extremes into a rule that waits for price to confirm before you fade the crowd.",
       },
     },
   },
@@ -940,6 +948,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.5",
+      bridge: "In 3.9.1 to 3.9.4 you measured extremes in surveys, futures, options and short interest; none came with a date. Here you add what they lack: a price trigger, a stop and an exit, then test the rule after costs on data it hasn't seen.",
       hook: {
         prompt: "Two rules fade the same sentiment extremes. Rule A sells at once. Rule B waits for a weekly close below the prior week's low. Which loses less when the extreme keeps getting more extreme?",
         control: {
@@ -1080,6 +1089,7 @@ const lessons: Lesson[] = [
           "Confirmation cut the stop-out rate from 63% to 25%, but it misses fast turns.",
           "Moderate sentiment confirms a trend; only extremes are contrarian, and out-of-sample intervals decide.",
         ],
+        next: "Next, 3.9.6: calendar effects, where noise passes for a pattern most easily, graded by their evidence.",
       },
     },
   },
@@ -1106,6 +1116,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.9",
       courseId: "3.9.6",
+      bridge: "In 3.9.5 your rule got one look at hold-out data. In 0.2.5 a random walk drew trends and levels. Here you grade calendar effects, count how often noise looks seasonal, and see effects fade after publication, as PEAD did in 3.8.8.",
       hook: {
         prompt: "Twenty years of pure random-walk prices. We test 30 calendar patterns at the 5% level: months, weekdays, month-ends. What's the chance at least one looks 'significant'?",
         control: {
@@ -1277,6 +1288,7 @@ const lessons: Lesson[] = [
           "Thirty tests on pure noise found a 'significant' pattern in 66% of histories.",
           "A commodity's seasonal rise is already in the futures curve; only surprises pay.",
         ],
+        next: "Next: the 3.9 checkpoint, then unit 3.10, Statistics for traders, which turns this lesson's test counting into tools for judging any edge.",
       },
     },
   },
@@ -1914,4 +1926,20 @@ const concepts: Concept[] = [
   },
 ];
 
-export const UNIT_3_9: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_3_9: UnitContent = {
+  intro: {
+    summary: "Sentiment and positioning show how one-sided a market's expectations and positions are: surveys, COT, the VIX, put/call, short interest and social buzz. This unit reads them as a condition, pairs extremes with a price trigger, and grades calendar effects against noise. It follows 3.6–3.8 and 2.12: the crowd matters next to macro, events and your own biases.",
+    outcomes: [
+      "Read a sentiment survey, the COT index and put/call against their own history, not fixed thresholds.",
+      "Turn the VIX into the range the options market expects for a week or a month.",
+      "Measure squeeze fuel with short interest and days to cover, and avoid becoming exit liquidity.",
+      "Write a contrarian rule as a condition plus a price trigger, and judge it on unseen data.",
+      "Grade calendar effects by their evidence, and count your tests before trusting a seasonal pattern.",
+    ],
+    buildsOn: "Recency from 2.12.4; randomness drawing patterns from 0.2.5; standardised surprises from 2.10.1; short selling and recalls from 2.14.2; FOMO from 1.7.2; the implied move from 3.8.7; and decay after publication from 3.8.8.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};

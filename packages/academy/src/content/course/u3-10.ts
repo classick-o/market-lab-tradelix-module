@@ -138,6 +138,7 @@ const L_3_10_1: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.1",
+    bridge: "In 3.9.6 you counted how often noise looks like a pattern; this unit gives you the tools behind that question. In 1.4.5 expectancy, one average, summed up a system. Here you look at the whole shape of results: median, spread, skew and tails.",
     hook: {
       prompt: "LABX moves 1% a day, one standard deviation. Under a normal, bell-curve model, how often should it fall five standard deviations in a single day?",
       control: {
@@ -287,6 +288,7 @@ const L_3_10_1: Lesson = {
         "A normal model expects a 5σ drop once in 13,800 years; fat tails, every 2.5 years.",
         "Trend following has positive skew and long dry spells; mean reversion and option selling, rare big losses.",
       ],
+      next: "Next, 3.10.2: volatility, the spread of returns, how it scales with time and why it comes in clusters.",
     },
   },
 };
@@ -314,6 +316,7 @@ const L_3_10_2: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.2",
+    bridge: "In 3.10.1 the standard deviation measured the spread of results; in 2.4.6 ATR measured price moves; in 3.9.3 you divided the VIX by √12. Here you scale volatility with the square root of time, and see why calm estimates fail when it clusters.",
     hook: {
       prompt: "LABX moves about 1% a day, one standard deviation. Roughly how much is that over a year of 252 trading days?",
       control: {
@@ -458,6 +461,7 @@ const L_3_10_2: Lesson = {
         "Volatility clusters. After a switch, a calm-window cone or ATR stop is too narrow.",
         "Realised volatility measures the past; implied volatility is the options market's forecast.",
       ],
+      next: "Next, 3.10.3: regression to the mean, why an extreme result, good or bad, is usually followed by a more ordinary one.",
     },
   },
 };
@@ -485,6 +489,7 @@ const L_3_10_3: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.3",
+    bridge: "In 3.10.2 volatility measured how widely returns scatter. In 0.2.6 luck made stars of coin-flippers; in 2.12.4 results after an extreme run drifted back toward the true edge. Here you split each result into edge plus noise and predict what the hottest performers do next.",
     hook: {
       prompt: "Fifty simulated traders with zero skill trade for a month. The top five averaged +12.1%. What will the same five average next month?",
       control: {
@@ -623,6 +628,7 @@ const L_3_10_3: Lesson = {
         "Before blaming the market, check for regression: a real change has a cause you can name.",
         "The best of many backtests was chosen partly for its luck; expect less on new data.",
       ],
+      next: "Next, 3.10.4: base rates and Bayesian updating, or how likely a setup that passed your test is to be real.",
     },
   },
 };
@@ -650,6 +656,7 @@ const L_3_10_4: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.4",
+    bridge: "In 3.10.3 the best of many backtests was chosen partly for luck. In 0.2.4 a 60% win rate over 20 trades fitted anything from 38.5% to 81.5%. Here you start from the base rate of real ideas and update it with each test and trade.",
     hook: {
       prompt: "10% of new setup ideas have a real edge. Your test catches 80% of real edges but also passes 20% of useless ones. Your idea passed. How likely is it to be real?",
       control: {
@@ -785,6 +792,7 @@ const L_3_10_4: Lesson = {
         "Count 1,000 ideas: 100 real, 80 pass; 900 useless, 180 pass anyway.",
         "Evidence moves beliefs slowly: 12 wins in 20 lift a 10% prior only to 27%.",
       ],
+      next: "Next, 3.10.5: the t-statistic, which says whether your mean R is distinguishable from zero, and how many trades that takes.",
     },
   },
 };
@@ -809,6 +817,7 @@ const L_3_10_5: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.5",
+    bridge: "In 3.10.4 a passed test meant little without the base rate. In 2.11.7 you put an interval around expectancy, and 2.11.8's SQN scaled mean R by its spread. Here those become a t-statistic and a p-value, and you count the trades a small edge needs.",
     hook: {
       prompt: "Your setup averages +0.2R per trade over 50 trades, with a standard deviation of 1.5R. Is that edge distinguishable from zero?",
       control: {
@@ -942,6 +951,7 @@ const L_3_10_5: Lesson = {
         "Trades needed for t = 2: (2 × sd ÷ mean)². +0.2R with sd 1.5R needs 225.",
         "A Sharpe's standard error is about 1 ÷ √years: a Sharpe of 1.0 over 3 years could be zero.",
       ],
+      next: "Next, 3.10.6: what happens to significance when you run many tests, and how to correct for every one.",
     },
   },
 };
@@ -969,6 +979,7 @@ const L_3_10_6: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.6",
+    bridge: "In 3.10.5 one test below the 5% level looked like an edge. Run twenty and noise will pass one. In 0.2.5 a random walk drew patterns, and in 3.9.6 calendar tests found 'hits' in pure noise. Here you count every test and correct the threshold.",
     hook: {
       prompt: "You test 20 indicator rules, none with any real edge, at the 5% level. What's the chance at least one looks like it works?",
       control: {
@@ -1109,6 +1120,7 @@ const L_3_10_6: Lesson = {
         "Bonferroni divides 5% by the tests run: 0.25% for 20. Modest real edges get harder to find.",
         "Count every tweak, and run the same search on R0: as many 'discoveries' there means noise.",
       ],
+      next: "Next, 3.10.7: independence, the assumption behind most of these tests, and how to check it on your own trades.",
     },
   },
 };
@@ -1136,6 +1148,7 @@ const L_3_10_7: Lesson = {
   script: {
     unit: "3.10",
     courseId: "3.10.7",
+    bridge: "In 3.10.6 you caught noise posing as edge. The t-statistic of 3.10.5, like the √t rule of 3.10.2, assumed each result ignores the last. In 2.8.1 trends and ranges needed different rules. Here autocorrelation fingerprints those regimes, and a runs test checks your own trades.",
     hook: {
       prompt: "Three markets, 40 days each. Each dot is one day: yesterday's return across, today's return up. Which market trends?",
       figure: { kind: "chart", chart: SCATTER, steps: [{ text: "Panels A, B and C. Dots to the right had an up day yesterday; dots up, an up day today." }] },
@@ -1264,6 +1277,7 @@ const L_3_10_7: Lesson = {
         "Runs test: expected runs = 2·n1·n2 ÷ (n1 + n2) + 1; |z| above 1.96 means non-random.",
         "Clustered results break Kelly, ruin formulas and reshuffled Monte Carlo: drawdowns run deeper.",
       ],
+      next: "Next: the 3.10 checkpoint, then unit 3.11, Backtesting and system design, where these tools judge every rule you build.",
     },
   },
 };
@@ -2040,6 +2054,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_3_10: UnitContent = {
+  intro: {
+    summary: "Every lesson here asks one question from a new angle: luck or edge? You describe results by their full shape, scale volatility, expect regression to the mean, start from base rates, test significance, correct for many tests and check independence. It comes before backtesting in 3.11 and sizing theory in 3.12, which both need this language.",
+    outcomes: [
+      "Describe results by mean, median, spread, skew and tails, and expect fat tails.",
+      "Scale volatility with the square root of time, and widen estimates when volatility clusters.",
+      "Expect regression after extreme results, and update beliefs from the base rate.",
+      "Test whether mean R is distinguishable from zero, and count the trades that takes.",
+      "Correct for many tests, and check whether your wins and losses cluster.",
+    ],
+    buildsOn: "Expected value, variance and randomness from 0.2; expectancy from 1.4.5; ATR from 2.4.6; regimes from 2.8.1; recency from 2.12.4; and the confidence interval and SQN of 2.11.7 and 2.11.8.",
+  },
   lessons: [L_3_10_1, L_3_10_2, L_3_10_3, L_3_10_4, L_3_10_5, L_3_10_6, L_3_10_7],
   questions: QUESTIONS,
   terms: TERMS,
