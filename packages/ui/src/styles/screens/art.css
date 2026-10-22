@@ -87,3 +87,26 @@
 .ml-art--mountains {
   --ml-art-img: url("../../assets/art/hero-mountains.webp");
 }
+
+/* Learn series (PLAN_LEARN §10): the course hero, one image per level, calm empty states. */
+.ml-art--course {
+  --ml-art-img: url("../../assets/art/course-hero.webp");
+}
+.ml-art--level-0 {
+  --ml-art-img: url("../../assets/art/level-0-basecamp.webp");
+}
+.ml-art--level-1 {
+  --ml-art-img: url("../../assets/art/level-1-trail.webp");
+}
+.ml-art--level-2 {
+  --ml-art-img: url("../../assets/art/level-2-ridge.webp");
+}
+.ml-art--level-3 {
+  --ml-art-img: url("../../assets/art/level-3-route.webp");
+}
+.ml-art--level-4 {
+  --ml-art-img: url("../../assets/art/level-4-summit.webp");
+}
+.ml-art--empty-review {
+  --ml-art-img: url("../../assets/art/empty-review.webp");
+}

@@ -3,7 +3,7 @@
  * rule, three things to remember, the terms met, one next step, and an optional rating.
  */
 import { useEffect, useState } from "react";
-import { checkId, getTerm, type Lesson, type LessonScript, type PracticeLink } from "@market-lab/academy";
+import { checkId, dayKey, dueReviews, getLesson, getTerm, nextLearnStep, type Lesson, type LessonScript, type PracticeLink } from "@market-lab/academy";
 import { Rich } from "../components/Page";
 import { Term } from "../components/Term";
 import { Icon, cx } from "../components/ui";
@@ -49,9 +49,14 @@ export function Recap({ lesson, script, terms, xp, next, onReplay, onJump }: { l
   const [rated, setRated] = useState<boolean | null>(p?.rating?.up ?? null);
   const [note, setNote] = useState(p?.rating?.note ?? "");
   const [queued, setQueued] = useState(false);
+  // The same "Next step" rule as the Course page and the Dashboard (PLAN_LEARN §6.6).
+  const step = nextLearnStep(lab.lessons, dueReviews(lab.review, dayKey(Date.now(), lab.settings.timeZone)).length);
+  const stepLesson = step.kind === "lesson" && step.lessonId !== lesson.id ? getLesson(step.lessonId) : step.kind === "lesson" ? next : undefined;
+  const nextLabel = step.kind === "review" ? `Today's review · ${step.due} due` : stepLesson ? `Next: ${stepLesson.title}` : "Back to the course";
   const goNext = () => {
-    if (next) navigate(`/learn/lessons/${next.id}`);
-    else navigate("/learn/lessons");
+    if (step.kind === "review") navigate("/learn/practice/review");
+    else if (stepLesson) navigate(`/learn/lessons/${stepLesson.id}`);
+    else navigate("/learn/course");
     return true;
   };
   useKeys({ Enter: goNext });
@@ -133,7 +138,7 @@ export function Recap({ lesson, script, terms, xp, next, onReplay, onJump }: { l
 
       <section className="lp-recap-next" aria-label="Your next step">
         <button type="button" className="ml-btn ml-btn--primary ml-btn--lg" onClick={goNext}>
-          {next ? `Next: ${next.title}` : "All lessons"} <Icon name="arrow-right" size={18} />
+          {nextLabel} <Icon name="arrow-right" size={18} />
         </button>
         <div className="lp-recap-secondary">
           {lesson.practice[0] && (

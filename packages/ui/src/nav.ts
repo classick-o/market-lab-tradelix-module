@@ -71,11 +71,11 @@ export const NAV: NavItem[] = [
     icon: "cap",
     group: "learning",
     children: [
-      { id: "paths", label: "Learning Paths", to: "/learn/paths", icon: "route" },
+      { id: "course", label: "Course", to: "/learn/course", icon: "map" },
       { id: "lessons", label: "Lessons", to: "/learn/lessons", icon: "book" },
-      { id: "concepts", label: "Concept Library", to: "/learn/concepts", icon: "library" },
-      { id: "glossary", label: "Glossary", to: "/learn/glossary", icon: "list" },
-      { id: "checks", label: "Knowledge Checks", to: "/learn/checks", icon: "quiz" },
+      { id: "practice", label: "Practice", to: "/learn/practice", icon: "target" },
+      { id: "library", label: "Library", to: "/learn/library", icon: "library" },
+      { id: "tracks", label: "Tracks", to: "/learn/tracks", icon: "route" },
     ],
   },
   {
@@ -118,6 +118,8 @@ const EXTRA: { prefix: string; item: NavItem["id"]; child?: string }[] = [
   { prefix: "/play/", item: "missions" },
   { prefix: "/debrief/", item: "missions" },
   { prefix: "/arena/session/", item: "arena", child: "simulator" },
+  { prefix: "/learn/units/", item: "learn", child: "course" },
+  { prefix: "/learn/checks/", item: "learn", child: "practice" },
 ];
 
 export interface NavMatch {

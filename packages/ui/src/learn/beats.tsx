@@ -264,6 +264,7 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
   const s = useScreen();
   const rights = useMemo(() => seededShuffle(b.pairs.map((p, i) => ({ text: p.right, i })), s.seed), [b.pairs, s.seed]);
   const [matched, setMatched] = useState<Set<number>>(() => new Set());
+  const [usedRight, setUsedRight] = useState<Set<number>>(() => new Set());
   const [left, setLeft] = useState<number | null>(null);
   const [miss, setMiss] = useState<{ left: number; right: number; text: string } | null>(null);
   const [mistakes, setMistakes] = useState(0);
@@ -275,9 +276,11 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
 
   const pick = (r: number) => {
     if (left === null) return;
-    if (r === left) {
-      const next = new Set(matched).add(r);
+    // Pairs can share a right-hand text; any right with the same text is a match.
+    if (b.pairs[r].right === b.pairs[left].right) {
+      const next = new Set(matched).add(left);
       setMatched(next);
+      setUsedRight((u) => new Set(u).add(r));
       setLeft(null);
       setMiss(null);
       if (next.size === b.pairs.length) s.evidence(b.concept, mistakes === 0 ? 1 : mistakes === 1 ? 0.5 : 0);
@@ -287,6 +290,7 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
     }
   };
   const done = (i: number) => s.done || matched.has(i);
+  const doneRight = (i: number) => s.done || usedRight.has(i);
   return (
     <>
       <BeatTitle kicker="Match">{b.title}</BeatTitle>
@@ -316,8 +320,8 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
             <button
               key={r.i}
               type="button"
-              className={cx("lp-match-item is-right-col", done(r.i) && "is-done", miss?.right === r.i && "is-miss")}
-              disabled={done(r.i) || left === null}
+              className={cx("lp-match-item is-right-col", doneRight(r.i) && "is-done", miss?.right === r.i && "is-miss")}
+              disabled={doneRight(r.i) || left === null}
               onClick={() => pick(r.i)}
             >
               <Rich text={r.text} />
@@ -333,6 +337,69 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
       )}
       {all && !s.done && (
         <Feedback tone="right" title="All matched.">
+          {b.correct && <Rich text={b.correct} />}
+        </Feedback>
+      )}
+    </>
+  );
+}
+
+/** Match with repeated right-hand sides is a sort: each item goes into one of a few categories. */
+function SortBeat({ b }: { b: BeatOf<"match"> }) {
+  const s = useScreen();
+  const cats = useMemo(() => [...new Set(b.pairs.map((p) => p.right))], [b.pairs]);
+  const [placed, setPlaced] = useState<Record<number, string>>(() => (s.done ? Object.fromEntries(b.pairs.map((p, i) => [i, p.right])) : {}));
+  const [miss, setMiss] = useState<{ i: number; text: string } | null>(null);
+  const [mistakes, setMistakes] = useState(0);
+  const all = b.pairs.every((p, i) => placed[i] === p.right);
+  useEffect(() => {
+    if (all) s.complete();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all]);
+  const choose = (i: number, cat: string) => {
+    if (placed[i] === b.pairs[i].right) return;
+    if (cat === b.pairs[i].right) {
+      const next = { ...placed, [i]: cat };
+      setPlaced(next);
+      setMiss(null);
+      if (b.pairs.every((p, k) => next[k] === p.right)) s.evidence(b.concept, mistakes === 0 ? 1 : mistakes === 1 ? 0.5 : 0);
+    } else {
+      setMistakes((m) => m + 1);
+      setMiss({ i, text: b.pairs[i].wrong ?? "Not this one. Read the statement again." });
+    }
+  };
+  return (
+    <>
+      <BeatTitle kicker="Sort">{b.title}</BeatTitle>
+      <p className="lp-prompt">
+        <Rich text={b.prompt} />
+      </p>
+      <ul className="lp-sort">
+        {b.pairs.map((p, i) => {
+          const ok = placed[i] === p.right;
+          return (
+            <li key={i} className={cx("lp-sort-item", ok && "is-done", miss?.i === i && "is-miss")}>
+              <span className="lp-sort-text">
+                <Rich text={p.left} />
+              </span>
+              <span className="lp-seg-options" role="radiogroup" aria-label={p.left}>
+                {cats.map((c) => (
+                  <button key={c} type="button" role="radio" aria-checked={placed[i] === c} className={cx("lp-seg-opt", ok && placed[i] === c && "is-on")} disabled={ok && placed[i] !== c} onClick={() => choose(i, c)}>
+                    {c}
+                  </button>
+                ))}
+              </span>
+              {miss?.i === i && (
+                <span className="lp-sort-miss" role="status">
+                  <Rich text={miss.text} />
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {all && !s.done && (
+        <Feedback tone="right" title="All sorted.">
           {b.correct && <Rich text={b.correct} />}
         </Feedback>
       )}
@@ -616,7 +683,7 @@ export function BeatView({ beat }: { beat: Beat }) {
     case "worked":
       return <WorkedBeat b={beat} />;
     case "match":
-      return <MatchBeat b={beat} />;
+      return new Set(beat.pairs.map((p) => p.right)).size < beat.pairs.length ? <SortBeat b={beat} /> : <MatchBeat b={beat} />;
     case "order":
       return <OrderBeat b={beat} />;
     case "hotspot":
@@ -635,8 +702,10 @@ export function needText(beat: Beat | "hook" | "task" | "check"): string {
   if (beat === "check") return "Answer the questions to continue";
   switch (beat.kind) {
     case "figure":
-    case "explain":
-      return "Step through the figure to continue";
+    case "explain": {
+      const f = beat.figure;
+      return f?.kind === "formula" && f.boxes.some((x) => x.answer !== undefined) ? "Fill in the formula to continue" : "Step through the figure to continue";
+    }
     case "predict":
       return "Lock in a prediction to continue";
     case "reveal":

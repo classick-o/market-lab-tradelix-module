@@ -18,6 +18,8 @@ export interface ProgressSnapshot {
   weeklies: { week: string; at: number }[];
   reflections: { at: number }[];
   replays: { at: number }[];
+  /** Finished daily reviews (spaced repetition). */
+  reviews?: { at: number }[];
   /** θ after each update, oldest first. */
   skillHistory: { skill: SkillId; theta: number; at: number }[];
   skills: Record<SkillId, { theta: number }>;
@@ -34,6 +36,7 @@ export function activityTimes(s: ProgressSnapshot): number[] {
     ...s.checks.map((c) => c.at),
     ...s.dailies.map((d) => d.at),
     ...s.reflections.map((r) => r.at),
+    ...(s.reviews ?? []).map((r) => r.at),
   ];
 }
 
@@ -49,9 +52,25 @@ export interface StreakInfo {
   activeToday: boolean;
   /** Runs of two or more consecutive active days, newest first. */
   history: { start: string; end: string; length: number }[];
+  /** Missed days the current streak skipped over with a pause. */
+  paused: string[];
+  /** Pauses left this week (Monday to Sunday). */
+  pausesLeft: number;
 }
 
-export function streakInfo(days: string[], today: string): StreakInfo {
+/** Monday of the week containing a day key. */
+function weekOf(day: string): number {
+  const i = dayIndex(day);
+  // dayIndex 0 is 1970-01-01, a Thursday: shift so weeks start on Monday.
+  return Math.floor((i + 3) / 7);
+}
+
+/**
+ * The learning streak. With `pausesPerWeek` (PLAN_LEARN §17: 2, automatic), up to that many missed days
+ * in a calendar week keep the streak alive without counting towards its length.
+ */
+export function streakInfo(days: string[], today: string, pausesPerWeek = 0): StreakInfo {
+  if (pausesPerWeek > 0) return streakWithPauses(days, today, pausesPerWeek);
   const set = new Set(days);
   const runs: { start: string; end: string; length: number }[] = [];
   let run: { start: string; end: string; length: number } | null = null;
@@ -75,6 +94,51 @@ export function streakInfo(days: string[], today: string): StreakInfo {
     atRisk: !activeToday && current > 0,
     activeToday,
     history: runs.filter((r) => r.length >= 2).reverse(),
+    paused: [],
+    pausesLeft: 0,
+  };
+}
+
+function streakWithPauses(days: string[], today: string, pausesPerWeek: number): StreakInfo {
+  const set = new Set(days);
+  const used = new Map<number, number>();
+  const runs: { start: string; end: string; length: number; paused: string[] }[] = [];
+  let run: { start: string; end: string; length: number; paused: string[] } | null = null;
+  const first = days.length ? days[0] : today;
+  const t = dayIndex(today);
+  for (let i = dayIndex(first); i <= t; i++) {
+    const d = addDays(first, i - dayIndex(first));
+    if (set.has(d)) {
+      if (!run) run = { start: d, end: d, length: 0, paused: [] };
+      run.end = d;
+      run.length++;
+      continue;
+    }
+    if (!run || i === t) continue; // Today isn't over yet.
+    const w = weekOf(d);
+    if ((used.get(w) ?? 0) < pausesPerWeek) {
+      used.set(w, (used.get(w) ?? 0) + 1);
+      run.paused.push(d);
+      continue;
+    }
+    runs.push(run);
+    run = null;
+  }
+  if (run) runs.push(run);
+  const activeToday = set.has(today);
+  const last = runs[runs.length - 1];
+  // Alive when the run reached yesterday, either active or paused.
+  const lastDay = last ? Math.max(dayIndex(last.end), ...last.paused.map(dayIndex)) : -Infinity;
+  const alive = !!last && lastDay >= t - 1;
+  const current = alive ? last.length : 0;
+  return {
+    current,
+    longest: runs.reduce((m, r) => Math.max(m, r.length), 0),
+    atRisk: !activeToday && current > 0,
+    activeToday,
+    history: runs.filter((r) => r.length >= 2).map(({ start, end, length }) => ({ start, end, length })).reverse(),
+    paused: alive ? last.paused : [],
+    pausesLeft: Math.max(0, pausesPerWeek - (used.get(weekOf(today)) ?? 0)),
   };
 }
 

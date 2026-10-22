@@ -57,10 +57,11 @@ const Analytics = page(() => import("./pages/Analytics"), "AnalyticsPage");
 const Paths = page(() => import("./pages/Learn"), "PathsPage");
 const PathDetail = page(() => import("./pages/Learn"), "PathDetailPage");
 const Lessons = page(() => import("./pages/Learn"), "LessonsPage");
-const Concepts = page(() => import("./pages/Learn"), "ConceptsPage");
-const Glossary = page(() => import("./pages/Learn"), "GlossaryPage");
+const Course = page(() => import("./pages/Course"), "CoursePage");
+const Practice = page(() => import("./pages/Practice"), "PracticePage");
+const ReviewSession = page(() => import("./pages/Practice"), "ReviewSessionPage");
+const Library = page(() => import("./pages/Library"), "LibraryPage");
 const KitGallery = page(() => import("./pages/KitGallery"), "KitGalleryPage");
-const Checks = page(() => import("./pages/Learn"), "ChecksPage");
 const Lesson = page(() => import("./pages/Lesson"), "LessonPage");
 const Check = page(() => import("./pages/CheckRunner"), "CheckPage");
 const SkillProfile = page(() => import("./pages/Progress"), "SkillProfilePage");
@@ -97,15 +98,21 @@ const ROUTES: [string, (p: Record<string, string>) => ReactNode][] = [
   ["/journal/alternatives", () => <Alternatives />],
   ["/journal/alternatives/:id", (p) => <Alternatives sessionId={p.id} />],
   ["/journal/analytics", () => <Analytics />],
-  ["/learn/paths", () => <Paths />],
-  ["/learn/paths/:id", (p) => <PathDetail pathId={p.id} />],
+  ["/learn/course", () => <Course />],
+  ["/learn/units/:id", (p) => <Course unitId={p.id} />],
+  ["/learn/tracks", () => <Paths />],
+  ["/learn/tracks/:id", (p) => <PathDetail pathId={p.id} />],
   ["/learn/lessons", () => <Lessons />],
   ["/learn/lessons/:id", (p) => <Lesson lessonId={p.id} />],
-  ["/learn/concepts", () => <Concepts />],
-  ["/learn/concepts/:id", (p) => <Concepts conceptId={p.id} />],
-  ["/learn/glossary", () => <Glossary />],
+  ["/learn/practice", () => <Practice />],
+  ["/learn/practice/review", () => <ReviewSession />],
+  ["/learn/library", () => <Library tab="concepts" />],
+  ["/learn/library/glossary", () => <Library tab="glossary" />],
+  ["/learn/library/flashcards", () => <Library tab="flashcards" />],
+  ["/learn/library/saved", () => <Library tab="saved" />],
+  ["/learn/library/concepts/:id", (p) => <Library tab="concepts" conceptId={p.id} />],
+  ["/learn/library/terms/:id", (p) => <Library tab="glossary" termId={p.id} />],
   ["/learn/kit", () => <KitGallery />],
-  ["/learn/checks", () => <Checks />],
   ["/learn/checks/:id", (p) => <Check checkId={p.id} />],
   ["/progress/skills", () => <SkillProfile />],
   ["/progress/xp", () => <Levels />],
@@ -126,8 +133,14 @@ function legacyRedirect(p: string): string | null {
   if (PARENT_REDIRECTS[p]) return PARENT_REDIRECTS[p];
   if (p === "/home") return "/dashboard";
   if (p === "/skills") return "/progress/skills";
+  if (p === "/learn/paths") return "/learn/tracks";
+  if (p === "/learn/concepts") return "/learn/library";
+  if (p === "/learn/glossary") return "/learn/library/glossary";
+  if (p === "/learn/checks") return "/learn/practice";
   let m: Record<string, string> | null;
   if ((m = matchPath("/replay/:id", p))) return `/journal/replay/${m.id}`;
+  if ((m = matchPath("/learn/paths/:id", p))) return `/learn/tracks/${m.id}`;
+  if ((m = matchPath("/learn/concepts/:id", p))) return `/learn/library/concepts/${m.id}`;
   if ((m = matchPath("/arena/:id", p)) && !["simulator", "scenarios", "portfolio", "risk-calculator", "session"].includes(m.id)) return `/arena/session/${m.id}`;
   return null;
 }

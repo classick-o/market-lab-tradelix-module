@@ -183,7 +183,7 @@ export function LessonRead({ lesson }: { lesson: ScriptedLesson }) {
                   </li>
                 ))}
               </ul>
-              <Link to="/learn/glossary" className="ml-text-link ml-small">
+              <Link to="/learn/library/glossary" className="ml-text-link ml-small">
                 Full glossary
               </Link>
             </div>

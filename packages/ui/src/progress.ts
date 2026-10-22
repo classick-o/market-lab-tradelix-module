@@ -73,6 +73,7 @@ export function buildSnapshot(lab: LabData, now = Date.now()): ProgressSnapshot 
     weeklies: Object.entries(lab.weeklies).map(([week, v]) => ({ week, at: v.at })),
     reflections: Object.values(lab.reflections).map((r) => ({ at: r.at })),
     replays: lab.xp.filter((x) => x.reason === "replay").map((x) => ({ at: x.at })),
+    reviews: lab.xp.filter((x) => x.reason === "review").map((x) => ({ at: x.at })),
     skillHistory,
     skills: lab.skills,
     xp,
@@ -87,7 +88,7 @@ export function useProgress(lab: LabData) {
     const snapshot = buildSnapshot(lab, now);
     const today = dayKey(now, lab.settings.timeZone);
     const days = activeDays(snapshot);
-    const streak = streakInfo(days, today);
+    const streak = streakInfo(days, today, lab.settings.streakPauses === false ? 0 : 2);
     const lvl = levelFromXp(snapshot.xp);
     const achievements = evaluateAchievements(snapshot);
     return {

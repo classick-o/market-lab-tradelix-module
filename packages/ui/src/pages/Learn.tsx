@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   CONCEPTS,
+  COURSE_LEVELS,
   GLOSSARY,
+  PLAYABLE_LESSONS,
+  appLessonFor,
+  dayKey,
+  dueReviews,
+  getCourseUnit,
   KNOWLEDGE_CHECKS,
   LEARNING_PATHS,
   LESSONS,
@@ -25,6 +31,7 @@ import { plural } from "../format";
 import { usePlan } from "../host";
 import { LOOKUP } from "../labels";
 import { useProgress } from "../progress";
+import { learnLocked, showProBadge } from "../learn/access";
 import { Link, useRouter } from "../router";
 import { useLab, useStore } from "../store";
 
@@ -77,7 +84,7 @@ function personalPath(lab: ReturnType<typeof useLab>, done: (s: PathStep) => boo
   const steps: PathStep[] = [];
   for (const skill of skills) {
     const topics = TOPICS.filter((t) => t.skill === skill);
-    const lesson = LESSONS.filter((l) => topics.some((t) => t.id === l.topic) && l.tier === "free").find((l) => !done({ kind: "lesson", id: l.id }));
+    const lesson = LESSONS.filter((l) => topics.some((t) => t.id === l.topic) && !learnLocked(l.tier, false)).find((l) => !done({ kind: "lesson", id: l.id }));
     const mission = MISSIONS.find((m) => m.skillPrimary === skill && !done({ kind: "mission", id: m.id })) ?? MISSIONS.find((m) => m.skillPrimary === skill);
     if (lesson) steps.push({ kind: "lesson", id: lesson.id });
     if (mission && !steps.some((s) => s.id === mission.id)) steps.push({ kind: "mission", id: mission.id });
@@ -109,7 +116,7 @@ export function PathsPage() {
   const personal = personalPath(lab, (s) => stepDone(s, snapshot) !== null);
   const pp = pathProgress(personal, snapshot);
 
-  const all = LEARNING_PATHS.map((p) => ({ p, pr: pathProgress(p, snapshot), locked: p.tier === "pro" && !pro }));
+  const all = LEARNING_PATHS.map((p) => ({ p, pr: pathProgress(p, snapshot), locked: learnLocked(p.tier, pro) }));
   const open = all.filter((x) => !x.locked);
   // Featured: the path you're in the middle of, else the first one with steps left.
   const featured = open.find((x) => x.pr.completed > 0 && x.pr.nextIndex !== null) ?? open.find((x) => x.pr.nextIndex !== null) ?? open[0];
@@ -152,7 +159,7 @@ export function PathsPage() {
                 </small>
               </>
             ) : (
-              <Button variant="secondary" iconRight="arrow-right" onClick={() => navigate(`/learn/paths/${featured.p.id}`)}>
+              <Button variant="secondary" iconRight="arrow-right" onClick={() => navigate(`/learn/tracks/${featured.p.id}`)}>
                 Review the path
               </Button>
             )}
@@ -205,10 +212,10 @@ export function PathsPage() {
           const minutes = p.steps.reduce((s, st) => s + stepMinutes(st), 0);
           return (
             <li key={p.id}>
-              <Link to={locked ? "/pricing" : `/learn/paths/${p.id}`} className={cx("ml-path-tile", `ml-tone-${i % 4}`, locked && "is-locked")}>
+              <Link to={locked ? "/pricing" : `/learn/tracks/${p.id}`} className={cx("ml-path-tile", `ml-tone-${i % 4}`, locked && "is-locked")}>
                 <span className="ml-path-tile-art">
                   <span className="ml-path-category">{LEVEL_NAME[p.level]}</span>
-                  {p.tier === "pro" && <span className="ml-path-pro">PRO</span>}
+                  {showProBadge(p.tier) && <span className="ml-path-pro">PRO</span>}
                   <LearningIllustration variant={a.variant} />
                 </span>
                 <span className="ml-path-tile-copy">
@@ -268,15 +275,15 @@ export function PathDetailPage({ pathId }: { pathId: string }) {
   const go = useStepNav();
   const { snapshot } = useProgress(lab);
   const path = LEARNING_PATHS.find((p) => p.id === pathId);
-  if (!path) return <Empty title="Path not found" action={<Link to="/learn/paths" className="ml-text-link">All paths</Link>} />;
+  if (!path) return <Empty title="Path not found" action={<Link to="/learn/tracks" className="ml-text-link">All paths</Link>} />;
   const pr = pathProgress(path, snapshot);
-  const locked = path.tier === "pro" && !pro;
+  const locked = learnLocked(path.tier, pro);
   const minutes = path.steps.reduce((s, st) => s + stepMinutes(st), 0);
 
   return (
     <div className="ml-page">
       <PageHead
-        back={{ to: "/learn/paths", label: "Learning Paths" }}
+        back={{ to: "/learn/tracks", label: "Tracks" }}
         eyebrow={`${LEVEL_NAME[path.level]} · ${plural(path.steps.length, "step")} · about ${minutes} min`}
         title={path.title}
         sub={path.description}
@@ -320,7 +327,7 @@ export function PathDetailPage({ pathId }: { pathId: string }) {
         <ol className="ml-path-step-list">
           {path.steps.map((s, i) => {
             const done = pr.done[i] !== null;
-            const lessonLocked = s.kind === "lesson" && getLesson(s.id)?.tier === "pro" && !pro;
+            const lessonLocked = s.kind === "lesson" && learnLocked(getLesson(s.id)?.tier, pro);
             const isNext = pr.nextIndex === i;
             return (
               <li key={`${s.kind}${s.id}`}>
@@ -354,17 +361,34 @@ export function LessonsPage() {
   const { pro } = usePlan();
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState<TopicId | "all">("all");
-  const [status, setStatus] = useState<"all" | "new" | "started" | "done">("all");
+  const [status, setStatus] = useState<"all" | "new" | "started" | "done" | "due">("all");
+  const [level, setLevel] = useState<number | "all">("all");
   const statusOf = (id: string) => (lab.lessons[id]?.completedAt ? "done" : lab.lessons[id] ? "started" : "new");
+  // Lessons whose check questions are due in today's review.
+  const dueLessons = useMemo(() => {
+    const due = new Set(dueReviews(lab.review, dayKey(Date.now(), lab.settings.timeZone), 1000));
+    return new Set(LESSONS.filter((l) => l.script?.check.some((qid) => due.has(qid))).map((l) => l.id));
+  }, [lab.review, lab.settings.timeZone]);
   const q = query.trim().toLowerCase();
-  const shown = LESSONS.filter(
-    (l) => (topic === "all" || l.topic === topic) && (status === "all" || statusOf(l.id) === status) && (!q || `${l.title} ${l.summary}`.toLowerCase().includes(q)),
+  // Course order: levels, units, lessons.
+  const ordered = useMemo(() => {
+    const inCourse = PLAYABLE_LESSONS.map((cl) => ({ l: appLessonFor(cl)!, cl }));
+    const rest = LESSONS.filter((l) => !inCourse.some((x) => x.l.id === l.id)).map((l) => ({ l, cl: undefined }));
+    return [...inCourse, ...rest];
+  }, []);
+  const shown = ordered.filter(
+    ({ l, cl }) =>
+      (topic === "all" || l.topic === topic) &&
+      (level === "all" || (cl && Number(cl.id.split(".")[0]) === level)) &&
+      (status === "all" || (status === "due" ? dueLessons.has(l.id) : statusOf(l.id) === status)) &&
+      (!q || `${l.title} ${l.summary}`.toLowerCase().includes(q)),
   );
   const done = LESSONS.filter((l) => statusOf(l.id) === "done").length;
   const reset = () => {
     setQuery("");
     setTopic("all");
     setStatus("all");
+    setLevel("all");
   };
 
   return (
@@ -376,6 +400,17 @@ export function LessonsPage() {
           <Icon name="search" size={17} />
           <span className="ml-sr">Search lessons</span>
           <input type="search" placeholder="Find a lesson…" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </label>
+        <label className="ml-findbar-select">
+          <span className="ml-sr">Level</span>
+          <select value={String(level)} onChange={(e) => setLevel(e.target.value === "all" ? "all" : Number(e.target.value))}>
+            <option value="all">All levels</option>
+            {COURSE_LEVELS.map((lv) => (
+              <option key={lv.id} value={lv.id}>
+                Level {lv.id} · {lv.name}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="ml-findbar-select">
           <span className="ml-sr">Topic</span>
@@ -401,6 +436,7 @@ export function LessonsPage() {
           { value: "new", label: "Not started" },
           { value: "started", label: "In progress" },
           { value: "done", label: "Completed", count: done },
+          { value: "due", label: "Due for review", count: dueLessons.size },
         ]}
       />
       {shown.length === 0 ? (
@@ -409,15 +445,17 @@ export function LessonsPage() {
         </Empty>
       ) : (
         <ul className="ml-lesson-deck">
-          {shown.map((l) => {
+          {shown.map(({ l, cl }) => {
             const st = statusOf(l.id);
+            const unit = cl ? getCourseUnit(cl.unit) : undefined;
+            const quality = lab.lessons[l.id]?.quality;
             const ti = TOPICS.findIndex((t) => t.id === l.topic);
             return (
               <li key={l.id}>
                 <Link to={`/learn/lessons/${l.id}`} className={cx("ml-lesson-tile", st === "done" && "is-done")}>
                   <span className={cx("ml-lesson-visual", `ml-tone-${ti % 3}`)}>
                     <LearningIllustration variant={ti % 4} />
-                    {l.tier === "pro" && !pro ? (
+                    {learnLocked(l.tier, pro) ? (
                       <span className="ml-lesson-flag">
                         <ProBadge />
                       </span>
@@ -425,7 +463,7 @@ export function LessonsPage() {
                       <span className="ml-lesson-flag ml-lesson-state">
                         {st === "done" ? (
                           <>
-                            <Icon name="check" size={12} /> Completed
+                            <Icon name="check" size={12} /> {quality === "strong" ? "Strong" : quality === "good" ? "Good" : quality === "review" ? "Review soon" : "Completed"}
                           </>
                         ) : (
                           "In progress"
@@ -438,11 +476,11 @@ export function LessonsPage() {
                     </span>
                   </span>
                   <span className="ml-lesson-copy">
-                    <span className="ml-learn-kicker">{TOPIC_BY_ID[l.topic].name}</span>
+                    <span className="ml-learn-kicker">{unit ? `${unit.id} · ${unit.title}` : TOPIC_BY_ID[l.topic].name}</span>
                     <span className="ml-lesson-title">{l.title}</span>
                     <span className="ml-lesson-summary-text">{l.summary}</span>
                     <span className="ml-lesson-go">
-                      {l.level === "beginner" ? "Beginner" : "Intermediate"} · interactive lesson
+                      {cl ? `Lesson ${cl.id}` : l.level === "beginner" ? "Beginner" : "Intermediate"} · {dueLessons.has(l.id) ? "due for review" : "interactive lesson"}
                       <Icon name="arrow-right" size={16} />
                     </span>
                   </span>
@@ -527,7 +565,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
                 <span className="ml-learn-kicker">{TOPIC_BY_ID[c.category].name}</span>
                 <h3>{c.name}</h3>
                 <p>{c.summary}</p>
-                <Link to={`/learn/concepts/${c.id}`} className="ml-text-arrow ml-accent-text">
+                <Link to={`/learn/library/concepts/${c.id}`} className="ml-text-arrow ml-accent-text">
                   Read the concept <Icon name="arrow-right" size={15} />
                   <span className="ml-sr">: {c.name}</span>
                 </Link>
@@ -552,7 +590,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
             <ul className="ml-concept-list">
               {shown.map((c) => (
                 <li key={c.id}>
-                  <Link to={`/learn/concepts/${c.id}`} className={cx("ml-concept-link", current?.id === c.id && "is-on")} aria-current={current?.id === c.id ? "page" : undefined}>
+                  <Link to={`/learn/library/concepts/${c.id}`} className={cx("ml-concept-link", current?.id === c.id && "is-on")} aria-current={current?.id === c.id ? "page" : undefined}>
                     <b>{c.name}</b>
                     <span className="ml-muted ml-small">{c.summary}</span>
                   </Link>
@@ -564,7 +602,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
         <div className="ml-library-detail">
           {current ? (
             <article className="ml-card ml-concept">
-              <Link to="/learn/concepts" className="ml-back">
+              <Link to="/learn/library" className="ml-back">
                 <Icon name="arrow-left" size={16} /> All concepts
               </Link>
               <span className="ml-eyebrow">{TOPIC_BY_ID[current.category].name}</span>
@@ -586,7 +624,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
                   <span className="ml-eyebrow">Related concepts</span>
                   <div className="ml-pills">
                     {current.related.map((r) => (
-                      <Link key={r} to={`/learn/concepts/${r}`} className="ml-pill">
+                      <Link key={r} to={`/learn/library/concepts/${r}`} className="ml-pill">
                         {getConcept(r)?.name ?? r}
                       </Link>
                     ))}
@@ -612,7 +650,7 @@ export function ConceptsPage({ conceptId }: { conceptId?: string }) {
               )}
             </article>
           ) : (
-            <Empty icon="library" title="Concept not found" action={<Link to="/learn/concepts" className="ml-text-link">All concepts</Link>}>
+            <Empty icon="library" title="Concept not found" action={<Link to="/learn/library" className="ml-text-link">All concepts</Link>}>
               The link may be out of date. Pick a concept from the list.
             </Empty>
           )}

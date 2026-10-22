@@ -58,8 +58,8 @@ export function Term({ id, children }: { id: string; children: string }) {
           </b>
           <span className="ml-term-card-plain">{term.plain}</span>
           <span className="ml-term-card-def">{term.definition}</span>
-          <Link to="/learn/glossary" className="ml-term-card-link">
-            Open in glossary
+          <Link to={`/learn/library/terms/${term.id}`} className="ml-term-card-link">
+            Open in Library
           </Link>
         </span>
       )}

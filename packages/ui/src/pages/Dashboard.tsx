@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LEARNING_PATHS, MISSION_TOPICS, TOPIC_BY_ID, getLesson, pathProgress, weekActivity, type LearningPath } from "@market-lab/academy";
+import { LEARNING_PATHS, MISSION_TOPICS, TOPIC_BY_ID, courseLessonFor, dueReviews, getCourseUnit, getLesson, nextLearnStep, pathProgress, weekActivity, type LearningPath } from "@market-lab/academy";
 import type { SkillId } from "@market-lab/evaluation";
 import { LEVEL_LABEL, SKILLS, SKILL_BY_ID, XP_RULES, levelOf, recommend, thetaProgress } from "@market-lab/learning";
 import { LEARNING_PATH, MISSIONS, getArenaScenario, getMission, missionMeta } from "@market-lab/missions";
@@ -10,6 +10,7 @@ import { DIFFICULTY_LABEL, bandLabel, formatDayKey, formatDuration, formatPct, r
 import { usePlan } from "../host";
 import { LOOKUP } from "../labels";
 import { activityFeed, resultRds, useProgress } from "../progress";
+import { learnLocked } from "../learn/access";
 import { Link, useRouter } from "../router";
 import { missionHistory, useLab, useStore, type ArenaSession, type MissionSession } from "../store";
 
@@ -120,8 +121,12 @@ export function DashboardPage() {
   // Continue learning: an unfinished session first, then the next step of a started path.
   const activeMission = (Object.values(lab.sessions).filter((s) => s.kind === "mission" && s.status === "active") as MissionSession[]).sort((a, b) => b.updatedAt - a.updatedAt)[0];
   const activeArena = store.activeArena();
-  const paths = LEARNING_PATHS.filter((p) => p.tier === "free" || pro).map((p) => ({ p, pr: pathProgress(p, snapshot) }));
+  const paths = LEARNING_PATHS.filter((p) => !learnLocked(p.tier, pro)).map((p) => ({ p, pr: pathProgress(p, snapshot) }));
   const started = paths.find(({ pr }) => pr.completed > 0 && pr.nextIndex !== null) ?? paths.find(({ pr }) => pr.nextIndex !== null);
+  // The course's next step (KNOWLEDGE.md › Continue learning, PLAN_LEARN §6.6).
+  const nextStep = nextLearnStep(lab.lessons, dueReviews(lab.review, today).length);
+  const nextLesson = nextStep.kind === "lesson" ? getLesson(nextStep.lessonId) : undefined;
+  const nextUnit = nextLesson ? getCourseUnit(courseLessonFor(nextLesson.id)?.unit ?? "") : undefined;
 
   const rec = recommend({ missions: MISSIONS.map(missionMeta), skills: lab.skills, history: missionHistory(lab), path: LEARNING_PATH, now: Date.now() });
   const primary = rec.primary?.missionId ? getMission(rec.primary.missionId) : null;
@@ -293,6 +298,46 @@ export function DashboardPage() {
                   </div>
                   <Button variant="primary" iconRight="arrow-right" onClick={() => navigate("/arena/simulator")}>
                     Resume session
+                  </Button>
+                </>
+              ) : nextStep.kind === "lesson" && nextLesson ? (
+                <>
+                  <h2>{nextLesson.title}</h2>
+                  <div className="ml-continue-meta">
+                    <span>
+                      <Icon name="book" size={14} />
+                      Lesson
+                    </span>
+                    <span>
+                      <Icon name="clock" size={14} />
+                      {nextLesson.minutes} min
+                    </span>
+                    {nextUnit && (
+                      <span className="num">
+                        <Icon name="map" size={14} />
+                        {nextUnit.id} · {nextUnit.title}
+                      </span>
+                    )}
+                  </div>
+                  <Button variant="primary" iconRight="arrow-right" onClick={() => navigate(`/learn/lessons/${nextLesson.id}`)}>
+                    {nextStep.reason === "in-progress" ? "Continue lesson" : "Start lesson"}
+                  </Button>
+                </>
+              ) : nextStep.kind === "review" ? (
+                <>
+                  <h2>Today's review</h2>
+                  <div className="ml-continue-meta">
+                    <span>
+                      <Icon name="history" size={14} />
+                      {nextStep.due} due
+                    </span>
+                    <span>
+                      <Icon name="clock" size={14} />
+                      About {Math.max(1, Math.round((Math.min(15, nextStep.due) * 20) / 60))} min
+                    </span>
+                  </div>
+                  <Button variant="primary" iconRight="arrow-right" onClick={() => navigate("/learn/practice/review")}>
+                    Start review
                   </Button>
                 </>
               ) : started && started.pr.nextIndex !== null ? (

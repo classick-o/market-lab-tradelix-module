@@ -50,9 +50,9 @@ const empty = (over: Partial<ProgressSnapshot> = {}): ProgressSnapshot => ({
 });
 
 describe("content integrity", () => {
-  it("has the 18 lessons with unique ids", () => {
-    expect(LESSONS).toHaveLength(18);
-    expect(lessonIds.size).toBe(18);
+  it("keeps the 18 original lessons, and every lesson id is unique", () => {
+    expect(LESSONS.filter((l) => /^L[0-9][0-9]$/.test(l.id))).toHaveLength(18);
+    expect(lessonIds.size).toBe(LESSONS.length);
   });
 
   it("links lessons only to things that exist", () => {

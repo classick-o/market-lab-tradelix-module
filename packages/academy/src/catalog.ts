@@ -4,18 +4,21 @@ import { LESSONS_A } from "./content/lessons-a";
 import { LESSONS_B } from "./content/lessons-b";
 import { QUESTIONS_A } from "./content/questions-a";
 import { QUESTIONS_B } from "./content/questions-b";
+import { COURSE_CONTENT_CONCEPTS, COURSE_CONTENT_LESSONS, COURSE_CONTENT_QUESTIONS, COURSE_CONTENT_TERMS } from "./content/course";
 import { SCRIPTS, SCRIPT_CONCEPTS, SCRIPT_TERMS } from "./content/scripts";
 import { assessmentId, checkId } from "./paths";
 import { TOPICS } from "./topics";
 import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId } from "./types";
 
 /** Lessons, each with its interactive script when one exists. */
-export const LESSONS: Lesson[] = [...LESSONS_A, ...LESSONS_B]
-  .map((l) => (SCRIPTS[l.id] ? { ...l, script: SCRIPTS[l.id] } : l))
-  .sort((a, b) => a.id.localeCompare(b.id));
-export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B];
-export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS];
-export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS];
+export const LESSONS: Lesson[] = [
+  ...[...LESSONS_A, ...LESSONS_B].map((l) => (SCRIPTS[l.id] ? { ...l, script: SCRIPTS[l.id] } : l)).sort((a, b) => a.id.localeCompare(b.id)),
+  // Lessons written directly in code, in course order (ids are course positions, e.g. "1.1.2").
+  ...COURSE_CONTENT_LESSONS,
+];
+export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B, ...COURSE_CONTENT_QUESTIONS];
+export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS, ...COURSE_CONTENT_CONCEPTS];
+export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS, ...COURSE_CONTENT_TERMS];
 
 const byId = <T extends { id: string }>(xs: T[]) => new Map(xs.map((x) => [x.id, x]));
 const lessonMap = byId(LESSONS);

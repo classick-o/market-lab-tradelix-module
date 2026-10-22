@@ -76,12 +76,14 @@ export function Bars({ bars, unit, lit = bars.length }: { bars: { label: string;
  * question node and the chosen branch lights up. A wrong branch stays neutral and explains itself.
  */
 export function Flow({ nodes, start, interactive = false, onDone }: { nodes: FlowNode[]; start: string; interactive?: boolean; onDone?: (firstTry: boolean) => void }) {
+  // A node with one way on is a pause, one with no way on is an end, whatever its declared kind.
+  const kindOf = (n: FlowNode): "question" | "pause" | "end" => (n.kind === "end" || (!n.yes && !n.no && !n.next) ? "end" : n.kind === "pause" || (!n.yes && !n.no) ? "pause" : "question");
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const [path, setPath] = useState<string[]>([start]);
   const [miss, setMiss] = useState<{ node: string; text: string } | null>(null);
   const [mistakes, setMistakes] = useState(0);
   const current = byId.get(path[path.length - 1]);
-  const finished = !current || current.kind === "end";
+  const finished = !current || kindOf(current) === "end";
 
   const go = (choice: "yes" | "no" | "next") => {
     if (!current) return;
@@ -96,7 +98,7 @@ export function Flow({ nodes, start, interactive = false, onDone }: { nodes: Flo
     const next = [...path, nextId];
     setPath(next);
     const n = byId.get(nextId);
-    if (n?.kind === "end") onDone?.(mistakes === 0);
+    if (!n || kindOf(n) === "end") onDone?.(mistakes === 0);
   };
 
   const shown = interactive ? path : nodes.map((n) => n.id);
@@ -108,12 +110,12 @@ export function Flow({ nodes, start, interactive = false, onDone }: { nodes: Flo
           if (!n) return null;
           const isCurrent = interactive && i === path.length - 1 && !finished;
           return (
-            <li key={`${id}-${i}`} className={cx("k-flow-node", `is-${n.kind ?? "question"}`, isCurrent && "is-current")}>
+            <li key={`${id}-${i}`} className={cx("k-flow-node", `is-${kindOf(n)}`, isCurrent && "is-current")}>
               <span className="k-flow-icon" aria-hidden="true">
-                <Icon name={n.kind === "end" ? "flag" : n.kind === "pause" ? "pause" : "quiz"} size={14} />
+                <Icon name={kindOf(n) === "end" ? "flag" : kindOf(n) === "pause" ? "pause" : "quiz"} size={14} />
               </span>
               <span className="k-flow-text">{n.text}</span>
-              {interactive && i < path.length - 1 && n.kind !== "pause" && n.kind !== "end" && (
+              {interactive && i < path.length - 1 && kindOf(n) === "question" && (
                 <span className="k-flow-chosen">{path[i + 1] === n.yes ? "Yes" : "No"}</span>
               )}
             </li>
@@ -122,16 +124,16 @@ export function Flow({ nodes, start, interactive = false, onDone }: { nodes: Flo
       </ol>
       {interactive && current && !finished && (
         <div className="k-flow-actions">
-          {current.kind === "pause" ? (
-            <button type="button" className="ml-btn ml-btn--secondary" onClick={() => go("next")}>
+          {kindOf(current) === "pause" ? (
+            <button type="button" className="ml-btn ml-btn--secondary ml-btn--sm" onClick={() => go("next")}>
               Continue
             </button>
           ) : (
             <>
-              <button type="button" className="ml-btn ml-btn--secondary" onClick={() => go("yes")} aria-keyshortcuts="Y">
+              <button type="button" className="ml-btn ml-btn--secondary ml-btn--sm" onClick={() => go("yes")} aria-keyshortcuts="Y">
                 Yes
               </button>
-              <button type="button" className="ml-btn ml-btn--secondary" onClick={() => go("no")} aria-keyshortcuts="N">
+              <button type="button" className="ml-btn ml-btn--secondary ml-btn--sm" onClick={() => go("no")} aria-keyshortcuts="N">
                 No
               </button>
             </>

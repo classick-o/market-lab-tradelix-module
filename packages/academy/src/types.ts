@@ -382,6 +382,14 @@ export interface Question {
   vary?: VarySpec;
 }
 
+/** A unit of the course written in code: its lessons (with scripts), check questions, and new terms and concepts. */
+export interface UnitContent {
+  lessons: Lesson[];
+  questions: Question[];
+  terms: GlossaryTerm[];
+  concepts: Concept[];
+}
+
 export type PathStep = { kind: "lesson"; id: string } | { kind: "mission"; id: string } | { kind: "check"; id: string };
 
 export interface LearningPath {

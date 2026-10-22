@@ -8,6 +8,7 @@ import { useToast } from "../components/Toast";
 import { Widget } from "../components/Widgets";
 import { Button, Empty, Icon, Tag } from "../components/ui";
 import { usePlan } from "../host";
+import { learnLocked, showProBadge } from "../learn/access";
 import { LessonPlayer, type ScriptedLesson } from "../learn/LessonPlayer";
 import { LessonRead } from "../learn/LessonRead";
 import { Link, useRouter } from "../router";
@@ -113,7 +114,7 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
   const { navigate } = useRouter();
   const { pro } = usePlan();
   const lesson = getLesson(lessonId);
-  const locked = lesson?.tier === "pro" && !pro;
+  const locked = learnLocked(lesson?.tier, pro);
   useEffect(() => {
     if (lesson && !locked) store.startLesson(lesson.id);
   }, [lesson, locked, store]);
@@ -126,7 +127,7 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
 
   const done = Boolean(lab.lessons[lesson.id]?.completedAt);
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
-  const next = LESSONS.slice(idx + 1).find((l) => l.tier === "free" || pro);
+  const next = LESSONS.slice(idx + 1).find((l) => !learnLocked(l.tier, pro));
   const complete = () => {
     if (done) return;
     store.completeLesson(lesson.id);
@@ -141,7 +142,7 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
         back={{ to: "/learn/lessons", label: "Lessons" }}
         eyebrow={
           <>
-            {TOPIC_BY_ID[lesson.topic].name} · {lesson.level === "beginner" ? "Beginner" : "Intermediate"} · {lesson.minutes} min {lesson.tier === "pro" && <ProBadge />}
+            {TOPIC_BY_ID[lesson.topic].name} · {lesson.level === "beginner" ? "Beginner" : "Intermediate"} · {lesson.minutes} min {showProBadge(lesson.tier) && <ProBadge />}
           </>
         }
         title={lesson.title}
@@ -217,7 +218,7 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
             <Card title="Related concepts">
               <div className="ml-pills">
                 {concepts.map((c) => (
-                  <Link key={c.id} to={`/learn/concepts/${c.id}`} className="ml-pill">
+                  <Link key={c.id} to={`/learn/library/concepts/${c.id}`} className="ml-pill">
                     {c.name}
                   </Link>
                 ))}
@@ -234,7 +235,7 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
                   </div>
                 ))}
               </dl>
-              <Link to="/learn/glossary" className="ml-text-link ml-small">
+              <Link to="/learn/library/glossary" className="ml-text-link ml-small">
                 Full glossary
               </Link>
             </Card>

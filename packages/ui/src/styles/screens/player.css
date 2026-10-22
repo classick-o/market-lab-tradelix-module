@@ -1831,3 +1831,90 @@
   font-weight: 500;
   text-align: center;
 }
+
+/* Sort (a match whose items share categories) */
+.lp-sort {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lp-sort-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-surface);
+  transition: border-color var(--ml-d-micro) var(--ml-ease);
+}
+.lp-sort-item.is-done {
+  border-color: color-mix(in srgb, var(--ml-pos) 45%, transparent);
+  background: var(--ml-pos-soft);
+}
+.lp-sort-item.is-miss {
+  animation: lp-shake 0.32s var(--ml-ease) both;
+}
+.lp-sort-text {
+  flex: 1 1 260px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.lp-sort-item .lp-seg-options {
+  flex: none;
+}
+.lp-sort-item .lp-seg-opt.is-on {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ml-pos) 60%, transparent);
+}
+.lp-sort-miss {
+  flex-basis: 100%;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ml-text-2);
+}
+
+/* "You seem to know this" offer, just above the action bar */
+.lp-skip {
+  position: sticky;
+  bottom: 74px;
+  z-index: 14;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  align-self: center;
+  width: min(var(--lp-col), calc(100% - 2 * var(--ml-gutter)));
+  margin: 0 auto 10px;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--ml-accent-line);
+  border-radius: var(--ml-r-lg);
+  background: color-mix(in srgb, var(--ml-surface-2) 92%, transparent);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  color: var(--ml-text);
+  animation: lp-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.lp-skip > svg {
+  color: var(--ml-accent-fg);
+}
+.lp-skip > span {
+  flex: 1;
+}
+
+.lp-flow-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 12px 0 0 18px;
+  border-top: 1px solid var(--ml-border);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ml-text-2);
+  animation: lp-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}

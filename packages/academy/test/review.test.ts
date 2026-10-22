@@ -182,3 +182,17 @@ describe("widget maths", () => {
     expect(simulateEntry(candles, 1, "buy", "market", 0)).toMatchObject({ filled: true, price: 100.05 });
   });
 });
+
+describe("streak pauses", () => {
+  it("bridge up to two missed days a week without counting them", async () => {
+    const { streakInfo } = await import("../src");
+    // 2026-10-19 is a Monday. Active Mon, Tue, (Wed missed), Thu, (Fri missed), Sat; today Sun.
+    const days = ["2026-10-19", "2026-10-20", "2026-10-22", "2026-10-24"];
+    expect(streakInfo(days, "2026-10-25")).toMatchObject({ current: 1 });
+    expect(streakInfo(days, "2026-10-25", 2)).toMatchObject({ current: 4, paused: ["2026-10-21", "2026-10-23"], pausesLeft: 0, atRisk: true });
+    // A third missed day in the same week ends the streak.
+    expect(streakInfo(["2026-10-19", "2026-10-21", "2026-10-23", "2026-10-25"], "2026-10-25", 2)).toMatchObject({ current: 1 });
+    // Pauses reset on Monday.
+    expect(streakInfo(["2026-10-24", "2026-10-27"], "2026-10-27", 2)).toMatchObject({ current: 2, paused: ["2026-10-25", "2026-10-26"] });
+  });
+});

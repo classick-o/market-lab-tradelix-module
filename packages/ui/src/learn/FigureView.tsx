@@ -12,6 +12,7 @@ import { useKeys } from "./context";
 
 function stepCount(f: FigureSpec): number {
   if (f.kind === "chart") return f.steps.length;
+  if (f.kind === "flow" && f.interactive) return 0;
   if (f.kind === "formula" || f.kind === "bars" || f.kind === "flow") return f.steps?.length ?? 0;
   return 0;
 }
@@ -35,6 +36,20 @@ export function FigureView({
   const [typed, setTyped] = useState("");
   const answerBox = f.kind === "formula" ? f.boxes.find((b) => b.answer !== undefined) : undefined;
   const [formulaOk, setFormulaOk] = useState<boolean | null>(all && answerBox ? true : null);
+  const [formulaTries, setFormulaTries] = useState(0);
+  const checkFormula = () => {
+    if (!answerBox) return;
+    const ok = formulaCorrect(answerBox, typed);
+    const t = formulaTries + 1;
+    setFormulaTries(t);
+    // After two misses the answer is shown, so nobody is stuck on a figure.
+    if (!ok && t >= 2) {
+      setTyped(String(answerBox.answer));
+      setFormulaOk(true);
+      return;
+    }
+    setFormulaOk(ok);
+  };
   const last = n === 0 || step >= n - 1;
   const needsInput = !!answerBox && formulaOk !== true;
   const interactiveFlow = f.kind === "flow" && f.interactive;
@@ -68,7 +83,7 @@ export function FigureView({
       <div className="lp-formula">
         <Formula boxes={f.boxes} operators={f.operators} lit={lit} value={typed} onValue={all ? undefined : (v) => (setTyped(v), setFormulaOk(null))} state={formulaOk === null ? "idle" : formulaOk ? "correct" : "incorrect"} />
         {answerBox && !all && last && formulaOk !== true && (
-          <button type="button" className="ml-btn ml-btn--secondary ml-btn--sm" onClick={() => setFormulaOk(formulaCorrect(answerBox, typed))} disabled={!typed.trim()}>
+          <button type="button" className="ml-btn ml-btn--secondary ml-btn--sm" onClick={checkFormula} disabled={!typed.trim()}>
             Check
           </button>
         )}
@@ -77,10 +92,31 @@ export function FigureView({
             Not quite. Work it out from the boxes to the left.
           </p>
         )}
+        {formulaOk && formulaTries >= 2 && answerBox && (
+          <p className="lp-inline-feedback" role="status">
+            The answer is {answerBox.answer}
+            {answerBox.unit ? ` ${answerBox.unit}` : ""}.
+          </p>
+        )}
       </div>
     );
   } else if (f.kind === "bars") body = <Bars bars={f.bars} unit={f.unit} lit={n ? Math.round(((step + 1) / n) * f.bars.length) : f.bars.length} />;
-  else if (f.kind === "flow") body = <Flow nodes={f.nodes} start={f.start} interactive={!!f.interactive && !all} onDone={() => setFlowDone(true)} />;
+  else if (f.kind === "flow")
+    body = (
+      <>
+        <Flow nodes={f.nodes} start={f.start} interactive={!!f.interactive && !all} onDone={() => setFlowDone(true)} />
+        {/* An interactive flow's step texts explain the path; they appear once it is walked. */}
+        {f.interactive && flowDone && f.steps && f.steps.length > 0 && (
+          <ul className="lp-flow-summary">
+            {f.steps.map((t, i) => (
+              <li key={i}>
+                <Rich text={t} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    );
   else body = <Diagram id={f.diagram} />;
 
   return (

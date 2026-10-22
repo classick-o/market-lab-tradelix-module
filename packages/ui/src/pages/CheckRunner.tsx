@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TOPIC_BY_ID, getCheck, getLesson, getQuestion, isCorrect, type Question } from "@market-lab/academy";
+import { TOPIC_BY_ID, getAnyCheck, getLesson, getQuestion, isCorrect, unitLessonIds, type Question } from "@market-lab/academy";
 import { Card, PageHead } from "../components/Page";
 import { QuestionCard } from "../components/Quiz";
 import { useToast } from "../components/Toast";
@@ -14,12 +14,13 @@ export function CheckPage({ checkId }: { checkId: string }) {
   const store = useStore();
   const toast = useToast();
   const { navigate } = useRouter();
-  const check = getCheck(checkId);
+  const check = getAnyCheck(checkId);
+  const unitId = checkId.startsWith("unit-") ? checkId.slice(5) : null;
   const attempts = lab.checks[checkId] ?? [];
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ correct: number; total: number; passed: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (!check) return <Empty title="Check not found" action={<Link to="/learn/checks" className="ml-text-link">Knowledge checks</Link>} />;
+  if (!check) return <Empty title="Check not found" action={<Link to="/learn/practice" className="ml-text-link">Knowledge checks</Link>} />;
 
   const qs = check.questionIds.map(getQuestion).filter((q): q is Question => Boolean(q));
   const topic = TOPIC_BY_ID[check.topic];
@@ -34,14 +35,17 @@ export function CheckPage({ checkId }: { checkId: string }) {
     const correct = qs.filter((q) => isCorrect(q, answers[q.id])).length;
     const r = store.submitCheck(checkId, answers, correct, qs.length, topic.skill);
     setResult({ correct, total: qs.length, passed: r.passed });
-    if (r.firstPass) toast(`${check.kind === "assessment" ? "Assessment" : "Check"} passed · XP earned`);
+    if (unitId && r.passed) {
+      store.testOutLessons(unitLessonIds(unitId));
+      toast(`Unit ${unitId} tested out`);
+    } else if (r.firstPass) toast(`${check.kind === "assessment" ? "Assessment" : "Check"} passed · XP earned`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="ml-page ml-lesson">
       <PageHead
-        back={check.kind === "assessment" ? { to: "/missions/assessments", label: "Assessments" } : { to: "/learn/checks", label: "Knowledge Checks" }}
+        back={unitId ? { to: `/learn/units/${unitId}`, label: "Course" } : check.kind === "assessment" ? { to: "/missions/assessments", label: "Assessments" } : { to: "/learn/practice", label: "Practice" }}
         eyebrow={`${topic.name} · ${qs.length} questions · pass with ${check.passPct}%`}
         title={check.title}
         sub={check.description}
@@ -81,7 +85,7 @@ export function CheckPage({ checkId }: { checkId: string }) {
             >
               Retake
             </Button>
-            <Button variant="tertiary" onClick={() => navigate(check.kind === "assessment" ? "/missions/assessments" : "/learn/checks")}>
+            <Button variant="tertiary" onClick={() => navigate(unitId ? `/learn/units/${unitId}` : check.kind === "assessment" ? "/missions/assessments" : "/learn/practice")}>
               Done
             </Button>
           </div>

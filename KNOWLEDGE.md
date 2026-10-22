@@ -25,6 +25,57 @@ Când o regulă se schimbă, se schimbă întâi aici, apoi în cod.
 - **Bara de sus:** afișează streak-ul de învățare și XP-ul de azi față de goal-ul zilnic. Nu are breadcrumb și nu are insigna „Simulation”. Pe telefon are butonul de meniu, logo-ul și streak-ul; XP-ul de azi se vede acolo în cardul Daily goal.
   - În cod: `Topbar` din `packages/ui/src/components/Shell.tsx`.
 
+## Learn
+
+Secțiunile sunt Course, Lessons, Practice, Library și Tracks. `/learn` deschide Course. Rutele vechi (`/learn/paths`, `/learn/concepts`, `/learn/glossary`, `/learn/checks`) duc la secțiunile noi.
+- În cod: `NAV` din `packages/ui/src/nav.ts`, `legacyRedirect` din `packages/ui/src/MarketLab.tsx`.
+
+### Next step
+
+O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lecții și Dashboard:
+1. o lecție începută și neterminată (cea mai recentă);
+2. recapitularea zilnică, dacă are cel puțin 5 elemente scadente;
+3. următoarea lecție din curs, în ordinea nivelurilor, unităților și lecțiilor, sărind peste cele terminate sau „Tested out”;
+4. recapitularea, dacă mai are ceva scadent.
+- În cod: `nextLearnStep()` din `packages/academy/src/course/index.ts`.
+
+### Lecția
+
+- Lecțiile interactive trec prin 5 faze: Hook → Learn → Try → Check → Recap. Continue se deblochează doar după interacțiunea ecranului (o predicție, o figură parcursă, un task rezolvat sau „Show me”).
+- Hook-ul nu se notează; răspunsul se compară cu regula în recap.
+- **Check:** 3 întrebări, una pe ecran. Greșelile revin la final până ies corect, deci oricine termină lecția. Contează doar prima încercare: 3/3 = „Strong”, 2/3 = „Good”, sub 2/3 = „Review soon”.
+- **XP:** 15 la terminare, plus 10 pentru 3/3 din prima încercare.
+- Întrebările numerice cu generator (`vary`) apar în check cu alte cifre decât în lecție, ca să se verifice regula, nu memoria.
+- Lecția se redeschide unde a rămas; o lecție terminată se redeschide la recap.
+- Dacă primele două interacțiuni notate din Learn sunt corecte din prima, player-ul oferă „You seem to know this. Skip to Try?”.
+- **Read mode** arată toată lecția pe o pagină, cu aceleași interacțiuni. Marcarea „Read” nu dă XP de lecție; checkul de la final o termină.
+- Cât e deschisă o lecție, sidebar-ul se strânge la rail, iar pe telefon bara de jos dispare.
+- În cod: `packages/ui/src/learn/` (`LessonPlayer`, `CheckPhase`, `Recap`, `LessonRead`), `finishLessonCheck` și `completeScriptedLesson` din `packages/ui/src/store.ts`.
+
+### Checkpoint-ul unității
+
+- Fiecare unitate cu lecții scrise are un checkpoint: toate întrebările din check-urile lecțiilor ei. La 80% sau mai mult, lecțiile unității se marchează „Tested out”: contează ca terminate pentru progres și pentru „Next step”, dar nu dau XP de lecție.
+- Se deschide din panoul unității, pe pagina Course.
+- În cod: `unitCheckpoint()` din `packages/academy/src/course/index.ts`, `CheckPage` din `packages/ui/src/pages/CheckRunner.tsx`.
+
+### Recapitularea
+
+- Fiecare răspuns din checkul unei lecții intră în recapitulare: greșit → cutia 1 (revine mâine), corect → cutia 2 (peste 3 zile). La recapitulare, corect urcă o cutie (1, 3, 7, 14, 30 de zile), greșit coboară în cutia 1, corect după indiciu rămâne în aceeași cutie.
+- Cel mult 15 elemente pe zi; restul se mută a doua zi.
+- Recapitularea zilnică terminată dă 15 XP, o dată pe zi, și contează ca activitate pentru streak.
+- Flashcard-urile din Library la care răspunzi „Not yet” intră în aceeași coadă.
+- În cod: `packages/academy/src/review.ts`; `answerReview`, `completeReviewSession`, `answerFlashcard` din store.
+
+### Acces
+
+- Deocamdată tot conținutul Learn (lecții, tracks, recapitulare, Library) e deschis pentru toți; gruparea pe planuri se decide la final.
+- În cod: `LEARN_ALL_FREE` din `packages/ui/src/learn/access.ts`.
+
+### Streak
+
+- Până la **2 zile ratate pe săptămână** (luni–duminică) nu rup streak-ul; nu se adună la lungimea lui. Pauzele se pot dezactiva din setări.
+- În cod: `streakInfo(days, today, pausesPerWeek)` din `packages/academy/src/progress.ts`; `settings.streakPauses`.
+
 ## Missions
 
 - Secțiunile sunt: All Missions, Daily Challenges, Weekly Challenges și Assessments. `/missions` deschide All Missions.
@@ -39,8 +90,9 @@ Arată un singur pas, primul care se potrivește, în ordinea:
 
 1. o misiune începută și neterminată;
 2. o sesiune Arena în curs;
-3. următorul pas dintr-un learning path început; dacă nu există unul, primul path cu pași rămași;
-4. dacă toate path-urile sunt gata, o trimitere spre scenariile Arena.
+3. pasul următor din curs, după regula „Next step” de la Learn: o lecție începută, apoi recapitularea zilnică dacă are cel puțin 5 elemente scadente, apoi următoarea lecție din curs;
+4. următorul pas dintr-un track (fostul learning path) început; dacă nu există unul, primul track cu pași rămași;
+5. dacă toate sunt gata, o trimitere spre scenariile Arena.
 
 Cardul nu are rând de etichetă deasupra titlului (de tipul „Arena session · LABX”). Graficul din dreapta e doar decorativ: fără simbol, fără monedă și fără eticheta „Synthetic data”; rămân lumânările și nivelurile take profit, entry și stop loss.
 

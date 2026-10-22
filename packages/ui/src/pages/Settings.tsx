@@ -102,6 +102,9 @@ export function ProfileSettingsPage() {
         <Row title="Active days per week" hint="Used for your weekly goal and streak summary.">
           <Segmented label="Active days per week" size="sm" value={String(goals.weeklyDays)} onChange={(v) => store.setGoals({ weeklyDays: Number(v) })} options={[2, 3, 4, 5, 7].map((v) => ({ value: String(v), label: String(v) }))} />
         </Row>
+        <Row title="Streak pauses" hint="Up to two missed days a week keep your learning streak alive.">
+          <Switch checked={lab.settings.streakPauses !== false} onChange={(v) => store.setSettings({ streakPauses: v })} label="Streak pauses" />
+        </Row>
         <div className="ml-field">
           <span className="ml-field-label">Topics you want to focus on</span>
           <Chips

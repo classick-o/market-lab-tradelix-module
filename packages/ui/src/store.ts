@@ -6,7 +6,7 @@ import {
   applyReview,
   enterReview,
   dayKey,
-  getCheck,
+  getAnyCheck,
   getQuestion,
   isCorrect,
   type ConceptEvidence,
@@ -163,6 +163,8 @@ export interface Settings {
   privacy: { analytics: boolean; personalization: boolean };
   sidebarCollapsed: boolean;
   progressCollapsed: boolean;
+  /** Up to two missed days a week keep the learning streak alive (on unless turned off). */
+  streakPauses?: boolean;
   /** Bumped when the default palette changes, so saved settings can migrate once. */
   paletteVersion?: number;
 }
@@ -781,6 +783,17 @@ export class LabStore {
     return XP_RULES.review;
   }
 
+  /**
+   * A glossary flashcard: "Knew it" or "Not yet". Cards live in the same review queue as questions,
+   * under "term:<id>", so a missed term comes back in Today's review.
+   */
+  answerFlashcard(termId: string, knew: boolean): void {
+    const at = Date.now();
+    const today = dayKey(at, this.data.settings.timeZone);
+    const key = `term:${termId}`;
+    this.update((d) => ({ ...d, review: { ...d.review, [key]: applyReview(d.review[key], knew, false, today, at) } }));
+  }
+
   toggleBookmark(id: string): void {
     this.update((d) => ({ ...d, bookmarks: d.bookmarks.includes(id) ? d.bookmarks.filter((b) => b !== id) : [...d.bookmarks, id] }));
   }
@@ -816,7 +829,7 @@ export class LabStore {
    * the first attempt of the day, so retrying a quiz can't inflate a skill estimate.
    */
   submitCheck(checkId: string, answers: Record<string, string>, correct: number, total: number, skill: SkillId): { passed: boolean; firstPass: boolean } {
-    const check = getCheck(checkId);
+    const check = getAnyCheck(checkId);
     const at = Date.now();
     const pct = total ? (correct / total) * 100 : 0;
     const passed = pct >= (check?.passPct ?? 60);

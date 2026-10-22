@@ -4,7 +4,7 @@
  * lesson reopens where the learner left it. The rail holds the outline, the lesson's terms and notes.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LESSONS, TOPIC_BY_ID, getTerm, termsForLesson, type Beat, type Lesson, type LessonScript } from "@market-lab/academy";
+import { LESSONS, TOPIC_BY_ID, getCourseUnit, getTerm, termsForLesson, type Beat, type Lesson, type LessonScript } from "@market-lab/academy";
 import { Rich, termLinks } from "../components/Page";
 import { useMediaQuery } from "../components/Stage";
 import { Term } from "../components/Term";
@@ -308,6 +308,9 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
   const [menu, setMenu] = useState(false);
   const [help, setHelp] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  // First-try scores of graded Learn interactions, for "Skip to Try?" (PLAN_LEARN §6.4).
+  const [learnScores, setLearnScores] = useState<Record<number, number>>({});
+  const [skipDismissed, setSkipDismissed] = useState(false);
   const registry = useMemo(() => new KeyRegistry(), []);
   const railOpen = lab.learnPrefs.railOpen;
   const mainRef = useRef<HTMLDivElement>(null);
@@ -351,9 +354,10 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
       complete: () => markDone(idx),
       evidence: (concept, score, source = "lesson") => {
         if (concept) store.recordEvidence([{ concept, score, source }]);
+        if (screens[idx].phase === 1) setLearnScores((m) => (idx in m ? m : { ...m, [idx]: score }));
       },
     }),
-    [doneOnEnter, lesson.id, idx, markDone, store],
+    [doneOnEnter, lesson.id, idx, markDone, store, screens],
   );
 
   const exit = useCallback(() => navigate("/learn/lessons"), [navigate]);
@@ -389,7 +393,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
 
   // Progress: one segment per screen, grouped by phase.
   const minutesLeft = Math.max(1, Math.ceil(lesson.minutes * (1 - idx / (screens.length - 1))));
-  const unitName = TOPIC_BY_ID[lesson.topic].name;
+  const unitName = getCourseUnit(script.unit)?.title ?? TOPIC_BY_ID[lesson.topic].name;
   const showRail = wide && railOpen;
   const nextUp = useMemo(() => nextLesson(lesson), [lesson]);
 
@@ -435,6 +439,10 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
     );
 
   const inCheckOrRecap = screen.kind === "check" || screen.kind === "recap";
+  const tryIdx = screens.findIndex((s) => s.kind === "task");
+  const scores = Object.values(learnScores);
+  const offerSkip =
+    !skipDismissed && !progress?.completedAt && screen.phase === 1 && tryIdx > idx + 1 && scores.length >= 2 && scores.every((x) => x === 1) && ready;
   const nextLabel = idx + 1 < screens.length ? (screens[idx + 1].phase !== screen.phase ? `Continue to ${PHASES[screens[idx + 1].phase]}` : "Continue") : "Continue";
 
   return (
@@ -469,6 +477,9 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
                   <div className="lp-menu" role="menu" onMouseLeave={() => setMenu(false)}>
                     <button type="button" role="menuitem" onClick={() => (setMenu(false), store.setLearnPrefs({ mode: "read" }))}>
                       <Icon name="book" size={16} /> Read mode
+                    </button>
+                    <button type="button" role="menuitem" onClick={() => (setMenu(false), store.toggleBookmark(`lesson:${lesson.id}`))}>
+                      <Icon name="star" size={16} /> {lab.bookmarks.includes(`lesson:${lesson.id}`) ? "Remove from saved" : "Save lesson"}
                     </button>
                     <button type="button" role="menuitem" onClick={() => (setMenu(false), go(0))}>
                       <Icon name="replay" size={16} /> Start over
@@ -527,6 +538,30 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
           )}
         </div>
 
+        {offerSkip && (
+          <div className="lp-skip" role="status">
+            <Icon name="bolt" size={16} />
+            <span>You seem to know this. Skip to Try?</span>
+            <button
+              type="button"
+              className="ml-btn ml-btn--secondary ml-btn--sm"
+              onClick={() => {
+                setCompleted((c) => {
+                  const n = new Set(c);
+                  for (let i = idx; i < tryIdx; i++) n.add(i);
+                  return n;
+                });
+                setSkipDismissed(true);
+                go(tryIdx);
+              }}
+            >
+              Skip to Try
+            </button>
+            <button type="button" className="ml-btn ml-btn--tertiary ml-btn--sm" onClick={() => setSkipDismissed(true)}>
+              Keep going
+            </button>
+          </div>
+        )}
         {!inCheckOrRecap && (
           <footer className={cx("lp-action", ready && "is-ready")}>
             <div className="lp-action-row">

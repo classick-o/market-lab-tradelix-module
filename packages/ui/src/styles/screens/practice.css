@@ -1,0 +1,905 @@
+/* Practice: today's review, the review session, weak concepts, topic checks (PLAN_LEARN §7.2). */
+
+/* ── Practice page ──────────────────────────────────────────────────── */
+
+.ml-practice-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+  gap: var(--ml-s4);
+  align-items: stretch;
+}
+
+/* Today's review */
+.ml-practice-today {
+  gap: 18px;
+  padding: 20px 22px 18px;
+}
+.ml-practice-today-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ml-s3);
+  min-height: 22px;
+}
+.ml-practice-today-head .ml-eyebrow {
+  margin: 0;
+  color: var(--ml-accent-fg);
+}
+.ml-practice-today-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ml-practice-today-count {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.ml-practice-today-count > .num {
+  font-size: 52px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ml-text);
+}
+.ml-practice-today-count > span:last-child {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 15px;
+  color: var(--ml-text-2);
+}
+.ml-practice-today-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--ml-text-3);
+}
+.ml-practice-today-text {
+  max-width: 56ch;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ml-text-2);
+}
+.ml-practice-today-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 4px;
+}
+
+/* Calm empty state inside the card */
+.ml-practice-today-calm {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  flex: 1;
+  align-content: center;
+  gap: 14px;
+  padding: 6px 0 4px;
+}
+.ml-practice-calm-copy {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.ml-practice-calm-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-md);
+  color: var(--ml-pos);
+}
+.ml-root .ml-practice-calm-title {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.ml-practice-calm-link {
+  margin-top: 6px;
+}
+
+/* 7-day forecast */
+.ml-practice-forecast {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--ml-border);
+}
+.ml-practice-forecast li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ml-practice-fc-n {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ml-text);
+}
+.ml-practice-forecast li.is-empty .ml-practice-fc-n {
+  color: var(--ml-text-disabled);
+  font-weight: 500;
+}
+.ml-practice-fc-track {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 32px;
+  height: 38px;
+  border-radius: 3px;
+  background: var(--ml-surface-2);
+}
+.ml-practice-fc-track i {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ml-accent) 45%, var(--ml-surface-active));
+  transform-origin: bottom;
+  animation: ml-practice-grow var(--ml-d-emphasis) var(--ml-ease-expressive) both;
+}
+.ml-practice-forecast li.is-empty .ml-practice-fc-track i {
+  background: var(--ml-border);
+}
+.ml-practice-forecast li.is-today .ml-practice-fc-track i {
+  background: var(--ml-accent);
+}
+.ml-practice-fc-day {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ml-text-3);
+}
+.ml-practice-forecast li.is-today .ml-practice-fc-day {
+  color: var(--ml-accent-fg);
+}
+@keyframes ml-practice-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* Concept mastery: a stacked bar and its legend, on the course's five-step accent scale */
+.ml-practice-mastery {
+  gap: 14px;
+}
+.ml-practice-level {
+  display: block;
+  background: var(--ml-surface-active);
+}
+.ml-practice-level.is-0 {
+  background: var(--ml-surface-active);
+  box-shadow: inset 0 0 0 1px var(--ml-border-strong);
+}
+.ml-practice-level.is-1 {
+  background: color-mix(in srgb, var(--ml-accent) 22%, var(--ml-surface-active));
+}
+.ml-practice-level.is-2 {
+  background: color-mix(in srgb, var(--ml-accent) 45%, var(--ml-surface-active));
+}
+.ml-practice-level.is-3 {
+  background: color-mix(in srgb, var(--ml-accent) 72%, var(--ml-surface-active));
+}
+.ml-practice-level.is-4 {
+  background: var(--ml-accent);
+}
+.ml-practice-mbar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.ml-practice-mbar .ml-practice-level {
+  flex-basis: 0;
+  min-width: 4px;
+  height: 100%;
+}
+.ml-practice-legend {
+  display: flex;
+  flex-direction: column;
+}
+.ml-practice-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ml-hairline);
+  font-size: 13px;
+  color: var(--ml-text-2);
+}
+.ml-practice-legend li:last-child {
+  border-bottom: 0;
+}
+.ml-practice-legend .ml-practice-level {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.ml-practice-legend b {
+  font-weight: 550;
+  color: var(--ml-text);
+}
+.ml-practice-legend li.is-zero b {
+  color: var(--ml-text-3);
+  font-weight: 500;
+}
+
+/* Five-step mastery meter */
+.ml-practice-mm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.ml-practice-mm-steps {
+  display: inline-flex;
+  gap: 3px;
+}
+.ml-practice-mm-steps i {
+  display: block;
+  width: 14px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--ml-surface-active);
+  box-shadow: inset 0 0 0 1px var(--ml-border);
+}
+.ml-practice-mm-steps i.is-on {
+  background: var(--ml-accent);
+  box-shadow: none;
+}
+.ml-practice-mm-label {
+  min-width: 64px;
+  font-size: 12px;
+  color: var(--ml-text-2);
+}
+.ml-practice-mm--compact .ml-practice-mm-steps i {
+  width: 10px;
+  height: 4px;
+}
+.ml-practice-mm--compact .ml-practice-mm-label {
+  min-width: 0;
+  font-size: 11.5px;
+}
+
+/* Weak concepts */
+.ml-practice-weak {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--ml-border);
+}
+.ml-practice-weak-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1.6fr);
+  align-items: center;
+  gap: 8px 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ml-border);
+}
+.ml-practice-weak-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+.ml-practice-weak-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ml-practice-weak-name {
+  width: fit-content;
+  max-width: 100%;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--ml-text);
+  overflow-wrap: anywhere;
+  transition: color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-practice-weak-name:hover {
+  color: var(--ml-accent-fg);
+}
+.ml-practice-weak-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-width: 0;
+}
+.ml-practice-weak-lesson {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--ml-text-2);
+  transition: color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-practice-weak-lesson span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ml-practice-weak-lesson .ml-icon {
+  flex: none;
+}
+.ml-practice-weak-lesson:hover {
+  color: var(--ml-text);
+}
+.ml-practice-fix {
+  flex: none;
+}
+.ml-practice-weak-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.ml-practice-weak-empty .ml-icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ml-pos);
+}
+
+/* Topic checks */
+.ml-practice-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--ml-s3);
+}
+.ml-practice-check {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  height: 100%;
+  padding: 14px 14px 13px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-surface);
+  transition:
+    border-color var(--ml-d-fast) var(--ml-ease),
+    background-color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-practice-check:hover {
+  border-color: var(--ml-border-strong);
+  background: var(--ml-surface-2);
+}
+.ml-practice-check.is-passed {
+  border-color: var(--ml-accent-line);
+}
+.ml-practice-check-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ml-practice-check-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.ml-practice-check-score {
+  font-size: 12.5px;
+  color: var(--ml-text-2);
+}
+.ml-practice-check-score b {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ml-text);
+}
+.ml-practice-check-meta {
+  font-size: 12px;
+  color: var(--ml-text-3);
+}
+.ml-practice-check-mastery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 9px;
+  border-top: 1px solid var(--ml-hairline);
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: var(--ml-text-3);
+}
+
+/* Topic assessments */
+.ml-practice-assess {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  border-top: 1px solid var(--ml-border);
+}
+.ml-practice-assess li {
+  border-bottom: 1px solid var(--ml-border);
+}
+.ml-practice-assess-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s4);
+  min-height: 52px;
+  padding: 8px 6px;
+  margin: 0 -6px;
+  border-radius: var(--ml-r-sm);
+  transition: background-color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-practice-assess-row:hover {
+  background: var(--ml-surface-2);
+}
+.ml-practice-assess-row:hover .ml-row-cta {
+  color: var(--ml-accent-fg);
+}
+
+/* ── Review session ─────────────────────────────────────────────────── */
+
+.ml-review {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+.ml-review-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.ml-review-top .ml-back {
+  margin-bottom: 4px;
+}
+.ml-root .ml-review-title {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+.ml-review-lesson {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ml-text-2);
+  transition: color var(--ml-d-fast) var(--ml-ease);
+}
+.ml-review-lesson:hover {
+  color: var(--ml-accent-fg);
+}
+.ml-review-session {
+  padding: 20px 22px 22px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+}
+.ml-review-session .lp-check-dots {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.ml-review-session .lp-choice,
+.ml-review-session .lp-numeric {
+  background: var(--ml-bg);
+}
+.ml-review-session .lp-choice.is-right {
+  background: var(--ml-pos-soft);
+}
+.ml-review-session .lp-choice.is-on:not(.is-right):not(.is-wrong) {
+  background: var(--ml-accent-soft);
+}
+.ml-review-session .lp-choice.is-wrong {
+  background: var(--ml-surface-2);
+}
+.ml-review-session .lp-scenario {
+  background: var(--ml-surface-2);
+}
+/* The field shows focus on its frame (focus-within); no second ring on the input itself. */
+.ml-review-session .lp-numeric input:focus-visible {
+  outline: none;
+}
+.ml-review-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: lp-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.ml-review-keys {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--ml-text-3);
+}
+
+/* Flashcard */
+.ml-review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-height: 220px;
+  justify-content: center;
+  padding: 28px 24px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-lg);
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--ml-accent) 5%, transparent), transparent 70%), var(--ml-bg);
+  text-align: center;
+}
+.ml-review-card.is-flipped {
+  justify-content: flex-start;
+}
+.ml-review-card-kicker {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ml-text-3);
+}
+.ml-root .ml-review-card-term {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--ml-text);
+  overflow-wrap: anywhere;
+}
+.ml-review-card-aka {
+  font-size: 12.5px;
+  color: var(--ml-text-3);
+}
+.ml-review-card-prompt {
+  margin-top: 6px !important;
+  font-size: 13px;
+  color: var(--ml-text-2);
+}
+.ml-review-card-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 54ch;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ml-border);
+  animation: lp-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.ml-review-card-plain {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ml-text);
+}
+.ml-review-card-def {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ml-text-2);
+}
+.ml-review-card-lesson {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ml-text-2);
+}
+.ml-review-card-lesson:hover {
+  color: var(--ml-accent-fg);
+}
+
+/* End screen */
+.ml-review-done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 24px 22px 22px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--ml-pos) 5%, transparent), transparent 45%), var(--ml-surface);
+  animation: lp-in var(--ml-d-standard) var(--ml-ease-enter) both;
+}
+.ml-review-done-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid color-mix(in srgb, var(--ml-pos) 40%, transparent);
+  border-radius: 50%;
+  background: var(--ml-pos-soft);
+  color: var(--ml-pos);
+}
+.ml-review-done-score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 16px;
+  color: var(--ml-text);
+}
+.ml-review-xp {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--ml-accent-line);
+  border-radius: var(--ml-r-full);
+  background: var(--ml-accent-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ml-accent-fg);
+}
+.ml-review-moves {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.ml-review-moves-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.ml-review-moves-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--ml-border);
+}
+.ml-review-moves-list li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ml-border);
+  font-size: 13px;
+}
+.ml-review-move-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ml-surface-2);
+  color: var(--ml-text-3);
+}
+.ml-review-moves-list li.is-up .ml-review-move-icon {
+  background: var(--ml-pos-soft);
+  color: var(--ml-pos);
+}
+.ml-review-moves-list li.is-up .ml-review-move-icon .ml-icon {
+  transform: rotate(-90deg);
+}
+.ml-review-moves-list li.is-down .ml-review-move-icon .ml-icon {
+  transform: rotate(90deg);
+}
+.ml-review-move-label {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.5;
+  color: var(--ml-text);
+}
+.ml-review-move-kind {
+  margin-right: 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ml-accent-2);
+}
+.ml-review-move-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: var(--ml-text-2);
+}
+.ml-review-move-when {
+  font-size: 11.5px;
+  color: var(--ml-text-3);
+}
+.ml-review-moves-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ml-text-3);
+}
+.ml-review-done-actions {
+  margin-top: 2px;
+}
+.ml-review-empty-actions {
+  justify-content: center;
+  margin-top: 6px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .ml-practice-weak-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .ml-practice-weak-actions {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+@media (max-width: 960px) {
+  .ml-practice-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-practice-assess {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .ml-practice-today {
+    padding: 16px 16px 14px;
+  }
+  .ml-practice-today-count > .num {
+    font-size: 44px;
+  }
+  .ml-practice-today-actions,
+  .ml-practice-today-actions .ml-btn {
+    width: 100%;
+  }
+  .ml-practice-today-actions .ml-btn,
+  .ml-practice-fix,
+  .ml-review .ml-btn,
+  .ml-review-empty-actions .ml-btn {
+    min-height: 44px;
+  }
+  .ml-practice-forecast {
+    gap: 4px;
+  }
+  .ml-practice-fc-day {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+  .ml-practice-weak-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .ml-practice-weak-actions {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+  .ml-practice-weak-lesson {
+    flex: 1 1 160px;
+    min-height: 44px;
+  }
+  .ml-practice-calm-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 0;
+  }
+  .ml-practice-checks {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  /* Phone: score and attempts share a row, so ten tiles stay short. */
+  .ml-practice-check {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "head head" "score meta" "meter meter" "mastery mastery";
+    align-items: center;
+    gap: 8px 12px;
+    padding: 13px 14px 12px;
+  }
+  .ml-practice-check-head {
+    grid-area: head;
+  }
+  .ml-practice-check-score {
+    grid-area: score;
+  }
+  .ml-practice-check-meta {
+    grid-area: meta;
+    text-align: right;
+  }
+  .ml-practice-check .ml-meter {
+    grid-area: meter;
+  }
+  .ml-practice-check-mastery {
+    grid-area: mastery;
+    padding-top: 8px;
+  }
+  .ml-practice-check-score b {
+    font-size: 17px;
+  }
+  .ml-review {
+    gap: 16px;
+  }
+  .ml-review-top .ml-back,
+  .ml-review-lesson {
+    min-height: 44px;
+    margin-bottom: 0;
+  }
+  .ml-root .ml-review-title {
+    font-size: 21px;
+  }
+  .ml-review-session {
+    padding: 16px 14px 18px;
+  }
+  .ml-review-session .lp-inline-actions > .ml-btn {
+    flex: 1 1 auto;
+  }
+  .ml-review-keys {
+    display: none;
+  }
+  .ml-review-card {
+    min-height: 200px;
+    padding: 22px 16px;
+  }
+  .ml-root .ml-review-card-term {
+    font-size: 24px;
+  }
+  .ml-review-done {
+    padding: 20px 16px 18px;
+  }
+  .ml-review-done-actions {
+    width: 100%;
+  }
+  .ml-review-done-actions .ml-btn {
+    flex: 1 1 100%;
+  }
+  .ml-review-move-box {
+    font-size: 12px;
+  }
+}
+@media (hover: none) {
+  .ml-review-keys {
+    display: none;
+  }
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-practice-fc-track i,
+  .ml-review-step,
+  .ml-review-card-back,
+  .ml-review-done,
+  .ml-review .lp-feedback,
+  .ml-review .lp-hints li {
+    animation: none !important;
+  }
+  .ml-practice-check,
+  .ml-review .lp-choice {
+    transition: none !important;
+  }
+}
+.ml-reduced-motion .ml-practice-fc-track i,
+.ml-reduced-motion .ml-review-step,
+.ml-reduced-motion .ml-review-card-back,
+.ml-reduced-motion .ml-review-done,
+.ml-reduced-motion .ml-review .lp-feedback,
+.ml-reduced-motion .ml-review .lp-hints li {
+  animation: none !important;
+}
