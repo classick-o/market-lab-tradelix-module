@@ -1,4 +1,4 @@
-import type { Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+import type { Concept, GlossaryTerm, Lesson, Question, UnitContent, UnitIntro } from "../../types";
 
 /**
  * Unit 4.5 · The business of trading (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce.
@@ -31,6 +31,7 @@ const L_4_5_1: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.1",
+    bridge: "Unit 4.4 sized your book for crisis correlations in 4.4.6. Now the business around trading, starting with its rules. In 1.8.4 you checked a broker's licence; in 2.14.8 you compared rules by jurisdiction. Here you date each rule and see what changed in 2026.",
     hook: {
       prompt: "A broker offers 500:1 leverage on EUR/USD to retail clients living in Romania. Is that allowed?",
       control: {
@@ -121,6 +122,7 @@ const L_4_5_1: Lesson = {
         "EU retail caps run from 30:1 to 2:1, with 50% close-out and negative balance protection. Date every rule.",
         "From 4 June 2026, US intraday margin replaced the pattern day trader rule; older courses are out of date.",
       ],
+      next: "Next, 4.5.2: what protects your money if a broker fails, and who profits from each dealing model.",
     },
   },
 };
@@ -148,6 +150,7 @@ const L_4_5_2: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.2",
+    bridge: "In 4.5.1 you found who supervises a broker; supervision doesn't stop firms failing. In 2.14.6 negative balance protection capped losses, and 3.2.6 showed who fills you. Here you learn what's protected when a broker fails, who profits from your losses, and how to rank brokers.",
     hook: {
       prompt: "Your broker goes bust. Which of these is protected?",
       control: {
@@ -331,6 +334,7 @@ const L_4_5_2: Lesson = {
         "A-book earns on your activity, B-book on your losses; a hybrid routes the winners out.",
         "Shortlist only verified, segregated, protected brokers; offshore, bonuses, guarantees and withdrawal complaints are red flags.",
       ],
+      next: "Next, 4.5.3: prop firm evaluations, a different route in, where a firm's loss rules decide whether you keep trading.",
     },
   },
 };
@@ -358,6 +362,7 @@ const L_4_5_3: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.3",
+    bridge: "In 4.5.2 you chose a broker for your money. Prop evaluations put you under a firm's loss rules. You met daily limits in 1.4.9, drawdown tiers in 2.11.5 and ruin in 3.12.5; here the firm sets them, and risk per trade moves the pass odds.",
     hook: {
       prompt: "A trader with a real +0.2R edge per trade takes a challenge: +10% target, −10% maximum loss. Which risk per trade passes most often?",
       control: {
@@ -377,7 +382,7 @@ const L_4_5_3: Lesson = {
       {
         kind: "explain",
         title: "Two businesses, one name",
-        text: "Institutional [[prop-firm|prop firms]] hire traders to trade the firm's own capital. Retail evaluation firms sell attempts: you pay a [[challenge-fee]] for an [[evaluation-challenge]] on a simulated account, and the [[funded-account]] you win is often still simulated, paying a [[profit-split]]. The second business sells tests.",
+        text: "Institutional [[prop-firm|prop firms]] hire traders to trade the firm's own capital. Retail evaluation firms sell attempts: you pay a [[challenge-fee]] (lost if you fail) for an [[evaluation-challenge]] on a simulated account, and the [[funded-account]] you win is often still simulated, paying a [[profit-split]]. The second business sells tests.",
       },
       {
         kind: "match",
@@ -490,6 +495,7 @@ const L_4_5_3: Lesson = {
         "Static floors stay put; intraday floors trail peak equity, end-of-day floors trail closing balances.",
         "Without an edge, more risk only buys lottery tickets; with one, moderate risk passes most often.",
       ],
+      next: "Next, 4.5.4: the maths of an evaluation, where fee, pass rate and payouts decide whether an attempt is worth buying.",
     },
   },
 };
@@ -517,6 +523,7 @@ const L_4_5_4: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.4",
+    bridge: "In 4.5.3 risk per trade moved the pass odds. Now you price the attempt. Expected value from 0.2.2 weighs the pass chance against the fee, and resampling your trades, as in the 3.11.7 Monte Carlo, estimates that chance from your record, not from marketing.",
     hook: {
       prompt: "An evaluation costs 500. You estimate a 10% chance to pass and 1,500 of payouts on average if you get funded. What is the expected value?",
       control: {
@@ -616,6 +623,7 @@ const L_4_5_4: Lesson = {
         "Estimate your pass chance from your own trades and risk; without an edge, passes are luck.",
         "The My Forex Funds case shows evaluation buyers can't count on regulators to protect them.",
       ],
+      next: "Next, 4.5.5: taxes, as awareness only, and the records every trade must leave behind.",
     },
   },
 };
@@ -640,6 +648,7 @@ const L_4_5_5: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.5",
+    bridge: "In 4.5.4 a fee decided whether an evaluation pays. Tax is another cost and, like 4.5.1's rules, depends on where you live. Your 1.6.4 journal records why you traded; here you add the records tax needs: fees, 2.14.4's swaps and exchange rates.",
     hook: {
       prompt: "Two traders each make 10% a year before tax for 10 years, starting from 10,000. One pays a generic 20% tax on each year's gain. How much less does she end with?",
       control: {
@@ -751,6 +760,7 @@ const L_4_5_5: Lesson = {
         "A generic 20% tax on each year's gain turns 10% into 8%: 4,348 less after 10 years.",
         "Tax differs by country, product, timing and broker. Ask your tax authority or a qualified adviser.",
       ],
+      next: "Next, 4.5.6: the go-live checklist, where evidence, process, capital and broker decide whether real money goes in.",
     },
   },
 };
@@ -778,6 +788,7 @@ const L_4_5_6: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.6",
+    bridge: "Lessons 4.5.1 to 4.5.5 covered the rules, your broker and your records; now the decision itself. The 4.3.7 dossier gave a verdict, 3.11.10 set incubation gates, 2.11.7 put an interval around expectancy and 1.6.2 fixed your risk capital. Here they meet in one go-live checklist.",
     hook: {
       prompt: "Your simulator results: 60 trades, +0.35R average, 98% stop integrity. Ready to go live?",
       control: {
@@ -931,6 +942,7 @@ const L_4_5_6: Lesson = {
         "The confidence interval decides, not the average: if it includes zero, the answer is not yet.",
         "Live results are worse than simulated: costs, slippage and real emotions. Start at minimum size.",
       ],
+      next: "Next, 4.5.7: when not to trade, the days to stand aside, and when not trading at all is the right answer.",
     },
   },
 };
@@ -958,6 +970,7 @@ const L_4_5_7: Lesson = {
   script: {
     unit: "4.5",
     courseId: "4.5.7",
+    bridge: "In 4.5.6, 'don't trade live' was a valid verdict; the same holds day to day. You met boredom trades in 1.7.5, tilt in 2.12.7 and loss limits in 2.11.4. Here they become written stand-aside rules, and 0.1.5's base rates decide whether to trade at all.",
     hook: {
       prompt: "Four mornings. On which one should you trade?",
       control: {
@@ -1133,6 +1146,7 @@ const L_4_5_7: Lesson = {
         "Start from base rates: most active retail traders lose. Only validated evidence should move you.",
         "Abstaining when there's no edge is a scored skill, and not trading live is a valid outcome.",
       ],
+      next: "Next: the 4.5 checkpoint, then unit 4.6, Your trading approach, starting with 4.6.1: the constraints matrix.",
     },
   },
 };
@@ -1960,8 +1974,21 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "Trading as a business with rules, counterparties and fixed costs: who regulates your broker, what protects your money, how prop evaluations work and what they're worth, taxes and records, the go-live checklist, and when not to trade. It follows 4.4 because before real money goes in, the broker, the rules and the decision itself are risks too.",
+  outcomes: [
+    "Name the regulator behind a broker, verify it on the register, and date every retail rule.",
+    "Judge client-money protection and a broker's dealing model, and rank brokers by their red flags.",
+    "Read a prop evaluation's loss floors and price an attempt by its expected value from your trades.",
+    "Keep the records tax needs, and see how tax slows compounding.",
+    "Run the go-live checklist, and write stand-aside rules for the days you shouldn't trade.",
+  ],
+  buildsOn: "Honest numbers and the benchmark from 0.1, scams and licence checks from 1.8, risk capital from 1.6.2, loss limits from 2.11, margin and dated rules from 2.14, broker models from 3.2, incubation from 3.11 and the 4.3.7 verdict.",
+};
 /** Unit 4.5 · The business of trading (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_4_5: UnitContent = {
+  intro: INTRO,
   lessons: [L_4_5_1, L_4_5_2, L_4_5_3, L_4_5_4, L_4_5_5, L_4_5_6, L_4_5_7],
   questions: QUESTIONS,
   terms: TERMS,

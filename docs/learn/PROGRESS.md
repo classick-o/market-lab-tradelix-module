@@ -22,9 +22,13 @@ Ce s-a făcut din [PLAN_LEARN.md](../../PLAN_LEARN.md) și ce a rămas. Regulile
   - celelalte 322, în `content/course/u*.ts`, câte un fișier pe unitate.
 
   În total: **1.079 de întrebări**, **1.064 de termeni**, **507 concepte**.
+- **Continuitatea:**
+  - în aplicație: poziția lecției în unitate, introducerea unității la prima lecție, „Builds on”, „Unit complete” cu checkpoint, Lessons grupat pe unități și nota „You'll learn this properly in…” pe termeni;
+  - în conținut: toate cele 44 de unități au `intro`; toate cele 340 de lecții au `bridge` și `recap.next`; termenii folosiți înainte de lecția lor au o explicație scurtă în text;
+  - testele cer aceste câmpuri pentru orice lecție nouă (AUTHORING §11).
 - **Verificat:**
   - typecheck curat;
-  - 127 de teste trec, inclusiv integritatea fiecărei lecții (lungimi, legături, widget-uri, start/Show me, unicitatea id-urilor);
+  - 130 de teste trec, inclusiv integritatea fiecărei lecții (lungimi, legături, widget-uri, start/Show me, unicitatea id-urilor);
   - build-ul de producție;
   - walkthrough automat cap-coadă pe cele 18 lecții vechi și pe un eșantion de câte o lecție din fiecare nivel.
 - **Ghiduri:** [AUTHORING.md](AUTHORING.md) (cum se scrie o lecție în cod, §10 pentru agenți), [widgets-backlog.md](widgets-backlog.md).
@@ -46,5 +50,6 @@ Ce s-a făcut din [PLAN_LEARN.md](../../PLAN_LEARN.md) și ce a rămas. Regulile
    - lecția 4.6.3 cere conceptul `playbook`, care nu există; există doar termenul;
    - definiția termenului `risk-accuracy` diferă de felul în care o calculează 2.13.7;
    - termenul `carry` e definit doar pentru valute;
-   - q-ta-12 și q-ta-13 trimit încă la L16 (s-ar potrivi cu 2.4.6).
+   - q-ta-12 și q-ta-13 trimit încă la L16 (s-ar potrivi cu 2.4.6);
+   - 11 prerechizite din `course/map.ts` arată spre lecții de mai târziu: 2.1.9 și 2.3.6 → 2.4.6; 3.8.7 → 3.9.3; 3.8.8 → 3.11.2; 3.9.2 → 3.14.1; 3.9.3 → 3.10.2; 3.9.5 → 3.11.4; 3.9.6 → 3.10.6; 3.13.1 → 3.14.1; 3.13.3 → 3.14.3, 3.14.6. „Builds on” le ascunde. Trebuie fie scoase, fie lecțiile reordonate.
 6. **E8 rămas:** animațiile din §11, auditul de accesibilitate (§12), imaginea `empty-search` și figura mică per concept în Library.

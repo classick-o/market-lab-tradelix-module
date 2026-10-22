@@ -1,4 +1,4 @@
-import type { CandleData, ChartSpec, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent } from "../../types";
+import type { CandleData, ChartSpec, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent, UnitIntro } from "../../types";
 
 /**
  * Unit 4.6 · Your trading approach (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce.
@@ -62,6 +62,7 @@ const L_4_6_1: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.1",
+    bridge: "In 4.5.7 not trading was a valid answer. If you do trade, this unit writes how. In 2.9.6 you weighed day against swing trading; here your hours, money, jurisdiction and the temperament your journal measured in 1.7 and 2.12 decide which styles remain.",
     hook: {
       prompt: "You work 09:00–17:00, Central European time, with a 30-minute lunch break. Which style fits best?",
       control: {
@@ -183,6 +184,7 @@ const L_4_6_1: Lesson = {
         "Temperament comes from your journal: revenge trades, moved stops, holding time. Measured beats declared.",
         "Name each style your constraints rule out, with a reason. Your free hours usually rule out the most.",
       ],
+      next: "Next, 4.6.2: choosing your market, by how far it moves for its cost and when it's busy in your hours.",
     },
   },
 };
@@ -273,6 +275,7 @@ const L_4_6_2: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.2",
+    bridge: "In 4.6.1 your constraints left a style; now the market. ATR from 2.4.6 over round-trip cost is 2.14.7's tradability ratio, and 2.9.2's sessions show when each market is busy. Here you pick one or two, from 2.14 or 3.14, that fit your clock and account.",
     hook: {
       prompt: "Which market is cheapest to trade relative to how much it moves? A: daily ATR 2.40, round-trip cost 0.20. B: ATR 1.50, cost 0.30. C: ATR 30.00, cost 1.50.",
       control: {
@@ -396,6 +399,7 @@ const L_4_6_2: Lesson = {
         "Match busy windows to your clock: the overlap is 15:00–19:00 Bucharest; mismatch weeks move US times earlier.",
         "Pick one or two liquid, available, weakly correlated instruments that fit your account, and learn them well.",
       ],
+      next: "Next, 4.6.3: specialise, because one setup on few markets builds a sample that can show whether the edge is real.",
     },
   },
 };
@@ -482,6 +486,7 @@ const L_4_6_3: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.3",
+    bridge: "In 4.6.2 you chose one or two markets; now the setups. In 3.10.5 small edges needed hundreds of trades to stand out, and 2.11.7 put an interval around expectancy. Here you specialise until the sample speaks, and give your 2.13.2 playbook a no-trade list.",
     hook: {
       prompt: "Trader A runs 6 setups on 5 markets. Trader B runs 1 setup on 2 markets. Both take 150 trades a year. Who learns faster whether their edge is real?",
       control: {
@@ -599,6 +604,7 @@ const L_4_6_3: Lesson = {
         "Rank setups by the lower end of their interval; under 30 trades, there's no evidence yet.",
         "Write a no-trade list. Add a second strategy only when both are positive and weakly correlated.",
       ],
+      next: "Next, 4.6.4: the development pipeline, where each strategy gets written review and kill thresholds before it trades.",
     },
   },
 };
@@ -665,6 +671,7 @@ const L_4_6_4: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.4",
+    bridge: "In 4.6.3 you chose setups worth a sample; each now needs a path and an exit. In 3.11.10 you set a kill switch from Monte Carlo; 4.3.7 gave a verdict, 4.5.6 a go-live checklist. Here they become eight pipeline stages with review and kill thresholds.",
     hook: {
       prompt: "Your system is 11R below its peak. Its Monte Carlo puts the 95th-percentile drawdown at 13.5R and the 99th at 16.5R. What do you do?",
       control: {
@@ -776,6 +783,7 @@ const L_4_6_4: Lesson = {
         "Review past the 95th percentile, or a zero-including interval after 50 trades. Kill past the 99th.",
         "Write the thresholds as numbers before going live, and run a premortem on every strategy you deploy.",
       ],
+      next: "Next, 4.6.5: scaling up, the capital stages a strategy earns as it passes these gates.",
     },
   },
 };
@@ -848,6 +856,7 @@ const L_4_6_5: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.5",
+    bridge: "In 4.6.4 thresholds decided whether a strategy keeps trading; now they decide its size. Kelly from 3.12.3 sets a ceiling, drawdown tiers from 2.11.5 cut risk, and impact from 4.2.2 and capacity from 4.3.6 limit how far size can grow.",
     hook: {
       prompt: "After a 10% drawdown, the Turtles traded as if their account were 20% smaller. Your 10,000.00 account is now at 9,000.00. Under that rule, what is a 1% risk, in vUSD?",
       control: {
@@ -988,6 +997,7 @@ const L_4_6_5: Lesson = {
         "Cut size in drawdowns from a smaller notional account; step up about 25% only after new highs.",
         "Full Kelly is a ceiling: 1% is about a sixteenth of it. Big size also meets market impact.",
       ],
+      next: "Next, 4.6.6: keep improving, by telling decay from variance and ending each year with one decision.",
     },
   },
 };
@@ -1060,6 +1070,7 @@ const L_4_6_6: Lesson = {
   script: {
     unit: "4.6",
     courseId: "4.6.6",
+    bridge: "In 4.6.5 size grew in stages; the last question is whether to keep going. In 3.13.7 edges decayed, and 2.13.6 set daily and weekly reviews. Here you tell decay from variance with 4.6.4's bands, change rules only through 3.11.10's logged process, and decide each year.",
     hook: {
       prompt: "Your system's expectancy fell from 0.30R to 0.12R over the last 80 trades. Is the edge decaying?",
       control: {
@@ -1177,6 +1188,7 @@ const L_4_6_6: Lesson = {
         "Change a rule only by hypothesis, evidence threshold, simulator test and a logged new version.",
         "Each year: net, risk-adjusted results against the benchmark, then continue, reduce, retire or invest passively.",
       ],
+      next: "Next: the 4.6 checkpoint, the end of the course. Then practice: the Arena, your daily review, and your approach, revisited each year.",
     },
   },
 };
@@ -1786,8 +1798,21 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/** How the unit introduces itself on the course map. */
+const INTRO: UnitIntro = {
+  summary: "The whole course gathered into one working document: your trading approach. You map your constraints, choose a market and a style, specialise, write kill criteria, plan how size grows, and set a review rhythm that ends each year in a decision. It comes last because it pulls every thread together: risk, statistics, psychology, process, evidence and costs.",
+  outcomes: [
+    "Map your constraints and measured temperament to the styles they allow, and rule out the rest.",
+    "Choose one or two markets by tradability ratio and by the busy windows in your hours.",
+    "Specialise until your sample can show an edge, and keep a written no-trade list.",
+    "Write review and kill thresholds from Monte Carlo, and raise size only in earned stages.",
+    "Tell decay from variance, change rules through a logged process, and decide each year whether to continue.",
+  ],
+  buildsOn: "Plan, journal and KPIs from 1.6; psychology from 1.7 and 2.12; styles and sessions from 2.9; playbook and reviews from 2.13; risk from 2.11 and 3.12; testing from 3.11 and 4.3; the go-live decision from 4.5.6.",
+};
 /** Unit 4.6 · Your trading approach (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_4_6: UnitContent = {
+  intro: INTRO,
   lessons: [L_4_6_1, L_4_6_2, L_4_6_3, L_4_6_4, L_4_6_5, L_4_6_6],
   questions: QUESTIONS,
   terms: TERMS,

@@ -51,8 +51,9 @@ describe("course content written in code", async () => {
 describe("unit introductions", async () => {
   const { COURSE_UNITS_CONTENT } = await import("../src/content/course");
   const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
-  it("are short and give three to five outcomes", () => {
+  it("exist for every unit, are short and give three to five outcomes", () => {
     for (const [unit, c] of Object.entries(COURSE_UNITS_CONTENT)) {
+      expect(c.intro, `${unit}: intro`).toBeTruthy();
       if (!c.intro) continue;
       expect(words(c.intro.summary), `${unit}: summary ≤ 60 words`).toBeLessThanOrEqual(60);
       expect(c.intro.outcomes.length, `${unit}: 3–5 outcomes`).toBeGreaterThanOrEqual(3);
