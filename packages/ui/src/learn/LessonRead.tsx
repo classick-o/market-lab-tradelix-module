@@ -15,7 +15,9 @@ import { AnswerControlView, hasAnswer, type AnswerValue } from "./AnswerControl"
 import { BeatView } from "./beats";
 import { CheckPhase } from "./CheckPhase";
 import { ScreenContext, hashSeed, type ScreenApi } from "./context";
+import { CurrentLessonContext } from "./currentLesson";
 import { FigureView } from "./FigureView";
+import { LessonContextCard } from "./LessonContext";
 import { lessonTerms, nextLesson, type ScriptedLesson } from "./LessonPlayer";
 import { TaskRunner } from "./TaskRunner";
 import { Link, useRouter } from "../router";
@@ -64,6 +66,7 @@ export function LessonRead({ lesson }: { lesson: ScriptedLesson }) {
   });
 
   return (
+    <CurrentLessonContext.Provider value={lesson.id}>
     <div className="ml-page lr">
       <PageHead
         back={{ to: "/learn/lessons", label: "Lessons" }}
@@ -90,6 +93,8 @@ export function LessonRead({ lesson }: { lesson: ScriptedLesson }) {
               ))}
             </ul>
           </section>
+
+          <LessonContextCard lessonId={lesson.id} script={script} />
 
           <Section kicker="Before we start" title="Make a prediction">
             <p className="lp-prompt">
@@ -191,5 +196,6 @@ export function LessonRead({ lesson }: { lesson: ScriptedLesson }) {
         </aside>
       </div>
     </div>
+    </CurrentLessonContext.Provider>
   );
 }

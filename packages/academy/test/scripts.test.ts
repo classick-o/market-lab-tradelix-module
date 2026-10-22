@@ -91,8 +91,10 @@ function scriptOk(id: string, s: LessonScript) {
   expect(s.learn.length, `${id}: 4–7 Learn beats`).toBeGreaterThanOrEqual(4);
   expect(s.learn.length, `${id}: 4–7 Learn beats`).toBeLessThanOrEqual(8);
   for (const t of s.recap.takeaways) expect(words(t), `${id}: takeaway ≤ 20 words`).toBeLessThanOrEqual(20);
+  if (s.bridge) expect(words(s.bridge), `${id}: bridge ≤ 45 words`).toBeLessThanOrEqual(45);
+  if (s.recap.next) expect(words(s.recap.next), `${id}: recap.next ≤ 25 words`).toBeLessThanOrEqual(25);
   if (s.task) taskOk(s.task, `${id} Try`);
-  const texts: string[] = [s.hook.prompt, ...s.recap.takeaways];
+  const texts: string[] = [s.hook.prompt, ...s.recap.takeaways, ...(s.bridge ? [s.bridge] : []), ...(s.recap.next ? [s.recap.next] : [])];
   s.learn.forEach((b, i) => {
     const where = `${id} B${i + 1}`;
     for (const t of beatTexts(b)) {

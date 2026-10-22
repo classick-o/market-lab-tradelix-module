@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   CONCEPTS,
   COURSE_LEVELS,
@@ -446,13 +446,24 @@ export function LessonsPage() {
         </Empty>
       ) : (
         <ul className="ml-lesson-deck">
-          {shown.map(({ l, cl }) => {
+          {shown.map(({ l, cl }, i) => {
+            const prevUnit = i > 0 ? shown[i - 1].cl?.unit : undefined;
+            const header = cl && cl.unit !== prevUnit ? getCourseUnit(cl.unit) : undefined;
             const st = statusOf(l.id);
             const unit = cl ? getCourseUnit(cl.unit) : undefined;
             const quality = lab.lessons[l.id]?.quality;
             const ti = TOPICS.findIndex((t) => t.id === l.topic);
             return (
-              <li key={l.id}>
+              <Fragment key={l.id}>
+              {header && (
+                <li className="ml-lesson-unit-head">
+                  <Link to={`/learn/units/${header.id}`}>
+                    <span className="num">{header.id}</span> {header.title}
+                  </Link>
+                  <span className="ml-muted ml-small">{header.lessons.length} lessons</span>
+                </li>
+              )}
+              <li>
                 <Link to={`/learn/lessons/${l.id}`} className={cx("ml-lesson-tile", st === "done" && "is-done")}>
                   <span className={cx("ml-lesson-visual", `ml-tone-${ti % 3}`)}>
                     <LearningIllustration variant={ti % 4} />
@@ -487,6 +498,7 @@ export function LessonsPage() {
                   </span>
                 </Link>
               </li>
+              </Fragment>
             );
           })}
         </ul>

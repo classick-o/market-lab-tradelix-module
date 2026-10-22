@@ -8,7 +8,7 @@ import { SCRIPTS, SCRIPT_CONCEPTS, SCRIPT_TERMS } from "./content/scripts";
 import COURSE_META from "./generated/course-meta";
 import { assessmentId, checkId } from "./paths";
 import { TOPICS } from "./topics";
-import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId } from "./types";
+import type { Concept, GlossaryTerm, KnowledgeCheck, Lesson, Question, TopicId, UnitIntro } from "./types";
 
 /** Lessons, each with its interactive script when one exists. */
 export const LESSONS: Lesson[] = [
@@ -20,6 +20,8 @@ export const LESSONS: Lesson[] = [
 export const QUESTIONS: Question[] = [...QUESTIONS_A, ...QUESTIONS_B, ...COURSE_META.questions];
 export const CONCEPTS: Concept[] = [...BASE_CONCEPTS, ...SCRIPT_CONCEPTS, ...COURSE_META.concepts];
 export const GLOSSARY: GlossaryTerm[] = [...BASE_GLOSSARY, ...SCRIPT_TERMS, ...COURSE_META.terms];
+/** Unit introductions, by unit id. */
+export const UNIT_INTROS: Record<string, UnitIntro> = COURSE_META.units ?? {};
 
 const byId = <T extends { id: string }>(xs: T[]) => new Map(xs.map((x) => [x.id, x]));
 const lessonMap = byId(LESSONS);

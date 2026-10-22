@@ -5,18 +5,19 @@
  * the generated files match this function's output.
  */
 import { COURSE_UNITS_CONTENT } from "./course";
-import type { Concept, GlossaryTerm, Lesson, LessonScript, Question } from "../types";
+import type { Concept, GlossaryTerm, Lesson, LessonScript, Question, UnitIntro } from "../types";
 
 export interface CompiledContent {
-  meta: { lessons: Lesson[]; questions: Question[]; terms: GlossaryTerm[]; concepts: Concept[] };
+  meta: { lessons: Lesson[]; questions: Question[]; terms: GlossaryTerm[]; concepts: Concept[]; units: Record<string, UnitIntro> };
   /** Scripts by unit id, then lesson id. */
   scripts: Record<string, Record<string, LessonScript>>;
 }
 
 export function compileCourseContent(): CompiledContent {
-  const meta: CompiledContent["meta"] = { lessons: [], questions: [], terms: [], concepts: [] };
+  const meta: CompiledContent["meta"] = { lessons: [], questions: [], terms: [], concepts: [], units: {} };
   const scripts: CompiledContent["scripts"] = {};
   for (const [unit, content] of Object.entries(COURSE_UNITS_CONTENT)) {
+    if (content.intro) meta.units[unit] = content.intro;
     for (const lesson of content.lessons) {
       const { script, ...rest } = lesson;
       if (script) {

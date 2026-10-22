@@ -47,3 +47,18 @@ describe("course content written in code", async () => {
     }
   });
 });
+
+describe("unit introductions", async () => {
+  const { COURSE_UNITS_CONTENT } = await import("../src/content/course");
+  const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
+  it("are short and give three to five outcomes", () => {
+    for (const [unit, c] of Object.entries(COURSE_UNITS_CONTENT)) {
+      if (!c.intro) continue;
+      expect(words(c.intro.summary), `${unit}: summary ≤ 60 words`).toBeLessThanOrEqual(60);
+      expect(c.intro.outcomes.length, `${unit}: 3–5 outcomes`).toBeGreaterThanOrEqual(3);
+      expect(c.intro.outcomes.length, `${unit}: 3–5 outcomes`).toBeLessThanOrEqual(5);
+      for (const o of c.intro.outcomes) expect(words(o), `${unit}: outcome ≤ 20 words`).toBeLessThanOrEqual(20);
+      if (c.intro.buildsOn) expect(words(c.intro.buildsOn), `${unit}: buildsOn ≤ 40 words`).toBeLessThanOrEqual(40);
+    }
+  });
+});

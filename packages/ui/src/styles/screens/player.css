@@ -1938,3 +1938,106 @@
   outline: none;
   border-color: var(--ml-accent);
 }
+
+/* Where a lesson sits: unit, bridge to earlier lessons, prerequisites */
+.lp-context {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+}
+.lp-context .lp-kicker {
+  color: var(--ml-text-3);
+}
+.lp-context.is-unit-start {
+  border-color: var(--ml-accent-line);
+  background: linear-gradient(120deg, var(--ml-accent-soft), transparent 70%), var(--ml-surface);
+}
+.lp-context.is-unit-start .lp-kicker {
+  color: var(--ml-accent-fg);
+}
+.lp-context-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lp-context-unit .lp-text {
+  font-size: 14px;
+}
+.lp-context-builds,
+.lp-context-bridge {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ml-text-2);
+}
+.lp-context-bridge {
+  color: var(--ml-text);
+}
+.lp-context-prereqs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 12px;
+  color: var(--ml-text-3);
+}
+.lp-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-full);
+  color: var(--ml-text-2);
+  text-decoration: none;
+}
+a.lp-context-chip:hover {
+  border-color: var(--ml-accent-line);
+  color: var(--ml-text);
+}
+.lp-context-chip.is-done {
+  border-color: color-mix(in srgb, var(--ml-pos) 40%, transparent);
+  color: var(--ml-text);
+}
+.lp-context-chip.is-done svg {
+  color: var(--ml-pos);
+}
+.lp-recap-teaser {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ml-text-2);
+}
+.lp-unit-done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--ml-pos) 40%, transparent);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-pos-soft);
+}
+.lp-unit-done > svg {
+  color: var(--ml-pos);
+}
+.lp-unit-done > div {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--ml-text-2);
+}
+.lp-unit-done b {
+  color: var(--ml-text);
+}
+.ml-term-card-later {
+  font-size: 12px;
+  color: var(--ml-accent-fg);
+}

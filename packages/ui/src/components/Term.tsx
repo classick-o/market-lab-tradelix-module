@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { getTerm } from "@market-lab/academy";
+import { courseLessonFor, getTerm } from "@market-lab/academy";
+import { coursePosition, useCurrentLesson } from "../learn/currentLesson";
 import { Link } from "../router";
 import { cx } from "./ui";
 
@@ -9,6 +10,8 @@ import { cx } from "./ui";
  */
 export function Term({ id, children }: { id: string; children: string }) {
   const term = getTerm(id);
+  const current = useCurrentLesson();
+  const taughtIn = term?.lesson && current && (coursePosition(term.lesson) ?? -1) > (coursePosition(current) ?? Infinity) ? courseLessonFor(term.lesson) : undefined;
   const [open, setOpen] = useState(false);
   const [above, setAbove] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -58,6 +61,11 @@ export function Term({ id, children }: { id: string; children: string }) {
           </b>
           <span className="ml-term-card-plain">{term.plain}</span>
           <span className="ml-term-card-def">{term.definition}</span>
+          {taughtIn && (
+            <span className="ml-term-card-later">
+              You'll learn this properly in {taughtIn.id} · {taughtIn.title}.
+            </span>
+          )}
           <Link to={`/learn/library/terms/${term.id}`} className="ml-term-card-link">
             Open in Library
           </Link>

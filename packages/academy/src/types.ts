@@ -305,13 +305,19 @@ export interface LessonScript {
   unit: string;
   /** Position in the course, e.g. "1.4.4". */
   courseId: string;
+  /**
+   * One or two sentences tying this lesson to what came before ("In 1.2.1 you read one candle; now…").
+   * Shown at the start of the lesson, above the hook.
+   */
+  bridge?: string;
   /** The prediction before any explanation. `compare` is shown in the recap; `{yours}` is the learner's answer. */
   hook: { prompt: string; control: AnswerControl; figure?: FigureSpec; compare: string; concept?: string };
   learn: Beat[];
   task?: TaskSpec;
   /** Three question ids from the bank. */
   check: string[];
-  recap: { takeaways: [string, string, string] };
+  /** `next`: one line that points to the next lesson and why it follows. */
+  recap: { takeaways: [string, string, string]; next?: string };
 }
 
 export interface Concept {
@@ -400,8 +406,18 @@ export interface Question {
   vary?: VarySpec;
 }
 
+/** How a unit introduces itself: what it is for, what the learner can do after it, and what it builds on. */
+export interface UnitIntro {
+  summary: string;
+  /** Three to five "you can…" outcomes. */
+  outcomes: string[];
+  /** How this unit follows from earlier ones. */
+  buildsOn?: string;
+}
+
 /** A unit of the course written in code: its lessons (with scripts), check questions, and new terms and concepts. */
 export interface UnitContent {
+  intro?: UnitIntro;
   lessons: Lesson[];
   questions: Question[];
   terms: GlossaryTerm[];

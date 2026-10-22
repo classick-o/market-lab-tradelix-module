@@ -579,3 +579,19 @@ a.ml-mastery-cell:focus-visible {
 .ml-unit-checkpoint.is-done > svg:first-child {
   color: var(--ml-pos);
 }
+
+.ml-unit-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--ml-accent-line);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-accent-soft);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.ml-unit-intro p {
+  margin: 0;
+}

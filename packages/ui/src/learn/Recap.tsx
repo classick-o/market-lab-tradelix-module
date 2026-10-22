@@ -3,7 +3,7 @@
  * rule, three things to remember, the terms met, one next step, and an optional rating.
  */
 import { useEffect, useState } from "react";
-import { checkId, dayKey, dueReviews, getLesson, getTerm, nextLearnStep, type Lesson, type LessonScript, type PracticeLink } from "@market-lab/academy";
+import { COURSE_UNITS, checkId, courseLessonFor, dayKey, dueReviews, getCourseUnit, getLesson, getTerm, nextLearnStep, unitCheckpoint, unitProgress, type Lesson, type LessonScript, type PracticeLink } from "@market-lab/academy";
 import { Rich } from "../components/Page";
 import { Term } from "../components/Term";
 import { Icon, cx } from "../components/ui";
@@ -60,6 +60,15 @@ export function Recap({ lesson, script, terms, xp, next, onReplay, onJump }: { l
     return true;
   };
   useKeys({ Enter: goNext });
+  // The end of a unit: every written lesson of the unit done.
+  const cl = courseLessonFor(lesson.id);
+  const unit = cl ? getCourseUnit(cl.unit) : undefined;
+  const unitDone = !!unit && (() => {
+    const pr = unitProgress(unit, lab.lessons);
+    return pr.playable > 0 && pr.done === pr.playable;
+  })();
+  const checkpoint = unit ? unitCheckpoint(unit.id) : undefined;
+  const nextUnit = unit ? COURSE_UNITS[COURSE_UNITS.findIndex((u) => u.id === unit.id) + 1] : undefined;
 
   return (
     <div className="lp-recap">
@@ -137,6 +146,30 @@ export function Recap({ lesson, script, terms, xp, next, onReplay, onJump }: { l
       )}
 
       <section className="lp-recap-next" aria-label="Your next step">
+        {unitDone && unit && (
+          <div className="lp-unit-done">
+            <Icon name="flag" size={18} />
+            <div>
+              <b>
+                Unit {unit.id} complete · {unit.title}
+              </b>
+              <span>
+                {checkpoint ? "Take the checkpoint to lock it in, or move on." : "Every lesson of this unit is done."}
+                {nextUnit ? ` Next: ${nextUnit.id} ${nextUnit.title}.` : ""}
+              </span>
+            </div>
+            {checkpoint && (
+              <Link to={`/learn/checks/${checkpoint.id}`} className="ml-btn ml-btn--secondary ml-btn--sm">
+                Unit checkpoint
+              </Link>
+            )}
+          </div>
+        )}
+        {script.recap.next && (
+          <p className="lp-recap-teaser">
+            <Rich text={script.recap.next} />
+          </p>
+        )}
         <button type="button" className="ml-btn ml-btn--primary ml-btn--lg" onClick={goNext}>
           {nextLabel} <Icon name="arrow-right" size={18} />
         </button>

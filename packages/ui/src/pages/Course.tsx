@@ -9,6 +9,7 @@ import {
   MASTERY_LABEL,
   QUESTIONS,
   TOPICS,
+  UNIT_INTROS,
   appLessonFor,
   courseLessonFor,
   dueReviews,
@@ -71,6 +72,17 @@ function UnitPanel({ unit, lab, onClose }: { unit: CourseUnit; lab: LabData; onC
   const [open, setOpen] = useState<string | null>(null);
   return (
     <Dialog open onClose={onClose} title={`${unit.id} · ${unit.title}`} variant="sheet" description={`${unit.lessons.length} lessons · ${pr.playable} ready · ${pr.done} done`}>
+      {UNIT_INTROS[unit.id] && (
+        <div className="ml-unit-intro">
+          <p>{UNIT_INTROS[unit.id].summary}</p>
+          <ul className="ml-list ml-list--check">
+            {UNIT_INTROS[unit.id].outcomes.map((o) => (
+              <li key={o}>{o}</li>
+            ))}
+          </ul>
+          {UNIT_INTROS[unit.id].buildsOn && <p className="ml-small ml-muted">{UNIT_INTROS[unit.id].buildsOn}</p>}
+        </div>
+      )}
       <ol className="ml-unit-lessons">
         {unit.lessons.map((cl) => {
           const app = appLessonFor(cl);

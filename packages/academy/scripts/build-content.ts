@@ -18,7 +18,7 @@ const asModule = (value: unknown) => `${header}export default JSON.parse(${JSON.
 writeFileSync(join(out, "course-meta.js"), asModule(meta));
 writeFileSync(
   join(out, "course-meta.d.ts"),
-  `${header}import type { Concept, GlossaryTerm, Lesson, Question } from "../types";\ndeclare const meta: { lessons: Lesson[]; questions: Question[]; terms: GlossaryTerm[]; concepts: Concept[] };\nexport default meta;\n`,
+  `${header}import type { Concept, GlossaryTerm, Lesson, Question, UnitIntro } from "../types";\ndeclare const meta: { lessons: Lesson[]; questions: Question[]; terms: GlossaryTerm[]; concepts: Concept[]; units: Record<string, UnitIntro> };\nexport default meta;\n`,
 );
 
 const units = Object.keys(scripts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));

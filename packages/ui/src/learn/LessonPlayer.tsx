@@ -16,7 +16,9 @@ import { AnswerControlView, hasAnswer, type AnswerValue } from "./AnswerControl"
 import { BeatView, needText } from "./beats";
 import { CheckPhase } from "./CheckPhase";
 import { KeyRegistry, KeysContext, ScreenContext, hashSeed, useKeys, useScreen, type ScreenApi } from "./context";
+import { CurrentLessonContext } from "./currentLesson";
 import { FigureView } from "./FigureView";
+import { LessonContextCard } from "./LessonContext";
 import { BeatTitle, Feedback } from "./parts";
 import { Recap } from "./Recap";
 import { TaskRunner } from "./TaskRunner";
@@ -96,6 +98,7 @@ function HookScreen({ lesson }: { lesson: ScriptedLesson }) {
   useKeys({ Enter: lock });
   return (
     <>
+      <LessonContextCard lessonId={lesson.id} script={lesson.script} />
       <BeatTitle kicker="Before we start">Make a prediction</BeatTitle>
       <p className="lp-prompt lp-prompt--hook">
         <Rich text={hook.prompt} />
@@ -449,6 +452,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
   const nextLabel = idx + 1 < screens.length ? (screens[idx + 1].phase !== screen.phase ? `Continue to ${PHASES[screens[idx + 1].phase]}` : "Continue") : "Continue";
 
   return (
+    <CurrentLessonContext.Provider value={lesson.id}>
     <KeysContext.Provider value={registry}>
       <div className={cx("lp", showRail && "has-rail")}>
         <header className="lp-bar">
@@ -641,5 +645,6 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
         />
       </div>
     </KeysContext.Provider>
+    </CurrentLessonContext.Provider>
   );
 }

@@ -770,3 +770,25 @@
 .ml-library-list .ml-findbar-select select {
   width: 100%;
 }
+
+/* Lessons page: one header row per unit */
+.ml-lesson-unit-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ml-border);
+}
+.ml-lesson-unit-head a {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ml-text);
+  text-decoration: none;
+}
+.ml-lesson-unit-head a .num {
+  margin-right: 6px;
+  color: var(--ml-accent-fg);
+}
