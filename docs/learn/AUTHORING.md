@@ -145,3 +145,16 @@ Testele verifică pentru fiecare lecție: id-ul și unitatea, întrebările din 
 - **Cifrele** se verifică cu un script node; ce spune textul trebuie să fie exact ce arată datele.
 - **Validare:** `npm run typecheck` și `npx vitest run packages/academy`, până trec. Fără comenzi git.
 - **Raportul final**, maximum 120 de cuvinte: id-urile lecțiilor, numărul de întrebări, termeni și concepte, widget-urile lipsă, ce ai simplificat și ce trebuie schimbat în fișierele comune.
+
+## 11. Trecerea de continuitate
+
+Cursul trebuie să se citească drept un drum, nu ca 340 de lecții separate. Pentru fiecare unitate primită:
+
+1. **`intro` în `UnitContent`** (fișierul unității): `summary` (≤ 60 de cuvinte: ce face unitatea și de ce vine acum), `outcomes` (3–5, fiecare ≤ 20 de cuvinte, la persoana a doua: „Read…”, „Size…”), `buildsOn` (≤ 40 de cuvinte: pe ce unități și lecții anterioare se sprijină, cu id-urile lor).
+2. **Fiecare lecție** primește:
+   - `script.bridge` (≤ 45 de cuvinte), arătat la începutul lecției: leagă concret lecția de cea dinainte și de precondiții, adică ce a făcut cursantul acolo și ce adaugă lecția aceasta. Citează id-ul lecției („In 1.2.1 you read one candle's four prices. Here you combine four of them into one 4-hour candle.”). Prima lecție a unei unități leagă de unitatea anterioară.
+   - `script.recap.next` (≤ 25 de cuvinte): anunță lecția următoare din ordinea cursului și de ce urmează („Next, 1.2.3: the same hours on a bigger timeframe.”). La ultima lecție a unității spune că urmează checkpoint-ul și numește unitatea următoare.
+3. **Termenii folosiți înaintea lecției care îi predă** (`forwardTerms` în worklist): adaugă în aceeași propoziție o explicație scurtă, pe înțelesul unui începător, dacă textul n-o are deja. Legătura `[[term]]` rămâne; cardul ei spune unde se predă.
+4. **Nu schimba nimic altceva:** beat-urile, întrebările, datele și id-urile rămân cum sunt.
+5. **Datele de lucru:** `worklist.json` (calea e în prompt): pentru fiecare lecție, lecția anterioară și cea următoare, precondițiile și termenii folosiți prea devreme. Citește lecțiile vecine din alte unități doar cât îți trebuie (titlu, ideile din recap).
+6. **Verificare:** `npm run content:build`, apoi `npm run typecheck` și `npx vitest run packages/academy`. Lucrezi direct în fișierele unităților tale (modificările sunt mici), fără să lași un fișier pe jumătate. Fără comenzi git.
