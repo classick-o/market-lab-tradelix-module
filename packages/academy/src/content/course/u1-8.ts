@@ -98,6 +98,7 @@ const L_1_8_1: Lesson = {
   script: {
     unit: "1.8",
     courseId: "1.8.1",
+    bridge: "Unit 1.7 ended with rules that hold under pressure. In 1.7.3, six doubled bets cost 6,300.00 against 600.00 at a fixed size; in 0.2.2, a game that won nine times in ten still lost. Here doubling gets its name: martingale.",
     hook: {
       prompt: "Start with a bet of 1 unit and double it after each loss. After 7 losses in a row, how big is the next bet?",
       control: {
@@ -235,6 +236,7 @@ const L_1_8_1: Lesson = {
         "A high win rate can hide one ruinous loss: a run of 9 losses in 1,000 flips is likely.",
         "A split entry fixes total risk before the first order. Averaging down adds risk after.",
       ],
+      next: "Next, 1.8.2: grid trading, averaging down on a schedule, and what one trend does to it.",
     },
   },
 };
@@ -262,6 +264,7 @@ const L_1_8_2: Lesson = {
   script: {
     unit: "1.8",
     courseId: "1.8.2",
+    bridge: "1.8.1 showed averaging down: adding to a loser after the idea starts failing. A grid does the same on a schedule. In 1.4.7 you measured exposure as a share of the account; here you watch it grow, unit by unit, as price trends away.",
     hook: {
       prompt: "A grid bot buys 10 units at every 1.00 step below 100.00 and sells each at +1.00. It has won 40 trades in a row. Now price falls to 90.00 without a bounce. How many units does it hold?",
       control: {
@@ -394,6 +397,7 @@ const L_1_8_2: Lesson = {
         "Open loss = units × (average price − current price): 100 × 4.50 = 450.00.",
         "A smooth equity curve hides open losses; one trend can erase many small wins.",
       ],
+      next: "Next, 1.8.3: holy grails and survivorship bias, and how to read a performance claim before you believe it.",
     },
   },
 };
@@ -418,6 +422,7 @@ const L_1_8_3: Lesson = {
   script: {
     unit: "1.8",
     courseId: "1.8.3",
+    bridge: "In 1.8.2 a smooth equity curve hid a large open loss. Ads hide things too. In 0.2.6 luck alone made stars among coin-flippers, and 1.2.7 showed cherry-picked charts. Here you check a performance claim before you believe it.",
     hook: {
       prompt: "An ad says: 'Our system: 92% win rate, +340% last year.' What's the first thing to ask?",
       control: {
@@ -436,7 +441,7 @@ const L_1_8_3: Lesson = {
       {
         kind: "explain",
         title: "Questions for any claim",
-        text: "Before believing a [[backtest]] or a track record, ask: how many trades, over what period? After which costs? What were the largest loss and the [[max-drawdown|maximum drawdown]]? Simulated or real money? How many systems were tried before this one? And how did it compare with simply holding the market?",
+        text: "Before believing a [[backtest]] or a track record, ask: how many trades, over what period? After which costs? What were the largest loss and the [[max-drawdown|maximum drawdown]], the deepest fall from a peak? Simulated or real money? How many systems were tried before this one? And how did it compare with simply holding the market?",
       },
       {
         kind: "figure",
@@ -576,6 +581,7 @@ const L_1_8_3: Lesson = {
         "Of 1,000 systems with no edge, about 28 make +20R by luck. Ads show only those.",
         "Published edges fell about 58% after publication. Halve them, then subtract your costs.",
       ],
+      next: "Next, 1.8.4: the people who sell those claims, signal sellers, scams and unregulated brokers, and how to check a licence.",
     },
   },
 };
@@ -603,6 +609,7 @@ const L_1_8_4: Lesson = {
   script: {
     unit: "1.8",
     courseId: "1.8.4",
+    bridge: "1.8.3 gave you questions for any performance claim. Now the people selling them: signal services, scams and unregulated brokers. In 0.1.5, 74% to 89% of EU retail CFD accounts lost money; here you check who holds your money and who gains when you lose.",
     hook: {
       prompt: "A broker offers 500:1 leverage, a 100% deposit bonus and a personal account manager. It is registered offshore. How many red flags?",
       control: {
@@ -765,6 +772,7 @@ const L_1_8_4: Lesson = {
         "Red flags: guaranteed returns, bonuses, pressure, offshore-only licences, blocked withdrawals, unsolicited offers.",
         "A B-book broker gains when you lose: a legal conflict to know before you trade.",
       ],
+      next: "Next, 1.8.5: the leverage illusion, why the leverage a broker allows isn't the leverage that hits your account.",
     },
   },
 };
@@ -793,6 +801,7 @@ const L_1_8_5: Lesson = {
   script: {
     unit: "1.8",
     courseId: "1.8.5",
+    bridge: "In 1.8.4, 500:1 leverage was a red flag. In 1.4.7 you saw leverage scale every move: at 5×, a 5% fall costs 25%. Here you separate the leverage a broker allows from the leverage you use, and see why a close-out isn't a stop.",
     hook: {
       prompt: "Your broker offers 1:500. Trader A holds positions worth 2 times her equity; Trader B, 20 times his. Who carries more risk?",
       control: {
@@ -917,6 +926,7 @@ const L_1_8_5: Lesson = {
         "The move that wipes out the account is 100% ÷ effective leverage: 5% at 20×.",
         "A close-out comes after most of the account is gone. Size from the stop instead.",
       ],
+      next: "Next: the 1.8 checkpoint closes Level 1. Level 2 opens with unit 2.1, Candlesticks in context: the candle from 1.2, judged against its neighbours.",
     },
   },
 };
@@ -1435,4 +1445,20 @@ const CONCEPTS: Concept[] = [
 ];
 
 /** Unit 1.8 · Danger zone (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_8: UnitContent = { lessons: [L_1_8_1, L_1_8_2, L_1_8_3, L_1_8_4, L_1_8_5], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_1_8: UnitContent = {
+  intro: {
+    summary: "This unit shows what destroys accounts and how it looks from outside: martingale and averaging down, grids, holy-grail claims, signal sellers and unregulated brokers, and maximum leverage. It closes Level 1 because you now have the tools to see why: expected value, streaks, survivorship, risk per trade and exposure.",
+    outcomes: [
+      "Calculate the next bet and the total loss of a doubling sequence after a losing run.",
+      "Work out the open loss of a grid without stops when price trends away.",
+      "Check a performance claim for sample, costs, period, worst loss and what was left out.",
+      "Verify a broker's licence on the regulator's own register and spot the red flags of scams.",
+      "Calculate effective leverage and the price move that would wipe out an account.",
+    ],
+    buildsOn: "Builds on expected value (0.2.2), streaks (0.2.3) and survivorship bias (0.2.6); risk per trade (1.4.1), exposure and leverage (1.4.7) and drawdowns (1.4.8); and the gambler's fallacy (1.7.3).",
+  },
+  lessons: [L_1_8_1, L_1_8_2, L_1_8_3, L_1_8_4, L_1_8_5],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};

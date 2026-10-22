@@ -220,6 +220,7 @@ const L151: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.1",
+    bridge: "In 1.4.9 you finished your risk rules with a daily limit. Every stop and size from 1.4 needs a place on the chart. Here you start reading structure: the swing highs and lows that the candles from 1.2.1 draw.",
     hook: {
       prompt: "Twenty hours of LABX. Tap the candle you'd call a swing high: a peak where a rise turned down.",
       // Not graded: the recap compares the tap with the rule.
@@ -359,6 +360,7 @@ const L151: Lesson = {
         "A swing is confirmed only after two more candles close, so structure always lags price.",
         "A different rule gives a different structure. Fix one rule and apply it every time.",
       ],
+      next: "Next, 1.5.2: swings in sequence tell a trend from a range, or from noise with no clear structure.",
     },
   },
 };
@@ -383,6 +385,7 @@ const L153: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.3",
+    bridge: "In 1.5.2 you named the market from its swings: an uptrend makes higher highs and higher lows. Here you measure the moves against that trend, the pullbacks, and see why the last higher low decides whether the trend still stands.",
     hook: {
       prompt: "An uptrend leg ran from 100.00 to 104.00. Price is now 102.80. How deep is this pullback?",
       figure: {
@@ -534,6 +537,7 @@ const L153: Lesson = {
         "A pullback keeps the uptrend while it holds above the last higher low.",
         "At a pullback the stop sits closer, so the same risk buys more units.",
       ],
+      next: "Next, 1.5.4: the zones where pullbacks and rallies keep turning, support and resistance, and what happens when price breaks through.",
     },
   },
 };
@@ -561,6 +565,7 @@ const L155: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.5",
+    bridge: "In 1.5.4 you drew support and resistance as zones, and in 1.4.3 you put the stop where the idea fails. Here you meet a special kind of level, the round number, where orders pile up and stops cluster just beyond.",
     hook: {
       prompt: "You're long LABX near 99.40. Where would most traders put a take-profit?",
       control: {
@@ -680,6 +685,7 @@ const L155: Lesson = {
         "Put the stop beyond the level and the stop cluster, about one normal candle away.",
         "The effect is real but small: 60.8% against 56.2%. Not a reason to trade on its own.",
       ],
+      next: "Next, 1.5.6: what happens after price breaks a level, a retest that holds or a close back inside.",
     },
   },
 };
@@ -707,6 +713,7 @@ const L156: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.6",
+    bridge: "In 1.5.4 a breakout and a false breakout looked the same at the break, and in 1.5.5 stops clustered just beyond round numbers. Here price comes back to the broken level, and you plan both endings before the break.",
     hook: {
       prompt: "LABX broke above 102.00, rose to 103.20 and is back at 102.05. Will old resistance hold as support?",
       figure: {
@@ -855,6 +862,7 @@ const L156: Lesson = {
         "Broken resistance may act as support, perhaps through orders left near the old level. A pattern, not a law.",
         "Plan both endings before the break: entry, stop back inside the range, and each next step.",
       ],
+      next: "Next, 1.5.7: when the level that breaks is the trend's own last higher low, and the trend itself ends.",
     },
   },
 };
@@ -879,6 +887,7 @@ const L157: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.7",
+    bridge: "In 1.5.3 a pullback kept the trend while it held the last higher low, and in 1.5.6 a close back inside ended a breakout. Here the last higher low itself breaks, and you learn when a trend has ended.",
     hook: {
       prompt: "An uptrend turns over. Tap the candle where you think the downtrend became clear.",
       // Not graded: the recap compares the tap with candle 31.
@@ -1021,6 +1030,7 @@ const L157: Lesson = {
         "A deep pullback holds the last higher low. A structure break closes below it.",
         "Once the structure breaks, stop buying pullbacks. Being a little late beats guessing the top.",
       ],
+      next: "Next, 1.5.8: structure on two timeframes at once, where a 1-hour fall can be a pullback in a 4-hour uptrend.",
     },
   },
 };
@@ -1045,6 +1055,7 @@ const L158: Lesson = {
   script: {
     unit: "1.5",
     courseId: "1.5.8",
+    bridge: "In 1.2.3 four 1-hour candles made one 4-hour candle, and in 1.5.3 a pullback was a fall inside an uptrend. Here you read both timeframes together: one for the context, one for timing the entry and the stop.",
     hook: {
       prompt: "On the 4-hour chart LABX is in an uptrend. On the 1-hour chart, the last twelve candles fall. Which chart is right?",
       control: {
@@ -1145,7 +1156,7 @@ const L158: Lesson = {
       {
         kind: "explain",
         title: "Every extra chart is another chance",
-        text: "Each extra timeframe is one more place to find, after the fact, a chart that agrees with you. That's [[confirmation-bias]] with more room to work. So the plan fixes two timeframes in advance: one for context, one for trading. Then a disagreement is information, not a reason to keep looking.",
+        text: "Each extra timeframe is one more place to find, after the fact, a chart that agrees with you. That's [[confirmation-bias]], favouring what fits your idea, with more room to work. So the plan fixes two timeframes in advance: one for context, one for trading. Then a disagreement is information, not a reason to keep looking.",
       },
       {
         kind: "callout",
@@ -1196,6 +1207,7 @@ const L158: Lesson = {
         "4-hour up and 1-hour down is usually a pullback inside the bigger uptrend, while it holds.",
         "Fix two timeframes in your plan. Hopping until one agrees with you is confirmation bias.",
       ],
+      next: "Next: the 1.5 checkpoint, then unit 1.6, Your first plan and journal, where these structure readings become rules you can check.",
     },
   },
 };
@@ -1737,4 +1749,20 @@ const CONCEPTS: Concept[] = [
 ];
 
 /** Unit 1.5 · Market structure basics (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_5: UnitContent = { lessons: [L151, L153, L155, L156, L157, L158], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_1_5: UnitContent = {
+  intro: {
+    summary: "Market structure is the vocabulary for reading a chart before you act on it: swings, trends and ranges, pullbacks, support and resistance, round numbers, retests and trend ends, on two timeframes. It comes right after risk, so every reading leads straight to a stop and a size, and it gives your plan in 1.6 conditions you can check.",
+    outcomes: [
+      "Mark swing highs and lows with one fixed rule, and name the market: trend, range or noise.",
+      "Measure a pullback against its leg, and tell it from a break in the trend's structure.",
+      "Draw support and resistance as zones, and put stops beyond levels and round numbers.",
+      "Plan both endings of a breakout before it happens: a retest that holds, or a close back inside.",
+      "Read the trend on a higher timeframe before timing an entry on the one you trade.",
+    ],
+    buildsOn: "Candles, normal candle size and timeframes from 1.2 (1.2.1, 1.2.3, 1.2.5); the stop at the invalidation from 1.3.2; and where a stop belongs and how size follows it, from 1.4.3 and 1.4.4.",
+  },
+  lessons: [L151, L153, L155, L156, L157, L158],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};

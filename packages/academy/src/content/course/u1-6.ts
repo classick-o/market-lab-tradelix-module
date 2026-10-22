@@ -68,6 +68,17 @@ function checklistFlow(wrongStop: boolean) {
 
 /** Unit 1.6 · Your first plan and journal (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_1_6: UnitContent = {
+  intro: {
+    summary: "Plans and journals come before strategies. You now have the mechanics, the risk rules and a structure vocabulary, enough to write conditions anyone can check. This unit writes your plan v1, runs it as a checklist before every order, keeps a journal, reviews decisions apart from outcomes, and measures your process over 30 trades.",
+    outcomes: [
+      "Write a short plan v1: one setup, your risk rules and your limits as numbers.",
+      "Run a yes-or-no checklist before every order, and treat any 'no' as no trade.",
+      "Journal every trade and no-trade within minutes: thesis, invalidation, plan check and emotion.",
+      "Grade each decision apart from its outcome, and sort every loss into variance or a mistake.",
+      "Track stop integrity, risk accuracy and plan adherence, and set one process goal for 30 trades.",
+    ],
+    buildsOn: "Risk, stops, sizing, reward-to-risk and daily limits from 1.4; swings and trends from 1.5.2; process versus outcome from 0.2.1; and streaks and sample size from 0.2.3 and 0.2.4.",
+  },
   lessons: [
     // ─── 1.6.2 · Your plan v1 ────────────────────────────────────────────────
     {
@@ -91,6 +102,7 @@ export const UNIT_1_6: UnitContent = {
       script: {
         unit: "1.6",
         courseId: "1.6.2",
+        bridge: "In 1.6.1 you saw what a plan names: setups, conditions, risk, exits and limits. In 1.4.9 you set a daily loss limit. Here you write your own plan v1, with each rule as a number the app can check.",
         hook: {
           prompt: "Which of these plan lines can the app check for you?",
           control: {
@@ -229,6 +241,7 @@ export const UNIT_1_6: UnitContent = {
             "Risk capital is money you can lose entirely; your limits are numbers a ticket can check.",
             "Change rules only through the plan's own rule: after 30 trades, between sessions, reason written.",
           ],
+          next: "Next, 1.6.3: a short checklist that runs your plan v1 against every order before it goes in.",
         },
       },
     },
@@ -255,6 +268,7 @@ export const UNIT_1_6: UnitContent = {
       script: {
         unit: "1.6",
         courseId: "1.6.3",
+        bridge: "In 1.6.2 you wrote your plan v1: one setup, with risk per trade and a daily limit as numbers. Here you turn the plan into a short yes-or-no checklist you run at the moment of each order.",
         hook: {
           prompt: "Pilots and surgeons run checklists for routine steps. Which trading mistake is a checklist most likely to catch?",
           control: {
@@ -366,7 +380,7 @@ export const UNIT_1_6: UnitContent = {
           {
             kind: "callout",
             tone: "key",
-            text: "The checklist ends the same way whether you trade or not: with a line in your [[journal]].",
+            text: "The checklist ends the same way whether you trade or not: with a line in your [[journal]], your written record of every trade and no-trade.",
           },
         ],
         check: ["q-1.6.3-1", "q-1.6.3-2", "q-1.6.3-3"],
@@ -376,6 +390,7 @@ export const UNIT_1_6: UnitContent = {
             "The app can verify stop, size and limits; the setup, conditions and your state are yours.",
             "Any 'no' means no trade. A 'no' on size alone: resize within the limit, or skip.",
           ],
+          next: "Next, 1.6.4: the journal line every checklist ends with, and what to write in it in 30 seconds.",
         },
       },
     },
@@ -402,6 +417,7 @@ export const UNIT_1_6: UnitContent = {
       script: {
         unit: "1.6",
         courseId: "1.6.4",
+        bridge: "In 1.6.3 every checklist ended with a line in your journal, trade or no trade. Here you write that line: the numbers the simulator fills in, plus the 30-second part only you can add.",
         hook: {
           prompt: "Which journal entry is most useful a month later?",
           control: {
@@ -424,7 +440,7 @@ export const UNIT_1_6: UnitContent = {
           {
             kind: "explain",
             title: "Two halves",
-            text: "A [[journal]] entry has two halves. The simulator fills in the numbers: time, setup, entry, stop, target, size, planned [[r|R]], result in R and costs. You add what only you know: your thesis, the [[invalidation]] price, whether you followed the plan, your emotion from 1 to 5, and one lesson. That takes about 30 seconds.",
+            text: "Your [[journal]] records each trade; each entry has two halves. The simulator fills in the numbers: time, setup, entry, stop, target, size, planned [[r|R]], result in R and costs. You add what only you know: your thesis, the [[invalidation]] price, whether you followed the plan, your emotion from 1 to 5, and one lesson. That takes about 30 seconds.",
           },
           {
             kind: "figure",
@@ -546,6 +562,7 @@ export const UNIT_1_6: UnitContent = {
             "The simulator fills in the numbers; your 30 seconds add what only you know.",
             "Journaling only losers, or days later, tilts the record and lets hindsight rewrite it.",
           ],
+          next: "Next, 1.6.5: reading those entries back to grade each decision apart from its outcome.",
         },
       },
     },
@@ -572,6 +589,7 @@ export const UNIT_1_6: UnitContent = {
       script: {
         unit: "1.6",
         courseId: "1.6.6",
+        bridge: "In 1.6.5 you graded each decision apart from its outcome, and in 0.2.3 you saw how long streaks run by chance. Here you sort each loss in your journal: variance, a valid trade that lost, or a mistake.",
         hook: {
           prompt: "Five losses in a row, each following every rule at 1% risk. What should change?",
           control: {
@@ -679,6 +697,7 @@ export const UNIT_1_6: UnitContent = {
             "Tag each mistake with its error name, and count what mistakes cost in R.",
             "A losing streak with every rule followed is variance: six in a row is common at 40%.",
           ],
+          next: "Next, 1.6.7: counting mistakes over many trades as process KPIs, which mean something long before profit does.",
         },
       },
     },
@@ -705,6 +724,7 @@ export const UNIT_1_6: UnitContent = {
       script: {
         unit: "1.6",
         courseId: "1.6.7",
+        bridge: "In 1.6.6 you tagged each mistake by name, and in 0.2.4 you saw how little 20 trades say about a win rate. Here you turn those tags into process KPIs that already mean something over 30 trades.",
         hook: {
           prompt: "After 30 trades, Trader A is up 6% with 8 trades taken without a stop. Trader B is down 2% with every trade by the plan. Who is closer to passing Level 1?",
           control: {
@@ -828,6 +848,7 @@ export const UNIT_1_6: UnitContent = {
             "Over 20 trades, profit is mostly luck; process KPIs already mean something.",
             "Set one process goal you control for your next 30 trades, not a profit target.",
           ],
+          next: "Next: the 1.6 checkpoint, then unit 1.7, The trader's mind I, starting with the emotions your journal already rates.",
         },
       },
     },

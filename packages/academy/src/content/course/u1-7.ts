@@ -282,6 +282,7 @@ const L_1_7_1: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.1",
+    bridge: "Unit 1.6 gave you a plan, a journal with an emotion field (1.6.4) and process KPIs (1.6.7). Rules only help if they hold when feelings run high. Here you learn to name and rate those feelings, so the plan still decides.",
     hook: {
       prompt: "Your open long is up 150.00 vUSD and rising fast. What do you feel most?",
       control: {
@@ -407,6 +408,7 @@ const L_1_7_1: Lesson = {
         "Check in before entry and after exit: a number from 1 to 5 and a word.",
         "Strong reactions to gains and losses go with worse results, so notice them and slow down.",
       ],
+      next: "Next, 1.7.2: the three pulls that do the most damage, FOMO, revenge and loss aversion, and a written rule for each.",
     },
   },
 };
@@ -432,6 +434,7 @@ const L_1_7_3: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.3",
+    bridge: "In 1.7.2 you met revenge sizing: trading bigger to win a loss back. In 0.2.3 you saw that long streaks are normal. Here the two meet: a streak doesn't make a win due or make you hot, so your risk per trade stays the same.",
     hook: {
       prompt: "Six losses in a row on a setup that wins 50% of the time. What's the chance the next one wins?",
       control: {
@@ -576,6 +579,7 @@ const L_1_7_3: Lesson = {
         "Sizing up after wins or after losses lets the streak decide, not the plan.",
         "Risk per trade stays the same through streaks. A plan rule decides when to review.",
       ],
+      next: "Next, 1.7.4: outcome bias in your own trades, where one lucky win can teach you a broken rule.",
     },
   },
 };
@@ -601,6 +605,7 @@ const L_1_7_4: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.4",
+    bridge: "1.7.3 kept your risk fixed through streaks; this lesson keeps your rules fixed through lucky and unlucky results. In 0.2.1 you judged decisions by process, and in 1.6.5 you reviewed your own. Here you grade the process first, then the result.",
     hook: {
       prompt: "You moved your stop away and the trade came back to +2R. Next time price nears your stop, what are you more likely to do?",
       control: {
@@ -703,7 +708,7 @@ const L_1_7_4: Lesson = {
           answer: "tiny",
         },
         reveal:
-          "Three rule-following losses are what [[variance]] looks like. A change to the plan goes through its own rule for changes: enough trades, reviewed in the journal, not a reaction to the last three.",
+          "Three rule-following losses are what [[variance]] looks like: results scattering by chance around the rule's average. A change to the plan goes through its own rule for changes: enough trades, reviewed in the journal, not a reaction to the last three.",
         concept: "decision-quality",
       },
       { kind: "callout", tone: "key", text: "Grade first. Look at the P&L second." },
@@ -730,6 +735,7 @@ const L_1_7_4: Lesson = {
         "A lucky win on a broken rule is the most dangerous box: it trains the habit.",
         "Unlucky losses on sound rules are variance. Change rules only through the plan's change rule.",
       ],
+      next: "Next, 1.7.5: boredom and overtrading, the trades taken because nothing was happening, and what they cost in R.",
     },
   },
 };
@@ -755,6 +761,7 @@ const L_1_7_5: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.5",
+    bridge: "1.7.4 graded trades you took. This lesson looks at trades you shouldn't take at all: boredom trades outside the plan. In 1.4.6 you measured costs in R; here you add them up across extra trades and see why waiting counts as a decision.",
     hook: {
       prompt: "Three quiet hours, no setup. A small move appears that isn't in your plan. What do you do?",
       control: {
@@ -868,6 +875,7 @@ const L_1_7_5: Lesson = {
         "At about 0.10R in costs each, four extra trades a day cost 8R over 20 days.",
         "A well-reasoned 'no trade' is a scored decision. Waiting is a position.",
       ],
+      next: "Next, 1.7.6: turn each urge into an if-then rule with a trigger you can observe, and write it into your plan.",
     },
   },
 };
@@ -893,6 +901,7 @@ const L_1_7_6: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.6",
+    bridge: "1.7.2 gave you a rule for each trap, and 1.7.5 matched each urge to trade more with a rule. Here you rewrite them as if-then rules, with a trigger you can observe, and add them to your plan v1 from 1.6.2.",
     hook: {
       prompt: "Which rule is more likely to hold after a painful loss?",
       control: {
@@ -1031,6 +1040,7 @@ const L_1_7_6: Lesson = {
         "Turn each urge into a rule: chasing, losing streaks, bad days.",
         "Rules decided in advance hold better than willpower: the decision is already made.",
       ],
+      next: "Next, 1.7.7: the pause, the action behind most of these rules, gets a length you choose and a fixed routine.",
     },
   },
 };
@@ -1056,6 +1066,7 @@ const L_1_7_7: Lesson = {
   script: {
     unit: "1.7",
     courseId: "1.7.7",
+    bridge: "In 1.7.2 the rule was: after a loss or a sharp move, pause before any decision. 1.7.6 made rules like that observable. Here the pause gets a length you choose and a fixed routine, so it holds when you most want to skip it.",
     hook: {
       prompt: "You were stopped out two minutes ago and a setup appears. What does waiting 15 minutes cost you?",
       control: {
@@ -1219,6 +1230,7 @@ const L_1_7_7: Lesson = {
         "Fill the pause with the routine: step away, check in, reframe, run the checklist, decide.",
         "Ask with fresh eyes: would I open this trade now? If not, exit or reduce.",
       ],
+      next: "Next: the 1.7 checkpoint. Then unit 1.8, Danger zone: martingale, grids, scams and leverage, the ways accounts blow up.",
     },
   },
 };
@@ -1755,6 +1767,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 1.7 · The trader's mind I (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_1_7: UnitContent = {
+  intro: {
+    summary: "Fear, greed and the urge to win a loss back come to every trader. This unit treats them as signals, not flaws, and answers each with a rule: a check-in, fixed risk through streaks, grading before the result, if-then rules and a set pause. It comes now because your plan and journal from 1.6 are where those rules live.",
+    outcomes: [
+      "Name and rate your feelings before entry and after exit, and log them in your journal.",
+      "Recognise FOMO, revenge trading, loss aversion and boredom trades in your own decisions.",
+      "Keep your risk per trade the same through winning and losing streaks.",
+      "Grade each trade's process before you look at its result.",
+      "Write if-then rules and a set pause into your plan, making it v1.1.",
+    ],
+    buildsOn: "Builds on unit 1.6: the plan (1.6.1, 1.6.2), the journal (1.6.4) and the decision review (1.6.5) hold these rules. Fixed risk and stops come from 1.4.1 and 1.4.3; streaks from 0.2.3.",
+  },
   lessons: [L_1_7_1, L_1_7_3, L_1_7_4, L_1_7_5, L_1_7_6, L_1_7_7],
   questions: QUESTIONS,
   terms: TERMS,
