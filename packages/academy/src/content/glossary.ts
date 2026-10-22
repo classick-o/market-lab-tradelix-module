@@ -315,6 +315,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: "Execution of only part of an order's quantity, with the rest still pending or cancelled, typically because there is not enough volume at the price.",
     plain: "Only some of the units you asked for were bought or sold.",
     related: ["fill", "liquidity", "limit-order"],
+    lesson: "1.3.6",
   },
   {
     id: "slippage",
@@ -579,6 +580,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: "A stop-loss that is moved in the direction of a profitable trade, according to a rule, to protect part of the gain. It is never moved further away.",
     plain: "A stop that follows price as the trade works, so you keep some of the profit.",
     related: ["stop-loss", "atr", "scaling-out"],
+    lesson: "1.3.8",
   },
   {
     id: "scaling-in",
@@ -640,6 +642,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: "The list of resting buy and sell limit orders for an instrument, organised by price.",
     plain: "A live list of who wants to buy and sell, and at what prices.",
     related: ["bid", "ask", "liquidity", "limit-order"],
+    lesson: "1.3.6",
     aka: ["Depth of market"],
   },
   {

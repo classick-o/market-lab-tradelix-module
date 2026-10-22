@@ -281,7 +281,7 @@ export const CONCEPTS: Concept[] = [
       "Long from 100.00 with the initial stop at 98.00. LABX rises to 104.00 and forms a higher low at 102.50, so the trader moves the stop to 102.30. The worst planned outcome is now a gain of 2.30 per unit before costs, unless a gap jumps the stop.",
     related: ["stop-loss-order", "trend", "volatility"],
     missions: [],
-    lessons: ["L10"],
+    lessons: ["L10", "1.3.8"],
   },
   {
     id: "gap-risk",
