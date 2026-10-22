@@ -207,14 +207,16 @@ function Layer({ layer: l, frame, spec }: { layer: ChartLayer; frame: Frame; spe
     case "marker": {
       const c = spec.candles[l.index];
       const price = l.price ?? (c ? (l.at === "low" ? c.l : l.at === "open" ? c.o : l.at === "close" ? c.c : c.h) : 0);
-      const below = l.at === "low";
       const x = frame.x(l.index);
       const y = frame.y(price);
+      // Labels sit beside the candle (not on it): to the right, or to the left near the right edge.
+      const off = Math.max(2, Math.min(14, frame.slot * 0.62)) / 2 + 7;
+      const left = x + off + 90 > frame.plotRight;
       return (
         <g className={cx("k-marker", `role-${l.role ?? "accent"}`)}>
           <circle cx={x} cy={y} r={3.5} />
           {l.label && (
-            <text x={x} y={below ? y + 16 : y - 9} textAnchor="middle">
+            <text x={left ? x - off : x + off} y={y} dy="0.35em" textAnchor={left ? "end" : "start"}>
               {l.label}
             </text>
           )}

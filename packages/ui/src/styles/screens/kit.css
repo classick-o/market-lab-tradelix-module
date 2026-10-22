@@ -206,6 +206,55 @@
   stroke: color-mix(in srgb, var(--ml-accent) 55%, transparent);
   fill: color-mix(in srgb, var(--ml-accent) 6%, transparent);
 }
+.k-hotspot-ring {
+  fill: color-mix(in srgb, var(--ml-accent) 10%, transparent);
+  stroke: color-mix(in srgb, var(--ml-accent) 55%, transparent);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: k-target 2.4s var(--ml-ease) infinite;
+}
+.k-hotspot-dot {
+  fill: var(--ml-accent);
+}
+.k-hotspot:hover .k-hotspot-ring,
+.k-hotspot:focus-visible .k-hotspot-ring {
+  fill: color-mix(in srgb, var(--ml-accent) 22%, transparent);
+  stroke: var(--ml-accent);
+}
+.k-hotspot.is-chosen .k-hotspot-dot {
+  fill: var(--ml-text-3);
+}
+.k-hotspot.is-chosen .k-hotspot-ring {
+  animation: none;
+  fill: transparent;
+  stroke: var(--ml-text-3);
+}
+.k-hotspot.is-correct .k-hotspot-dot {
+  fill: var(--ml-pos);
+}
+.k-hotspot.is-correct .k-hotspot-ring {
+  animation: none;
+  fill: var(--ml-pos-soft);
+  stroke: var(--ml-pos);
+}
+.k-hotspots:has(.is-correct) .k-hotspot:not(.is-correct) .k-hotspot-ring {
+  animation: none;
+  opacity: 0.4;
+}
+@keyframes k-target {
+  50% {
+    transform: scale(1.18);
+  }
+}
+.ml-reduced-motion .k-hotspot-ring {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .k-hotspot-ring {
+    animation: none;
+  }
+}
 .k-hotspot.is-chosen rect {
   stroke: var(--ml-border-strong);
   stroke-dasharray: none;
@@ -374,4 +423,10 @@
   .k-bar-fill {
     transition: none;
   }
+}
+
+/* Point targets carry their own marks; their hit areas stay invisible. */
+.k-hotspot:has(.k-hotspot-target) rect {
+  fill: transparent !important;
+  stroke: transparent !important;
 }

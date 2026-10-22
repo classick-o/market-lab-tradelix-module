@@ -4,6 +4,7 @@ import { BottomNav, NavDrawer, Sidebar, Topbar } from "./components/Shell";
 import { ReducedMotionContext, useMediaQuery } from "./components/Stage";
 import { ToastProvider, useToast } from "./components/Toast";
 import { Button, Dialog, Empty, cx } from "./components/ui";
+import { FocusContext } from "./focus";
 import { HostContext, useHost, type HostOptions } from "./host";
 import { PARENT_REDIRECTS } from "./nav";
 import { OnboardingPage } from "./pages/Onboarding";
@@ -195,7 +196,8 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
   // Breakpoints from the app design: rail at ≤960px, phone layout at ≤760px.
   const mobile = useMediaQuery("(max-width: 760px)");
   const tablet = useMediaQuery("(max-width: 960px)");
-  const collapsed = tablet || lab.settings.sidebarCollapsed;
+  const [focus, setFocus] = useState(false);
+  const collapsed = tablet || lab.settings.sidebarCollapsed || focus;
   const [drawer, setDrawer] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const signOut = () => {
@@ -216,7 +218,8 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
   }
 
   return (
-    <div className={cx("ml-app", mobile && "is-mobile")} data-sidebar={collapsed ? "collapsed" : "expanded"}>
+    <FocusContext.Provider value={setFocus}>
+    <div className={cx("ml-app", mobile && "is-mobile", focus && "is-focus")} data-sidebar={collapsed ? "collapsed" : "expanded"}>
       {!mobile && <Sidebar collapsed={collapsed} canCollapse={!tablet} brand={brand} onSignOut={signOut} />}
       <div className="ml-app-main">
         <Topbar mobile={mobile} onMenu={() => setDrawer(true)} />
@@ -225,7 +228,7 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
         </main>
         <Footer />
       </div>
-      {mobile && <BottomNav />}
+      {mobile && !focus && <BottomNav />}
       {mobile && <NavDrawer open={drawer} onClose={() => setDrawer(false)} onSignOut={signOut} brand={brand} />}
       <AchievementWatcher />
       <Dialog
@@ -252,6 +255,7 @@ function AppShell({ showNav, brand, children }: { showNav: boolean; brand?: Reac
         }
       />
     </div>
+    </FocusContext.Provider>
   );
 }
 

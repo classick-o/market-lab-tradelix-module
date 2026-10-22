@@ -162,3 +162,23 @@ describe("expressions and question variants", () => {
     }
   });
 });
+
+describe("widget maths", () => {
+  it("matches the lesson numbers", async () => {
+    const { computeWidget, losingRunProbability, simulateEntry } = await import("../src");
+    expect(computeWidget("candle-builder", { open: 100, high: 100.2, low: 98.8, close: 99.7 })).toMatchObject({ direction: "bearish", body: 0.3, upperWick: 0.2, lowerWick: 0.9, range: 1.4, lowerOverBody: 3 });
+    expect(computeWidget("candle-builder", { open: 100, high: 99, low: 99.2, close: 101 })).toMatchObject({ high: 101, upperWick: 0 });
+    expect(computeWidget("spread-cost", { units: 100, mid: 50, spread: 0.1, commissionPct: 0.05 })).toMatchObject({ spreadCost: 10, feeIn: 2.51, feeOut: 2.5, roundTrip: 15.01 });
+    expect(computeWidget("bracket-builder", { stop: 97.7, target: 103.8, units: 25 }, { entry: 100 })).toMatchObject({ lossBefore: 57.5, lossAfter: 59.98, gainBefore: 95, gainAfter: 92.45, rr: 1.65 });
+    expect(computeWidget("position-size", { account: 10000, riskPct: 1, entry: 100, stop: 98, units: 47 })).toMatchObject({ budget: 100, simpleQty: 50, qty: 47, lossAtStop: 98.66, withinBudget: true });
+    expect(computeWidget("risk-reward", { entry: 100, stop: 98, target: 104 })).toMatchObject({ rr: 2, breakEven: 33.3 });
+    expect(computeWidget("expectancy", { winRate: 40, avgWin: 2.5, avgLoss: 1, runLength: 5 })).toMatchObject({ expectancy: 0.4 });
+    expect(computeWidget("loss-recovery", { drawdown: 50 })).toMatchObject({ gainNeeded: 100, lossesInRow: 69 });
+    expect(losingRunProbability(0.5, 1, 1)).toBeCloseTo(0.5);
+    expect(losingRunProbability(0.5, 2, 2)).toBeCloseTo(0.25);
+    const candles = [{ o: 100, h: 100.2, l: 99.9, c: 100 }, { o: 100, h: 100.1, l: 99.5, c: 99.6 }, { o: 99.6, h: 99.7, l: 98.9, c: 99.2 }];
+    expect(simulateEntry(candles, 1, "buy", "limit", 99)).toMatchObject({ filled: true, at: 2, price: 99, quote: 100.05, extreme: 98.95 });
+    expect(simulateEntry(candles, 1, "buy", "limit", 98.8)).toMatchObject({ filled: false });
+    expect(simulateEntry(candles, 1, "buy", "market", 0)).toMatchObject({ filled: true, price: 100.05 });
+  });
+});

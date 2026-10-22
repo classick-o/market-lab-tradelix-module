@@ -4,6 +4,7 @@ import {
   TOPIC_BY_ID,
   WEEKLY_XP,
   applyReview,
+  enterReview,
   dayKey,
   getCheck,
   getQuestion,
@@ -130,6 +131,15 @@ export interface LessonProgress {
   fields?: Record<string, string | number>;
 }
 
+export interface LessonNote {
+  id: string;
+  lesson: string;
+  phase: number;
+  beat: number;
+  text: string;
+  at: number;
+}
+
 export interface PlanState {
   tier: "free" | "pro";
   billing: "monthly" | "annual" | null;
@@ -188,6 +198,8 @@ export interface LabData {
   reviewSkillDay: Record<string, string>;
   /** Saved lessons, concepts and terms (ids). */
   bookmarks: string[];
+  /** Notes the learner wrote in lessons, at a phase and beat. */
+  lessonNotes: LessonNote[];
   learnPrefs: { mode: "learn" | "read"; railOpen: boolean };
   dailies: Record<string, { at: number; correct: number; total: number; answers: Record<string, string> }>;
   weeklies: Record<string, { at: number }>;
@@ -250,6 +262,7 @@ function fresh(): LabData {
     evidence: [],
     reviewSkillDay: {},
     bookmarks: [],
+    lessonNotes: [],
     learnPrefs: { mode: "learn", railOpen: true },
     dailies: {},
     weeklies: {},
@@ -770,6 +783,28 @@ export class LabStore {
 
   toggleBookmark(id: string): void {
     this.update((d) => ({ ...d, bookmarks: d.bookmarks.includes(id) ? d.bookmarks.filter((b) => b !== id) : [...d.bookmarks, id] }));
+  }
+
+  addLessonNote(lesson: string, phase: number, beat: number, text: string): void {
+    const t = text.trim().slice(0, 1000);
+    if (!t) return;
+    const at = Date.now();
+    this.update((d) => ({ ...d, lessonNotes: [...d.lessonNotes, { id: `n${at.toString(36)}${Math.random().toString(36).slice(2, 6)}`, lesson, phase, beat, text: t, at }] }));
+  }
+
+  deleteLessonNote(id: string): void {
+    this.update((d) => ({ ...d, lessonNotes: d.lessonNotes.filter((n) => n.id !== id) }));
+  }
+
+  /** "Review later": the lesson's check questions come back tomorrow, unless already in review. */
+  queueLessonReview(questionIds: string[]): void {
+    const at = Date.now();
+    const today = dayKey(at, this.data.settings.timeZone);
+    this.update((d) => {
+      const review = { ...d.review };
+      for (const q of questionIds) if (!review[q]) review[q] = enterReview(false, today, at);
+      return { ...d, review };
+    });
   }
 
   setLearnPrefs(patch: Partial<LabData["learnPrefs"]>): void {

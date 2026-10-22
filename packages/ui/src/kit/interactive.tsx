@@ -158,6 +158,12 @@ export function Hotspots({
             }}
           >
             <rect x={r.x} y={r.y} width={r.w} height={r.h} rx={4} />
+            {z.index !== undefined && z.price !== undefined && (
+              <g className="k-hotspot-target" transform={`translate(${frame.x(z.index)},${frame.y(z.price)})`} aria-hidden="true">
+                <circle className="k-hotspot-ring" r={9} />
+                <circle className="k-hotspot-dot" r={3.5} />
+              </g>
+            )}
           </g>
         );
       })}

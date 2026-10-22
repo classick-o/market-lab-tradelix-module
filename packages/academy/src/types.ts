@@ -171,7 +171,7 @@ export interface Choice {
 /** The control a learner answers with in a hook or a predict beat. */
 export type AnswerControl =
   | { kind: "choice"; choices: Choice[]; answer?: string }
-  | { kind: "slider"; min: number; max: number; step: number; unit?: string; start?: number; answer?: number; tolerance?: number }
+  | { kind: "slider"; min: number; max: number; step: number; unit?: string; start?: number; answer?: number; tolerance?: number; feedback?: { from: number; to: number; text: string }[] }
   | { kind: "numeric"; unit?: string; answer?: number; tolerance?: number; feedback?: { value: number; text: string }[] }
   | { kind: "tap"; chart: ChartSpec; zones: TapZone[]; answer?: string };
 
@@ -186,10 +186,69 @@ export interface TapZone {
   feedback?: string;
 }
 
+/** Content a widget needs beyond its controls: the chart it plays, fixed prices, card sets. */
+export interface TaskData {
+  /** The chart the widget draws (order-fill, bracket-builder, level-drawer, trend-classifier). Candles after `visible` are the hidden future. */
+  chart?: ChartSpec;
+  /** Fixed entry price (bracket-builder). */
+  entry?: number;
+  /** Fixed position size (order-fill, bracket-builder). */
+  units?: number;
+  /** Text of the plan panel (order-fill). */
+  plan?: string;
+  /**
+   * trend-classifier: segments A, B, C with the right label and evidence. Each has its own candles
+   * (drawn as separate charts), or a candle index range of `chart`. `showMe` adds layers on Show me.
+   */
+  segments?: { id?: string; label: "trend" | "range" | "noise"; evidence: "hh_hl" | "lh_ll" | "bounded" | "overlap"; candles?: CandleData[]; from?: number; to?: number; showMe?: ChartLayer[] }[];
+  /** trend-classifier: the evidence options, in order. */
+  evidence?: { id: string; label: string }[];
+  /** ma-period: one candle series per market ("trend", "range"). */
+  series?: Record<string, CandleData[]>;
+  /** ma-period: leading candles of each series used only to warm up the average (not drawn or counted). */
+  warmup?: number;
+  /** position-size: a price ruler beside the controls, with context levels, a note card and a fixed comparison row. */
+  ruler?: { layers: ChartLayer[]; card?: string; compare?: string };
+  /**
+   * level-drawer breakout plan: after the band, the breakout candle (`breakIndex`, 0-based in `chart`) appears with
+   * the entry; the stop must sit `minBelowBand`–`maxBelowBand` under the band; Play shows the endings in `order`.
+   * `messages` are templates: {touches} {bandLow} {bandHigh} {stop} {risk} {total} {k} {close}.
+   */
+  breakout?: {
+    endings: Record<string, CandleData[]>;
+    order: string[];
+    breakIndex: number;
+    entry: number;
+    stopRule: { minBelowBand: number; maxBelowBand: number };
+    showMeEnding: string;
+    messages: Record<string, string>;
+  };
+  /** bias-spotter: the cards, each a short situation; `answer` is an id from `options`; `rationales` explain wrong picks. */
+  cards?: { id: string; text: string; answer: string; correct: string; rationales?: Record<string, string> }[];
+  /** bias-spotter: the answer buttons, in order. */
+  options?: { id: string; label: string }[];
+}
+
+/** One field a learner sets in a plan-fields beat (their own rules): a choice between values, or a stepper. */
+export interface PlanField {
+  id: string;
+  label: string;
+  kind: "choice" | "stepper";
+  /** Choice values (choice fields). */
+  options?: number[];
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+  default: number;
+}
+
 /** Interactive task configuration for a widget (docs/learn/widgets.md). */
 export interface TaskSpec {
   widget: string;
   goal: string;
+  /** Content the widget needs (charts, fixed prices, cards). */
+  data?: TaskData;
   /** Starting values, by the widget's field names. */
   start?: Record<string, number | string | boolean>;
   /** Controls the learner can't change. */
@@ -213,10 +272,13 @@ export type Beat =
   | { kind: "figure"; title?: string; figure: FigureSpec; text?: string; concept?: string }
   | { kind: "predict"; title?: string; prompt: string; control: AnswerControl; figure?: FigureSpec; reveal?: string; concept?: string }
   | { kind: "reveal"; title?: string; prompt: string; chart: ChartSpec; choices?: Choice[]; answer?: string; after: string; concept?: string }
-  | { kind: "worked"; title: string; lines: string[]; ask?: { answer: number; tolerance?: number; unit?: string; feedback?: { value: number; text: string }[]; correct?: string }; after?: string; concept?: string }
+  | { kind: "worked"; title: string; lines: string[]; ask?: { answer: number; tolerance?: number; unit?: string; feedback?: { value: number; text: string }[]; correct?: string; incorrect?: string }; after?: string; concept?: string }
   | { kind: "task"; title?: string; task: TaskSpec }
-  | { kind: "match"; title?: string; prompt: string; pairs: { left: string; right: string; wrong?: string }[]; columns?: [string, string]; concept?: string }
-  | { kind: "order"; title?: string; prompt: string; items: string[]; explain?: string; concept?: string }
+  | { kind: "match"; title?: string; prompt: string; pairs: { left: string; right: string; wrong?: string }[]; columns?: [string, string]; correct?: string; concept?: string }
+  /** `note`: an optional free-text field shown once the order is solved, saved with the lesson under `key`. */
+  | { kind: "order"; title?: string; prompt: string; items: string[]; explain?: string; wrong?: string; note?: { key: string; label: string; placeholder?: string }; concept?: string }
+  /** The learner sets their own rules; any values for which `valid` holds are accepted and saved with the lesson. */
+  | { kind: "fields"; title?: string; prompt: string; fields: PlanField[]; valid?: import("./success").Condition; correct?: string; feedback?: import("./success").FeedbackCase[]; concept?: string }
   | { kind: "hotspot"; title?: string; prompt: string; chart: ChartSpec; zones: TapZone[]; answer: string; correct: string; concept?: string }
   | { kind: "callout"; tone: "key" | "warning" | "info"; text: string };
 

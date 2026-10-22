@@ -12,3 +12,4 @@ export * from "./review";
 export * from "./success";
 export * from "./widgets";
 export * from "./expr";
+export * from "./widget-math";

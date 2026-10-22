@@ -5,7 +5,9 @@ import {
   LESSONS,
   QUESTIONS,
   WIDGET_CONTRACTS,
+  WIDGET_DEFAULTS,
   evaluateCondition,
+  widgetValues,
   type Beat,
   type ChartSpec,
   type Condition,
@@ -115,17 +117,28 @@ describe("interactive lesson scripts", () => {
     for (const l of scripted) scriptOk(l.id, l.script!);
   });
 
-  it("show a task's own starting state as not yet solved", () => {
+  it("start unsolved, and \"Show me\" solves the task on the widget's own numbers", () => {
+    // Widgets that finish in steps of their own (placing an order, a breakout plan) are checked by the widget.
+    const stepped = (t: TaskSpec) => t.widget === "order-fill" || (t.widget === "level-drawer" && !!t.data?.breakout);
     for (const l of scripted) {
       const tasks = [l.script!.task, ...l.script!.learn.filter((b): b is Extract<Beat, { kind: "task" }> => b.kind === "task").map((b) => b.task)].filter(Boolean) as TaskSpec[];
       for (const t of tasks) {
-        if (!t.start) continue;
-        // Outputs aren't known here; only check conditions that use controls alone.
-        const controlsOnly = fields(t.success).every((f) => f in (WIDGET_CONTRACTS[t.widget]?.controls ?? {}));
-        if (controlsOnly) expect(evaluateCondition(t.success, t.start), `${l.id}: start state already solves the task`).toBe(false);
-        if (controlsOnly) expect(evaluateCondition(t.success, { ...t.start, ...t.showMe }), `${l.id}: "Show me" solves the task`).toBe(true);
+        const start = { ...WIDGET_DEFAULTS[t.widget], ...t.start };
+        expect(evaluateCondition(t.success, widgetValues(t.widget, start, t.data)), `${l.id}: start state already solves the task`).toBe(false);
+        const shown = widgetValues(t.widget, { ...start, ...t.showMe, ...(t.widget === "level-drawer" ? { phase: 3 } : {}) }, t.data);
+        if (!stepped(t) || t.widget === "level-drawer") expect(evaluateCondition(t.success, shown), `${l.id}: "Show me" solves the task`).toBe(true);
       }
     }
+  });
+
+  it("plan-fields beats have defaults in range", () => {
+    for (const l of scripted)
+      for (const b of l.script!.learn)
+        if (b.kind === "fields")
+          for (const f of b.fields) {
+            if (f.kind === "choice") expect(f.options, `${l.id}: ${f.id} options`).toContain(f.default);
+            else expect(f.default >= (f.min ?? -Infinity) && f.default <= (f.max ?? Infinity), `${l.id}: ${f.id} default`).toBe(true);
+          }
   });
 
   it("use unique glossary and concept ids", () => {

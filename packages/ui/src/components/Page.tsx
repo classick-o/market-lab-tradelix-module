@@ -3,6 +3,7 @@ import { formatSigned } from "@market-lab/engine";
 import { NAV } from "../nav";
 import { AVATARS, initialsOf } from "../host";
 import { Link, useRouter } from "../router";
+import { Term } from "./Term";
 import { Button, Icon, cx } from "./ui";
 
 /** Page title block. `actions` sit on the right on wide screens. */
@@ -191,7 +192,29 @@ export function ProBadge() {
 }
 
 /** Inline `**bold**` markup used by the lesson content. */
+/** Plain content text with `**bold**` and glossary links: `[[term-id]]` or `[[term-id|shown text]]`. */
 export function Rich({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return <>{parts.map((p, i) => (p.startsWith("**") && p.endsWith("**") ? <strong key={i}>{p.slice(2, -2)}</strong> : p))}</>;
+  const parts = text.split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\])/g);
+  return (
+    <>
+      {parts.map((p, i) => {
+        if (p.startsWith("**") && p.endsWith("**")) return <strong key={i}>{p.slice(2, -2)}</strong>;
+        const link = /^\[\[([a-z0-9-]+)(?:\|([^\]]+))?\]\]$/.exec(p);
+        if (link) {
+          const shown = link[2] ?? link[1].replace(/-/g, " ");
+          return (
+            <Term key={i} id={link[1]}>
+              {shown}
+            </Term>
+          );
+        }
+        return p;
+      })}
+    </>
+  );
+}
+
+/** The glossary ids a text links to, in order of first appearance. */
+export function termLinks(text: string): string[] {
+  return [...new Set([...text.matchAll(/\[\[([a-z0-9-]+)(?:\|[^\]]*)?\]\]/g)].map((m) => m[1]))];
 }

@@ -10,6 +10,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@market-lab/engine": "0.1.0",
     "@market-lab/evaluation": "0.1.0",
     "@market-lab/learning": "0.1.0"
   },

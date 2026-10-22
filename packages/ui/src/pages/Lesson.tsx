@@ -8,6 +8,8 @@ import { useToast } from "../components/Toast";
 import { Widget } from "../components/Widgets";
 import { Button, Empty, Icon, Tag } from "../components/ui";
 import { usePlan } from "../host";
+import { LessonPlayer, type ScriptedLesson } from "../learn/LessonPlayer";
+import { LessonRead } from "../learn/LessonRead";
 import { Link, useRouter } from "../router";
 import { useLab, useStore } from "../store";
 
@@ -116,6 +118,11 @@ export function LessonPage({ lessonId }: { lessonId: string }) {
     if (lesson && !locked) store.startLesson(lesson.id);
   }, [lesson, locked, store]);
   if (!lesson) return <Empty title="Lesson not found" action={<Link to="/learn/lessons" className="ml-text-link">All lessons</Link>} />;
+  // Interactive lessons open in the player (or on one page in Read mode).
+  if (lesson.script && !locked) {
+    const scripted = lesson as ScriptedLesson;
+    return lab.learnPrefs.mode === "read" ? <LessonRead key={lesson.id} lesson={scripted} /> : <LessonPlayer key={lesson.id} lesson={scripted} />;
+  }
 
   const done = Boolean(lab.lessons[lesson.id]?.completedAt);
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
