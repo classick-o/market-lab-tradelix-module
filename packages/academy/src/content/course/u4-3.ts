@@ -74,6 +74,7 @@ const L_4_3_1: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.1",
+    bridge: "Unit 4.2 priced execution; Unit 4.3 asks whether the edge is real. In 3.10.6 Bonferroni divided 5% by the tests run; in 3.11.5 the best of 10 zero-edge tries showed a Sharpe near 1.5. Here the winner of a whole search faces luck's best.",
     hook: {
       prompt: "The best of your 200 variants has a t-statistic of 3.0, which alone would mean p ≈ 0.003. After a Bonferroni correction for 200 tests, is it still significant at 5%?",
       control: {
@@ -206,6 +207,7 @@ const L_4_3_1: Lesson = {
         "The Reality Check compares the winner with the best of many no-edge resamples, not with zero.",
         "Haircuts are nonlinear. Count every trial in the whole process, abandoned ideas included.",
       ],
+      next: "Next, 4.3.2: the deflated Sharpe ratio, which turns your trial count into a bar for one backtest's Sharpe.",
     },
   },
 };
@@ -230,6 +232,7 @@ const L_4_3_2: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.2",
+    bridge: "In 4.3.1 the Reality Check gave a search's winner a p-value. Here the deflated Sharpe ratio asks the same of a single Sharpe: it raises the bar to luck's best of your N trials, allowing for 3.10.1's skew and fat tails.",
     hook: {
       prompt: "Your best of 50 backtests shows an annual Sharpe of 1.5 over 3 years of daily data. How confident can you be that it's more than the luck of 50 tries?",
       control: {
@@ -348,6 +351,7 @@ const L_4_3_2: Lesson = {
         "PSR is the chance the true Sharpe beats a benchmark; DSR sets that benchmark at luck's best.",
         "Best of 50, Sharpe 1.5 over 3 years: PSR 0.994, DSR 0.73, below the 0.95 convention.",
       ],
+      next: "Next, 4.3.3: how long a backtest must be, and the error bars around any Sharpe.",
     },
   },
 };
@@ -372,6 +376,7 @@ const L_4_3_3: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.3",
+    bridge: "In 4.3.2 a 3-year Sharpe of 1.5 scored a DSR of 0.73 after 50 tries; more years would lift it. Here 3.10.5's standard error puts error bars on a Sharpe and caps the tries your data can carry.",
     hook: {
       prompt: "A strategy shows a Sharpe of 1.0 over 3 years of daily data. Which range most likely contains its true Sharpe?",
       control: {
@@ -495,6 +500,7 @@ const L_4_3_3: Lesson = {
         "MinBTL = (E[max] ÷ target)² years. For a Sharpe of 1, 45 tries need 5 years.",
         "Autocorrelation breaks √12 annualising: Lo found hedge fund Sharpes overstated by up to 65%.",
       ],
+      next: "Next, 4.3.4: the probability of backtest overfitting, which judges the whole family of variants, not just its winner.",
     },
   },
 };
@@ -522,6 +528,7 @@ const L_4_3_4: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.4",
+    bridge: "In 4.3.3 MinBTL capped your search: 25 tries for 4 years at a target Sharpe of 1. DSR and MinBTL judge one winner by formula. Here CSCV runs 3.11.4's in-sample and out-of-sample split 70 ways and counts how often the winner disappoints.",
     hook: {
       prompt: "On pure noise, how often does the in-sample winner of a strategy family finish in the bottom half out of sample?",
       control: {
@@ -638,6 +645,7 @@ const L_4_3_4: Lesson = {
         "PBO is the share of splits where the in-sample winner ranks at or below the median out of sample.",
         "Noise gives a PBO near 0.5. App thresholds: 0.50 or more reject, 0.20 to 0.50 incubate.",
       ],
+      next: "Next, 4.3.5: purged cross-validation, because a split counts only if no test information leaks into training.",
     },
   },
 };
@@ -662,6 +670,7 @@ const L_4_3_5: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.5",
+    bridge: "In 4.3.4 CSCV scored every split out of sample. That works only if no test information leaks into training. 3.11.3 caught look-ahead in a backtest's rules; here it slips in through cross-validation, and you learn to purge and embargo it.",
     hook: {
       prompt: "You label each day by the next 10 days' return and shuffle days into random folds. Your model scores well above 50% on pure noise. Why?",
       control: {
@@ -788,6 +797,7 @@ const L_4_3_5: Lesson = {
         "Purge training days whose labels reach the test fold; embargo the days right after it.",
         "Report the purged score: 50.0% on R0, a coin toss, as noise should be.",
       ],
+      next: "Next, 4.3.6: capacity, how much money an edge that survives these tests can carry.",
     },
   },
 };
@@ -812,6 +822,7 @@ const L_4_3_6: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.6",
+    bridge: "4.3.1 to 4.3.5 tested whether an edge is real. Now: how much money can it carry? In 4.2.2, twice the size cost about 2.8 times as much impact in total. Here impact meets a fixed edge, and 3.13.7's crowding adds others' size to yours.",
     hook: {
       prompt: "Your strategy nets 15.9 bps per trade at 2,500 units. You trade 4 times bigger. What happens to total profit per trade?",
       control: {
@@ -906,6 +917,7 @@ const L_4_3_6: Lesson = {
         "Total profit peaks where marginal profit is zero: 5,000 units, 500 vUSD, before the 11,250 break-even.",
         "Crowding adds others' size to your impact: one twin fund cuts your 500 to 86 vUSD.",
       ],
+      next: "Next, 4.3.7: the validation dossier, where every test of this unit meets rules written before the results.",
     },
   },
 };
@@ -933,6 +945,7 @@ const L_4_3_7: Lesson = {
   script: {
     unit: "4.3",
     courseId: "4.3.7",
+    bridge: "4.3.1 to 4.3.6 gave you the tests: Reality Check, DSR, MinBTL, PBO, purged folds and capacity. Here they go into one dossier. 3.11.10's research log supplies the trial count, 3.13.7's decay sets a haircut, and the verdict follows rules written before the results.",
     hook: {
       prompt: "Two researchers report the same Sharpe of 1.2. One tried 3 ideas, the other 300. Whose result do you trust more?",
       control: {
@@ -1056,6 +1069,7 @@ const L_4_3_7: Lesson = {
         "Pre-register thresholds and the decay haircut: a published 0.30R backtest enters the plan as 0.15R.",
         "Deploy, incubate or reject by rules written first. A justified reject is a success.",
       ],
+      next: "Next, the Unit 4.3 checkpoint. Then Unit 4.4, Portfolio risk at scale: from one validated system to the risk of a whole book.",
     },
   },
 };
@@ -1805,6 +1819,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_4_3: UnitContent = {
+  intro: {
+    summary: "Unit 3.11 taught you to test one backtest honestly. Professionals test dozens or hundreds of correlated variants and keep the best, so this unit prices that selection: Reality Check, deflated Sharpe, minimum backtest length, PBO, purged cross-validation and capacity. It ends in a validation dossier judged by rules written before the results, the statistics the final capstone asks for.",
+    outcomes: [
+      "Test a search's winner against the best that luck gives the whole search, not against zero.",
+      "Read a deflated Sharpe ratio card, and cap your search with the minimum backtest length.",
+      "Estimate the probability of backtest overfitting with CSCV, and purge and embargo cross-validation folds.",
+      "Find the size that maximises total profit after square-root impact, and see how crowding lowers it.",
+      "Pre-register thresholds, audit a research log, and reach deploy, incubate or reject.",
+    ],
+    buildsOn: "Multiple testing and Bonferroni (3.10.6), the Sharpe's standard error (3.10.5), autocorrelation (3.10.7), out-of-sample, the R0 control and the research log (3.11.4, 3.11.5, 3.11.10), decay and crowding (3.13.7), and square-root impact (4.2.2).",
+  },
   lessons: [L_4_3_1, L_4_3_2, L_4_3_3, L_4_3_4, L_4_3_5, L_4_3_6, L_4_3_7],
   questions: QUESTIONS,
   terms: TERMS,

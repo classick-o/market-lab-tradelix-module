@@ -51,6 +51,7 @@ const L_4_4_1: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.1",
+    bridge: "Unit 4.3 judged one system; Unit 4.4 measures a whole book's risk. 3.10.1 showed fat tails make extreme days far likelier than a normal curve says; in 4.1.11 one short straddle lost 192.80 in a −25% gap. Here you measure the tail: VaR and ES.",
     hook: {
       prompt: "Your 95% one-day VaR is 247 vUSD. What is the most you can lose tomorrow?",
       control: {
@@ -205,6 +206,7 @@ const L_4_4_1: Lesson = {
         "VaR isn't a maximum. Fat tails lower VaR 95% to 226 but raise ES 99% to 554.",
         "Backtest by counting exceedances: 12.5 expected a year at 95%; 20 or more is a red flag.",
       ],
+      next: "Next, 4.4.2: volatility targeting for the whole book, where correlations join each asset's volatility.",
     },
   },
 };
@@ -232,6 +234,7 @@ const L_4_4_2: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.2",
+    bridge: "4.4.1's VaR and ES scale with the book's volatility. In 3.12.6 you sized one position from forecast volatility; in 2.11.3 correlated positions acted as one. Here the two meet in a whole book's volatility, under 2.11.5's drawdown tiers.",
     hook: {
       prompt: "Two equal-weight positions, each at 10% volatility, correlation 0.2, scaled to a 10% target. Correlation jumps to 0.9; neither volatility changes. How much must you cut the book?",
       control: {
@@ -407,6 +410,7 @@ const L_4_4_2: Lesson = {
         "Correlation alone can force a cut: from 0.2 to 0.9 the multiplier falls from 1.29× to 1.03×.",
         "Forecasts lag. Caps and drawdown tiers can only shrink the book; the smallest size wins.",
       ],
+      next: "Next, 4.4.3: gross, net and beta-adjusted exposure, three ways to count what the book holds.",
     },
   },
 };
@@ -434,6 +438,7 @@ const L_4_4_3: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.3",
+    bridge: "In 4.4.2 the target set the book's size; caps and tiers could only shrink it. In 1.4.7 exposure was one position's value ÷ equity; 2.11.4 capped risk per direction. A long–short book needs three numbers: gross, net and beta-adjusted.",
     hook: {
       prompt: "A ‘market-neutral’ book is long 100,000 and short 100,000 vUSD on 50,000 of equity. What is a plausible worst day?",
       control: {
@@ -532,6 +537,7 @@ const L_4_4_3: Lesson = {
         "Net +30,000 hid gross 170,000: a 5% split between the legs cost 8,500, 17% of equity.",
         "Net limits control market risk, gross limits leg risk. Prefer fixes that shrink gross.",
       ],
+      next: "Next, 4.4.4: risk parity and risk budgets, where each position's share of risk replaces its share of capital.",
     },
   },
 };
@@ -559,6 +565,7 @@ const L_4_4_4: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.4",
+    bridge: "In 4.4.3 you counted the book in vUSD: gross, net and beta-adjusted. Here 4.4.2's book volatility, built from weights, volatilities and correlations, splits into each asset's share, so you can budget risk, not just capital.",
     hook: {
       prompt: "You split capital 50/50 between a calm asset at 10% volatility and a wild one at 30%, uncorrelated. What share of the portfolio's risk comes from the wild one?",
       control: {
@@ -674,6 +681,7 @@ const L_4_4_4: Lesson = {
         "Inverse-volatility weights, 75/25, give each asset half the risk; the book runs at 10.6%.",
         "Matching 15.8% then needs 1.49× leverage, which hurts most when everything falls together.",
       ],
+      next: "Next, 4.4.5: stress testing, what past crises and imagined shocks would do to today's book.",
     },
   },
 };
@@ -701,6 +709,7 @@ const L_4_4_5: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.5",
+    bridge: "In 4.4.4 risk parity's 1.49× leverage hurt most when everything fell together. Stress tests ask what such days do to today's book. You've met their pieces: 4.2.5's halts, 3.7.8's stops filled far past their level, 2.14.6's balance protection. Here they become a battery.",
     hook: {
       prompt: "Your book runs at 3× effective leverage. What adverse move loses 20% of your equity?",
       control: {
@@ -811,6 +820,7 @@ const L_4_4_5: Lesson = {
         "Reverse stress: the move that costs 20% of equity is 6.7% at 3×, 4% at 5×.",
         "The worst scenario sets the size: keeping a 20% gap within 15% allows 0.75× equity.",
       ],
+      next: "Next, 4.4.6: correlation regimes, why diversification disappears in exactly the crises you just stressed.",
     },
   },
 };
@@ -838,6 +848,7 @@ const L_4_4_6: Lesson = {
   script: {
     unit: "4.4",
     courseId: "4.4.6",
+    bridge: "4.4.5's battery set correlations to 1 by hand. Here you watch them climb in a crisis. 2.11.3 counted effective bets, 3.6.8 showed correlations flip when the dominant shock changes, and 3.13.3's carry crashes arrived together. Now you size for the crisis, not the calm.",
     hook: {
       prompt: "Five 1%-risk positions look diversified at correlation 0.2. In a crisis, correlation jumps to 0.8. How many independent bets do you really hold?",
       control: {
@@ -964,6 +975,7 @@ const L_4_4_6: Lesson = {
         "In crises correlations jump: equities and carry fall together; only some hedges hold.",
         "Size with crisis correlations: 0.65% each keeps five positions within 3% at ρ 0.8.",
       ],
+      next: "Next, the Unit 4.4 checkpoint. Then Unit 4.5, The business of trading: regulators, brokers, prop firms and going live.",
     },
   },
 };
@@ -1644,6 +1656,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 4.4 · Portfolio risk at scale (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_4_4: UnitContent = {
+  intro: {
+    summary: "This unit measures the risk of a whole book, not one trade: VaR and Expected Shortfall, volatility targeting with correlations, gross, net and beta-adjusted exposure, risk budgets, stress tests and correlation regimes. 2.11 and 3.12 sized positions and one strategy; 4.1's option sellers need ES rather than stops, and the final capstone asks for a book's risk report.",
+    outcomes: [
+      "Compute parametric and historical VaR and Expected Shortfall, and backtest VaR by counting exceedances.",
+      "Scale a whole book to a volatility target from weights, volatilities and correlations, under caps and drawdown tiers.",
+      "Track gross, net and beta-adjusted exposure, and budget risk rather than capital.",
+      "Run historical, hypothetical and reverse stress tests, and let the worst scenario set the size.",
+      "Size positions with crisis correlations, not calm ones.",
+    ],
+    buildsOn: "Exposure and leverage (1.4.7), correlation, effective bets, exposure limits and drawdown tiers (2.11.3–2.11.5), fat tails (3.10.1), volatility targeting (3.12.6), correlation flips (3.6.8), carry crashes (3.13.3) and the short-volatility tail (4.1.11).",
+  },
   lessons: [L_4_4_1, L_4_4_2, L_4_4_3, L_4_4_4, L_4_4_5, L_4_4_6],
   questions: QUESTIONS,
   terms: TERMS,
