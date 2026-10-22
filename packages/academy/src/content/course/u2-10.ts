@@ -471,6 +471,7 @@ const L2101: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.1",
+    bridge: "In 2.9.8 a weekend gap skipped your stop. Scheduled releases can do the same, at a minute you can now convert (2.9.1). First, why price jumps at all: on the surprise against what was expected, sized against normal noise, as 0.2 taught.",
     hook: {
       prompt: "A synthetic jobs report beats consensus by 60,000 jobs. Another beats it by 10,000. Both are 'better than expected'. Which one usually moves price more?",
       control: {
@@ -603,6 +604,7 @@ const L2101: Lesson = {
         "Standardise it: z = surprise ÷ the usual surprise size. 60,000 against a σ of 60,000 is z = 1.0.",
         "Surprises under half the usual size are mostly noise. Don't read a trend into them.",
       ],
+      next: "Next, 2.10.2: the economic calendar, where the time, the consensus and the actual sit on one row.",
     },
   },
 };
@@ -628,6 +630,7 @@ const L2102: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.2",
+    bridge: "In 2.10.1 you measured a surprise as actual minus consensus. The economic calendar is where both numbers appear, with the release time and an impact rating. Here you read a row, convert its time with the DST trap from 2.9.1, and triage a week.",
     hook: {
       prompt: "A synthetic jobs release is at 08:30 New York time. Europe's clocks went back last Sunday; the US clocks change next Sunday. What time is it in Bucharest?",
       control: {
@@ -748,6 +751,7 @@ const L2102: Lesson = {
         "Convert from New York time every week. In the clock-change gap weeks, 08:30 is 14:30, not 15:30.",
         "Triage the week before it starts: flat for red, half size for orange, ignore yellow.",
       ],
+      next: "Next, 2.10.3: what spreads, slippage and stops do in the minute around a release.",
     },
   },
 };
@@ -773,6 +777,7 @@ const L2103: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.3",
+    bridge: "In 2.10.2 the calendar told you when volatility would rise. Here you see that minute up close: spreads widen, depth thins, and a triggered stop becomes a market order that fills after the jump, the slippage of 1.3.7 at news size.",
     hook: {
       prompt: "Long 47 LABX at 100.00, stop 98.00, planned loss 98.66. At the release, the first bid after the jump is 96.80. What do you lose?",
       control: {
@@ -916,6 +921,7 @@ const L2103: Lesson = {
         "A stop fills at the first bid after a jump: 96.80 instead of 98.00 cost 0.57R extra.",
         "A widened spread can trigger your stop even though the mid price never reached it.",
       ],
+      next: "Next, 2.10.4: the US jobs report, the first of three big releases you'll learn to read.",
     },
   },
 };
@@ -941,6 +947,7 @@ const L2104: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.4",
+    bridge: "With the surprise from 2.10.1 and the release-minute risks from 2.10.3, you can read a real report. Here it's the US jobs report: three headline numbers, revisions, and sampling noise big enough to swallow a beat.",
     hook: {
       prompt: "Payrolls come in 90,000 above consensus. The report's own margin of error on a monthly change is typically over 100,000 jobs. What is this surprise?",
       control: {
@@ -1054,6 +1061,7 @@ const L2104: Lesson = {
         "A beat smaller than the report's margin of error is noise, even when price still jumps.",
         "Clearly hot or cold only when all three numbers and revisions agree; otherwise it's mixed.",
       ],
+      next: "Next, 2.10.5: CPI, the inflation report, where headline and core can pull price two ways.",
     },
   },
 };
@@ -1079,6 +1087,7 @@ const L2105: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.5",
+    bridge: "In 2.10.4 a mixed jobs report moved in two waves. Inflation data does the same when headline and core disagree. Here you size a CPI surprise as z, as in 2.10.1, and wait for core before you decide.",
     hook: {
       prompt: "Headline CPI comes in 0.2 above consensus on energy prices. Core comes in 0.1 below. LABX's first spike is down. What next?",
       control: {
@@ -1194,6 +1203,7 @@ const L2105: Lesson = {
         "Size the surprise by the usual spread: a 0.1 core miss with σ 0.1 is z = −1.0.",
         "When headline and core disagree, stay flat until the second wave shows which one wins.",
       ],
+      next: "Next, 2.10.6: central banks, whose rate decisions respond to the inflation you just learned to read.",
     },
   },
 };
@@ -1219,6 +1229,7 @@ const L2106: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.6",
+    bridge: "In 2.10.5 inflation data moved prices through what it implied for interest rates. Here are the banks that set those rates. Their decisions surprise like any release (2.10.1), with the spreads and slippage of 2.10.3, at the statement and again at the press conference.",
     hook: {
       prompt: "The market prices a 70% chance of a 25 bp rate cut. Which outcome is the bigger surprise: the cut, or no change?",
       control: {
@@ -1333,6 +1344,7 @@ const L2106: Lesson = {
         "Expected move = probability × size: 70% of 25 bp is 17.5 bp, so a hold surprises more.",
         "Hawkish and dovish only mean something against expectations. Watch the press conference as well as the decision.",
       ],
+      next: "Next, 2.10.7: your news policy, stand aside, reduce or trade the surprise, decided before the event.",
     },
   },
 };
@@ -1358,6 +1370,7 @@ const L2107: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.7",
+    bridge: "In 2.10.4 to 2.10.6 you read three big releases and saw how they jump. Here you decide in advance what to do about them: stand aside, reduce to a size that survives a gap, as you did for weekends in 2.9.8, or trade the reaction.",
     hook: {
       prompt: "You hold 47 LABX long, risking 98.66. A red event is 20 minutes away. Hold, reduce, or go flat?",
       control: {
@@ -1490,6 +1503,7 @@ const L2107: Lesson = {
         "To hold through an event, size so a k × ATR gap stays within 1R: 30 units, not 47.",
         "The first seconds belong to algorithms. You'd enter late, at the widest spread: no retail edge.",
       ],
+      next: "Next, 2.10.8: the second move, how to trade the reaction once spreads have normalised.",
     },
   },
 };
@@ -1515,6 +1529,7 @@ const L2108: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.8",
+    bridge: "In 2.10.7 trading the reaction was the third policy. Here is how: wait for spreads to normalise, mark the post-release range and trade its break like the range breakout of 2.8.4, or pass when details disagree, as in CPI's two waves (2.10.5).",
     hook: {
       prompt: "Two news policies: enter at the release, or wait for a break of the 5-minute post-release range. Over many events, which has the smaller worst trade?",
       control: {
@@ -1635,6 +1650,7 @@ const L2108: Lesson = {
         "Buy a break of the post-release range, stop at its other side, sized to 1R: 83 units.",
         "Pass on conflicting details, small surprises and pending press conferences: that's where the second move fails.",
       ],
+      next: "Next, 2.10.9: one checklist for every order near news, and the shocks no calendar shows.",
     },
   },
 };
@@ -1660,6 +1676,7 @@ const L2109: Lesson = {
   script: {
     unit: "2.10",
     courseId: "2.10.9",
+    bridge: "From 2.10.1 to 2.10.8 you built the pieces: surprise, calendar, slippage, policies and the second move. Here you join them into one checklist, and face the shock no calendar shows, where, as with the weekend gap in 2.9.8, only size protects you.",
     hook: {
       prompt: "Which of these protects you from an unscheduled shock?",
       control: {
@@ -1775,6 +1792,7 @@ const L2109: Lesson = {
         "No timing dodges an unscheduled shock. Only small size and low leverage cap the damage.",
         "Journal the slippage you paid per event type: it's the real price of trading news.",
       ],
+      next: "Next: the 2.10 checkpoint. Then unit 2.11, Portfolio risk and performance, because one event can hit all your positions at once.",
     },
   },
 };
@@ -2592,6 +2610,19 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_2_10: UnitContent = {
+  intro: {
+    summary:
+      "A scheduled release is a volatility event before it is information. This unit measures the surprise against consensus, reads the calendar, shows what spreads, slippage and stops do at release time, reads three big releases, and sets your policy: stand aside, reduce, or trade the second move. It follows 2.9, where you learned release times and gap risk.",
+    outcomes: [
+      "Measure a release's surprise against consensus as z, and tell a real surprise from noise.",
+      "Read a calendar row, convert its time to yours, and triage the week before it starts.",
+      "Calculate what a stop really costs when price jumps at a release, in vUSD and in R.",
+      "Read jobs and inflation reports as hot, cold or mixed, and rate decisions against what was priced.",
+      "Choose a news policy in advance, size holds for the gap, and run the checklist before each order.",
+    ],
+    buildsOn:
+      "Builds on 2.9.1 (release times and the DST weeks), 2.9.8 (gaps a stop can't cap), 1.3.7 (slippage and gaps), 1.4.4 (sizing from the stop), 2.4.6 (ATR) and 0.2.2 (expected value, used to price a rate decision).",
+  },
   lessons: [L2101, L2102, L2103, L2104, L2105, L2106, L2107, L2108, L2109],
   questions: QUESTIONS,
   terms: TERMS,

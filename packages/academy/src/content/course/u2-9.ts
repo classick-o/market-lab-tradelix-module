@@ -122,6 +122,7 @@ const L_2_9_1: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.1",
+    bridge: "In 2.8 you picked strategies by regime (2.8.1) and judged them after costs (2.8.10). None of that said when to trade. This unit adds the clock, starting here with when each market is open, in your own time zone.",
     hook: {
       prompt: "It's 15:00 in Bucharest on a Wednesday in July. Which of these are open right now: US stocks (regular session), London stocks, spot FX, crypto?",
       control: {
@@ -225,6 +226,7 @@ const L_2_9_1: Lesson = {
         "When US and EU clocks change on different dates, New York events come an hour earlier for you.",
         "Open isn't liquid: a 24-hour market is busiest when London and New York trade.",
       ],
+      next: "Next, 2.9.2: the FX day split into four sessions, and why the London–New York overlap gives the most movement per pip of spread.",
     },
   },
 };
@@ -252,6 +254,7 @@ const L_2_9_2: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.2",
+    bridge: "In 2.9.1 you saw that spot FX trades all weekday, yet isn't equally busy. Here you split its day into four sessions and rate each by its range per pip of spread, the cost you met in 1.1.1.",
     hook: {
       prompt: "On a major FX pair, which 4-hour window typically moves the most: the Asian session, the London morning, the London–New York overlap, or the New York afternoon?",
       control: {
@@ -376,6 +379,7 @@ const L_2_9_2: Lesson = {
         "More traders mean more movement and tighter spreads; quiet hours cost more for less.",
         "Choose hours by range per unit of spread, not by session folklore or killzones.",
       ],
+      next: "Next, 2.9.3: the rhythm inside one stock session, and why your stop should follow the hour's volatility.",
     },
   },
 };
@@ -403,6 +407,7 @@ const L_2_9_3: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.3",
+    bridge: "In 2.9.2 FX activity rose and fell with the sessions. A stock session has its own rhythm: busy at the open and close, quiet at midday. Here you set stops from each hour's ATR, the measure from 2.4.6.",
     hook: {
       prompt: "Your stop is 0.40 below entry. In the first 30 minutes LABX's 5-minute ATR is 0.60; at midday it is 0.20. When is the stop inside the noise?",
       control: {
@@ -523,6 +528,7 @@ const L_2_9_3: Lesson = {
         "Set the stop from the hour's ATR: 2 × 0.60 = 1.20 at the open, 0.40 at midday.",
         "Quiet hours shrink stops, so costs take more of each R: 0.50R at midday, 0.17R at the open.",
       ],
+      next: "Next, 2.9.4: the opening range breakout, a strategy for the day's busiest minutes, judged after costs.",
     },
   },
 };
@@ -550,6 +556,7 @@ const L_2_9_4: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.4",
+    bridge: "In 2.9.3 the open was the busiest, most volatile half hour of the day. Here you trade it: the opening range breakout, a 2.8.4 breakout entered with a stop order (1.3.3) and judged after costs, as in 2.8.10.",
     hook: {
       prompt: "In a replication, the opening range breakout made about +0.13R per trade before costs. A round trip costs about 0.10R, and stop orders at the open slip. What's left per trade?",
       control: {
@@ -694,6 +701,7 @@ const L_2_9_4: Lesson = {
         "A +0.13R gross edge turns into −0.15R after LABX's costs and slippage at the open.",
         "Trade it only on in-play days with a modest range; skip quiet days and releases.",
       ],
+      next: "Next, 2.9.5: the other opening setup, the gap, and when to go with it, fade it or pass.",
     },
   },
 };
@@ -721,6 +729,7 @@ const L_2_9_5: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.5",
+    bridge: "In 2.9.4 you traded the first minutes' range. The other opening setup is the gap: price opens away from yesterday's close. Here you use the gap types from 2.5.6 to choose go, fade or pass, against what chance alone produces.",
     hook: {
       prompt: "LABX closes at 100.00 and opens at 101.00 with no news. On a pure random walk with a daily standard deviation of 1.60, how often would price touch 100.00 again that day?",
       control: {
@@ -828,6 +837,7 @@ const L_2_9_5: Lesson = {
         "Go with news and volume, fade a quiet gap inside last week's range, otherwise pass.",
         "On a random walk, a 1.00 gap with σ 1.60 is revisited 53% of the time.",
       ],
+      next: "Next, 2.9.6: day, swing or position trading, chosen from costs, gap risk and the hours you really have.",
     },
   },
 };
@@ -855,6 +865,7 @@ const L_2_9_6: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.6",
+    bridge: "In 2.9.4 costs sank an intraday edge, and in 2.9.5 passing was often right. Here you choose a style, day, swing or position, from costs in R (1.4.6), gap risk and your own hours (2.9.1). The base rates from 0.1.5 return.",
     hook: {
       prompt: "Same gross edge: +0.30R per trade. Day trader: 25 trades a week, stop 0.50, costs 0.40R per trade. Swing trader: 3 trades a week, stop 3.00, costs 0.07R. Who keeps more per week?",
       control: {
@@ -970,6 +981,7 @@ const L_2_9_6: Lesson = {
         "Weekly costs in R = trades × cost ÷ stop: 10 × 0.20 ÷ 1.00 = 2.00R.",
         "Pick the style your hours, account and temper allow; not day trading is a valid choice.",
       ],
+      next: "Next, 2.9.7: scalping, the shortest style, where costs set a break-even win rate few setups can reach.",
     },
   },
 };
@@ -997,6 +1009,7 @@ const L_2_9_7: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.7",
+    bridge: "In 2.9.6 tight stops made a day trader's costs bigger than the edge. Scalping takes that to the extreme: targets of a few tenths, with the same 0.20 round trip from 1.1.5. Here you find the win rate it needs to break even.",
     hook: {
       prompt: "A scalper on LABX near 100 targets 0.30 and stops at 0.30. Round-trip costs are about 0.20 per unit. What win rate breaks even?",
       control: {
@@ -1129,6 +1142,7 @@ const L_2_9_7: Lesson = {
         "Cost drag = costs ÷ average gross profit: 67% on a 0.30 scalp, under 1% on a 150-pip swing.",
         "Retail scalpers pay the spread to professionals who earn it; the base rates are grim.",
       ],
+      next: "Next, 2.9.8: the opposite risk, holding through weekends and holidays, when a stop can't protect you from the gap.",
     },
   },
 };
@@ -1156,6 +1170,7 @@ const L_2_9_8: Lesson = {
   script: {
     unit: "2.9",
     courseId: "2.9.8",
+    bridge: "In 2.9.7 short holds paid too much in costs. Longer holds pay in gaps: in 2.9.6 an overnight gap made a swing trade −3R. Here you size for weekend and holiday gaps (1.3.7), and meet FX rollover, the 17:00 New York close from 2.9.2.",
     hook: {
       prompt: "Friday: long 47 LABX at 100.00, stop 98.00, planned loss 98.66. Monday's first bid is 95.50. What do you lose?",
       control: {
@@ -1275,6 +1290,7 @@ const L_2_9_8: Lesson = {
         "Size weekend holds for a 3 × ATR gap within 2R: 32 units instead of 47.",
         "FX rolls over at 17:00 New York, usually 00:00 in Bucharest; spreads widen around it.",
       ],
+      next: "Next: the 2.9 checkpoint. Then unit 2.10, News and the economic calendar: release times you can now convert, and the gaps they cause.",
     },
   },
 };
@@ -1927,6 +1943,19 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 2.9 · Sessions, time and intraday (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_2_9: UnitContent = {
+  intro: {
+    summary:
+      "Unit 2.8 matched strategies to regimes; this unit adds the clock. You convert market hours across time zones, read FX sessions and the intraday rhythm, test two opening strategies after costs, choose between day and swing trading, meet scalping's cost wall, and plan for weekend gaps. It prepares 2.10, where a release's exact minute matters.",
+    outcomes: [
+      "Convert market hours and event times to your own clock, including the weeks US and EU clocks disagree.",
+      "Pick trading hours by range per unit of spread, and set stops from the hour's ATR.",
+      "Judge opening range breakouts and gap trades after costs and against the random-walk base rate.",
+      "Choose day, swing or position trading from your costs, hours and temperament, and see why scalping rarely survives costs.",
+      "Size a weekend hold so a 3 × ATR gap stays within 2R.",
+    ],
+    buildsOn:
+      "Builds on 1.1 and 1.4.6 (costs, costs in R), 1.3.7 (slippage and gaps), 1.4.4 (sizing from the stop), 2.4.6 (ATR), 2.5.6 (gap types) and 2.8, whose strategies 2.8.10 judged after costs.",
+  },
   lessons: [L_2_9_1, L_2_9_2, L_2_9_3, L_2_9_4, L_2_9_5, L_2_9_6, L_2_9_7, L_2_9_8],
   questions: QUESTIONS,
   terms: TERMS,
