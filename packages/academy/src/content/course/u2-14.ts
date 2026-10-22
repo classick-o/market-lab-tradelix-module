@@ -1973,7 +1973,7 @@ const CONCEPTS: Concept[] = [
     example: "Buy 100 shares at the ask, 50.00, before a 1.00 dividend; sell after the ex-date at the bid, 48.90. Price −110.00, dividend +100.00, commissions 2.50 and 2.45: −14.95 before taxes.",
     related: ["stocks-and-etfs", "trading-costs"],
     missions: [],
-    lessons: ["2.14.1"],
+    lessons: ["2.14.1", "3.8.9"],
   },
   {
     id: "short-selling",

@@ -1,4 +1,2491 @@
-import type { UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, UnitContent } from "../../types";
+
+/*
+ * Unit 3.8 · Company fundamentals and earnings: 3.8.1–3.8.9.
+ *
+ * Conventions in this file:
+ * - LABA, LABB, LABD and LABE are fictional companies (LABA steady, LABB fast-growing, LABD indebted, LABE small).
+ *   Each lesson's statements, ratios and prices are its own worked example; amounts are in millions of vUSD.
+ * - Every number in the copy was checked with a scratch script: DCF and reverse DCF, Gordon multiples,
+ *   Black–Scholes prices (r = 0, 365-day year), sizing with 0.05% commission per side rounded up to the cent.
+ * - Simulator figures (the 3×3 reaction matrix, the drift paths, the PEAD cost test, the straddle record) are
+ *   lesson design data, not facts about any market; the copy says so. Research figures carry their evidence grade.
+ * - Candle indices in layers are 0-based; copy uses 1-based bar numbers ("bar 31" is index 30).
+ */
+
+/** Rows of [open, high, low, close] → candles. */
+const k = (rows: [number, number, number, number][]): CandleData[] => rows.map(([o, h, l, c]) => ({ o, h, l, c }));
+/** Flat placeholder candles for figures drawn only with layers (`hideCandles`). */
+const blank = (n: number, p: number): CandleData[] => Array.from({ length: n }, () => ({ o: p, h: p, l: p, c: p }));
+
+// ─── Chart data ─────────────────────────────────────────────────────────────
+
+/**
+ * 3.8.3: price against the discount rate, 8% to 12% in half-point slots, both set to 100 at 8%:
+ * 100 × (0.08 − g) ÷ (r − g). Slow grower g = 1%; fast grower g = 6%.
+ */
+const RATE_G1 = [100, 93.33, 87.5, 82.35, 77.78, 73.68, 70, 66.67, 63.64];
+const RATE_G6 = [100, 80, 66.67, 57.14, 50, 44.44, 40, 36.36, 33.33];
+
+/**
+ * 3.8.5: LABB's ten-day run-up from 93.46 to 100.00 (+7.0%), the report after the close, the extended-hours bar
+ * (low 87.20), and the next session's open at 88.00 (−12.0% from the close).
+ */
+const REPORT: CandleData[] = k([
+  [93.46, 94.35, 93.06, 94.1], [94.1, 95.1, 93.73, 94.85], [94.85, 95.29, 94.34, 94.6], [94.6, 95.75, 94.03, 95.4], [95.4, 96.8, 94.94, 96.2],
+  [96.2, 96.69, 95.7, 96.05], [96.05, 97.37, 95.71, 97.1], [97.1, 98.6, 96.74, 98.0], [98.0, 99.25, 97.55, 98.9], [98.9, 100.35, 98.36, 100.0],
+  [100.0, 100.6, 87.2, 88.4], [88.0, 89.3, 86.9, 88.7],
+]);
+
+/**
+ * 3.8.8: synthetic average cumulative return (%) after the report day, days 0–60 in 5-day slots:
+ * 2.70 × (1 − e^(−t/30)) ÷ (1 − e^(−2)) for the top SUE decile, −2.30 × the same for the bottom. Spread at day 60: 5.00.
+ */
+const DRIFT_TOP = [0, 0.48, 0.89, 1.23, 1.52, 1.77, 1.97, 2.15, 2.3, 2.43, 2.53, 2.62, 2.7];
+const DRIFT_BOTTOM = [0, -0.41, -0.75, -1.05, -1.29, -1.5, -1.68, -1.83, -1.96, -2.07, -2.16, -2.23, -2.3];
+
+/**
+ * 3.8.9: LABA, 36 bars. Bars 1–30 climb from 107.60 to a close of 120.00; bar 31 opens at 30.10 after a 4-for-1 split.
+ * Every pre-split price is a multiple of 0.04, so ÷ 4 is exact to the cent. MA(20) unadjusted: 116.20 at bar 30,
+ * 91.37 at bar 36. SPLIT_ADJ divides bars 1–30 by 4: MA(20) 29.05 at bar 30, 29.16 at bar 31.
+ */
+const SPLIT_ROWS: [number, number, number, number][] = [
+  [107.6, 108.88, 106.96, 108.36], [108.36, 109.8, 108.04, 109.24], [109.24, 109.6, 108.72, 109.04], [109.04, 110.52, 108.48, 109.88], [109.88, 111.24, 109.2, 110.56],
+  [110.56, 111.36, 109.52, 110.2], [110.2, 111.28, 109.8, 110.92], [110.92, 112.04, 110.68, 111.72], [111.72, 112.08, 111.4, 111.84], [111.84, 112.88, 111.52, 112.12],
+  [112.12, 112.68, 111.32, 111.84], [111.84, 112.64, 111.12, 112.36], [112.36, 113.56, 112.16, 113.28], [113.28, 113.64, 112.68, 113.36], [113.36, 114.92, 112.76, 114.48],
+  [114.48, 115.12, 113.68, 114.16], [114.16, 115.2, 113.64, 114.4], [114.4, 115.52, 113.88, 115.08], [115.08, 116.16, 114.44, 115.64], [115.64, 117.16, 115.0, 116.4],
+  [116.4, 117.08, 115.76, 116.68], [116.68, 117.44, 115.76, 116.24], [116.24, 117.8, 115.96, 117.36], [117.36, 118.6, 116.96, 118.08], [118.08, 118.52, 117.72, 118.24],
+  [118.24, 118.8, 117.68, 118.4], [118.4, 119.56, 117.76, 118.8], [118.8, 120.08, 118.4, 119.56], [119.56, 120.2, 119.32, 119.68], [119.68, 120.32, 119.2, 120.0],
+  [30.1, 30.44, 29.94, 30.25], [30.25, 30.53, 30.17, 30.4], [30.4, 30.58, 30.18, 30.32], [30.32, 30.64, 30.14, 30.55], [30.55, 30.84, 30.37, 30.7],
+  [30.7, 30.76, 30.43, 30.62],
+];
+const SPLIT: CandleData[] = k(SPLIT_ROWS);
+const SPLIT_ADJ: CandleData[] = k(SPLIT_ROWS.map((r, i) => (i < 30 ? (r.map((x) => Math.round(x * 25) / 100) as [number, number, number, number]) : r)));
+
+// ─── 3.8.1 · Three statements, one company ──────────────────────────────────
+
+const L381: Lesson = {
+  id: "3.8.1",
+  title: "Three statements, one company",
+  topic: "market_fundamentals",
+  level: "intermediate",
+  tier: "free",
+  minutes: 7,
+  summary: "Net income links the income statement, balance sheet and cash-flow statement, and receivables, inventory and capex explain why profit and cash can move apart.",
+  objectives: [
+    "Trace how net income flows into the balance sheet and the cash-flow statement.",
+    "Compute operating cash flow and free cash flow from given line items.",
+    "Explain why profit and cash can move in opposite directions.",
+  ],
+  blocks: [],
+  practice: [{ kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" }],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.1",
+    hook: {
+      prompt: "LABA reports record quarterly profit: net income of 60m vUSD. Yet its cash fell by 45m. What is the most likely reason?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "error", label: "The report contains an error", feedback: "Profit and cash often differ in a correct report. The cash-flow statement shows exactly where they parted." },
+          { id: "credit", label: "Customers haven't paid yet, and it bought equipment" },
+          { id: "price", label: "The share price fell", feedback: "The share price is set by the market. It doesn't touch the company's own cash." },
+          { id: "tax", label: "It paid its taxes twice", feedback: "Rare, and it would show up as a cost. Check the ordinary reasons first: unpaid sales, stock and equipment." },
+        ],
+        answer: "credit",
+      },
+      compare: "You picked {yours}. Net income 60 + depreciation 20 − receivables up 80 − inventory up 30 = operating cash flow −30m. Minus capex 15m: free cash flow −45m. No new debt or shares, so cash fell 45m.",
+      concept: "financial-statements",
+    },
+    learn: [
+      {
+        kind: "figure",
+        title: "One number, three statements",
+        figure: {
+          kind: "flow",
+          start: "is",
+          nodes: [
+            { id: "is", text: "Income statement: revenue − costs = net income, 60m", kind: "pause", next: "bs" },
+            { id: "bs", text: "Balance sheet: retained earnings, part of equity, rise by 60m", kind: "pause", next: "cf" },
+            { id: "cf", text: "Cash-flow statement: 60m + depreciation − rise in receivables and inventory", kind: "pause", next: "capex" },
+            { id: "capex", text: "Capex: PP&E rises on the balance sheet; cash leaves as investing cash flow", kind: "end" },
+          ],
+          steps: [
+            "The income statement turns a quarter's revenue into net income: 60m.",
+            "Net income not paid out lands in retained earnings, part of equity on the balance sheet.",
+            "The cash-flow statement starts from 60m, adds back depreciation and subtracts the rise in receivables and inventory.",
+            "Capex raises PP&E on the balance sheet and leaves as investing cash flow.",
+          ],
+        },
+        text: "The [[income-statement]] covers a period, the [[balance-sheet]] is a snapshot on one date, and the [[cash-flow-statement]] shows the cash that actually moved. Net income is the thread that ties all three.",
+        concept: "financial-statements",
+      },
+      {
+        kind: "worked",
+        title: "From profit to cash",
+        lines: [
+          "Net income: +60m.",
+          "Depreciation is a cost that spent no cash this quarter: add back +20m.",
+          "Receivables rose 80m: sales booked, cash not yet collected: −80m.",
+          "Inventory rose 30m: cash spent on goods still unsold: −30m.",
+          "[[operating-cash-flow|Operating cash flow]] = 60 + 20 − 80 − 30 = ?",
+        ],
+        ask: {
+          answer: -30,
+          tolerance: 0,
+          unit: "m",
+          feedback: [
+            { value: 30, text: "Check the sign. Receivables and inventory both rose, so they took cash away." },
+            { value: 190, text: "Rising receivables and inventory are cash going out. Subtract them." },
+            { value: -70, text: "Depreciation is added back: it lowered profit without spending cash." },
+          ],
+          correct: "Right: −30m. The business made a profit and still burned cash.",
+          incorrect: "Start at 60, add 20, then subtract 80 and 30.",
+        },
+        after: "Then subtract the 15m of [[capex]]: [[free-cash-flow]] = −30 − 15 = −45m. With no new debt or shares, that's exactly the fall in cash.",
+        concept: "free-cash-flow",
+      },
+      {
+        kind: "match",
+        title: "Where it shows up first",
+        prompt: "Match each transaction with the first line it changes.",
+        columns: ["Transaction", "First line changed"],
+        pairs: [
+          { left: "Sell 10m of goods on credit", right: "Receivables", wrong: "A credit sale is revenue now and cash later. Until the customer pays, it sits in receivables." },
+          { left: "Buy a 15m machine", right: "Capex and PP&E", wrong: "A machine lasts years. Cash leaves now as capex; profit feels it slowly, through depreciation." },
+          { left: "Pay a 5m dividend", right: "Financing cash flow and retained earnings", wrong: "A dividend isn't a cost. It's a payout to owners: it cuts retained earnings and leaves as financing cash flow." },
+          { left: "Issue 20m of new shares", right: "Financing cash flow and equity", wrong: "New shares bring cash in from investors. That's financing, not operations, and it raises equity." },
+        ],
+        concept: "financial-statements",
+      },
+      {
+        kind: "explain",
+        title: "Why profit and cash part ways",
+        text: "Profit counts a sale when it's made; cash counts it when it's paid. Growing receivables and inventory, and heavy [[capex]], push cash below profit. Collecting old receivables or cutting inventory does the reverse. Net income divided by the share count is [[eps]], the headline number, and it inherits all of these gaps.",
+      },
+      // Try (statement-builder isn't built yet): choose a quarter-2 plan, then compute it.
+      {
+        kind: "predict",
+        title: "Run LABA for a quarter",
+        prompt: "Quarter 1: LABA sells 400m, all for cash, and earns 48m (12%); free cash flow is 48m. Which quarter-2 plan raises net income but turns free cash flow negative?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "capex", label: "All cash sales; buy a 40m machine", feedback: "Profit stays at 48m: the machine reaches it slowly, through depreciation. Free cash flow falls to 8m, still positive." },
+            { id: "credit", label: "Sell 80% on credit; buy a 40m machine" },
+            { id: "shares", label: "All cash sales; issue 50m of new shares", feedback: "Cash rises 98m, but 50m of it is financing. Net income and free cash flow both stay at 48m." },
+            { id: "both", label: "Issue 50m of shares; buy a 40m machine", feedback: "The shares pay for the machine. Net income stays 48m, free cash flow is 8m, and cash still rises." },
+          ],
+          answer: "credit",
+        },
+        reveal: "Credit wins buyers: revenue rises to 450m and net income to 54m. But a third of the credit sales are still unpaid at the quarter's end, so receivables rise 120m. Add the 40m machine and free cash flow turns deeply negative. Next, the sum.",
+        concept: "free-cash-flow",
+      },
+      {
+        kind: "worked",
+        title: "The plan, line by line",
+        lines: [
+          "Revenue 450m × 12% margin = net income 54m, up 6m.",
+          "Credit sales: 80% × 450 = 360m. A third is unpaid at quarter-end: receivables +120m.",
+          "Operating cash flow = 54 − 120 = −66m.",
+          "Capex 40m. Free cash flow = −66 − 40 = ?",
+        ],
+        ask: {
+          answer: -106,
+          tolerance: 0,
+          unit: "m",
+          feedback: [
+            { value: -66, text: "That's operating cash flow. Subtract the 40m of capex." },
+            { value: 14, text: "54 − 40 skips the receivables. Unpaid sales are profit without cash." },
+          ],
+          correct: "Right: −106m. Profit up 6m; free cash flow down from +48m to −106m.",
+          incorrect: "Operating cash flow −66m, minus capex 40m.",
+        },
+        after: "Profit up, cash down, from ordinary decisions. Nothing in the report is wrong; the cash-flow statement shows what the profit line hides. If customers pay next quarter, cash catches up.",
+        concept: "free-cash-flow",
+      },
+      {
+        kind: "callout",
+        tone: "key",
+        text: "Read the cash-flow statement next to the profit line. Net income rising while operating cash flow falls is a question to answer: how much cash is tied up in receivables and inventory, and will it come back?",
+      },
+    ],
+    check: ["q-3.8.1-1", "q-3.8.1-2", "q-3.8.1-3"],
+    recap: {
+      takeaways: [
+        "Net income links the statements: it feeds retained earnings and starts the cash-flow statement.",
+        "Operating cash flow adds back depreciation and subtracts rising receivables and inventory; FCF subtracts capex.",
+        "Credit sales and capex can lift profit while free cash flow turns negative.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.2 · Earnings quality and key ratios ────────────────────────────────
+
+const L382: Lesson = {
+  id: "3.8.2",
+  title: "Earnings quality and key ratios",
+  topic: "market_fundamentals",
+  level: "intermediate",
+  tier: "free",
+  minutes: 7,
+  summary: "Adjusted EPS can hide recurring costs, dilution and capex; cash per share, growth without buybacks and leverage ratios show what the profit is worth.",
+  objectives: [
+    "Rank companies by free cash flow per share when their adjusted EPS is identical.",
+    "Separate EPS growth that comes from the business from growth that comes from buybacks.",
+    "Use leverage and coverage ratios to flag a fragile balance sheet.",
+  ],
+  blocks: [],
+  practice: [{ kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" }],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.2",
+    hook: {
+      prompt: "LABA and LABB both report adjusted EPS of 2.00. LABB pays staff mostly in new shares, so its share count grows 6% a year, and it spends heavily on equipment. Which earns more cash per share?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "laba", label: "LABA" },
+          { id: "labb", label: "LABB", feedback: "LABB's 2.00 leaves out its share-based pay, and equipment spending eats its cash. Per share, it keeps far less." },
+          { id: "same", label: "The same", feedback: "Same adjusted EPS, very different cash. Adjusted EPS leaves out whatever each company chose to leave out." },
+        ],
+        answer: "laba",
+      },
+      compare: "You picked {yours}. LABA: free cash flow 210m ÷ 100m shares = 2.10 a share. LABB: operating cash flow 240m − capex 160m = 80m, or 0.80 a share, and next year 6% more shares split it.",
+      concept: "earnings-quality",
+    },
+    learn: [
+      {
+        kind: "worked",
+        title: "Two EPS numbers",
+        lines: [
+          "LABB's adjusted EPS: 2.00. Its GAAP EPS, under the accounting rules: 1.10.",
+          "The 0.90 gap: share-based pay 0.70, plus 'one-off' restructuring costs 0.20.",
+          "Share-based pay is a real cost, paid in new shares instead of cash: it shows up as [[dilution]].",
+          "The 'one-off' costs have appeared in each of the last four years.",
+        ],
+        after: "[[adjusted-eps|Adjusted EPS]] is the company's own definition. Read what it leaves out: a cost that comes back every year isn't one-off, and paying in shares is still paying.",
+        concept: "earnings-quality",
+      },
+      {
+        kind: "worked",
+        title: "Growth from a buyback",
+        lines: [
+          "LABD's net income: 100m last year and 100m this year.",
+          "A [[share-buyback]] cuts its shares from 100m to 95m.",
+          "EPS: 100 ÷ 100 = 1.00 last year; 100 ÷ 95 = 1.053 this year.",
+          "EPS growth, in % = ?",
+        ],
+        ask: {
+          answer: 5.3,
+          tolerance: 0.1,
+          unit: "%",
+          feedback: [
+            { value: 5, text: "5m is 5% of the old share count, but EPS divides by the new, smaller count: 1.053 ÷ 1.00." },
+            { value: 0, text: "Profit growth is 0%. EPS growth isn't: the same profit over fewer shares." },
+          ],
+          correct: "Right: +5.3% EPS growth. Business growth: 0%.",
+          incorrect: "1.053 ÷ 1.00 − 1, in %.",
+        },
+        after: "Business growth: 0%. The buyback raised EPS by shrinking the denominator. That isn't bad, but it isn't the business growing, and if borrowed money paid for it, risk went up too.",
+        concept: "earnings-quality",
+      },
+      {
+        kind: "match",
+        title: "What each ratio measures",
+        prompt: "Match each ratio with what it tells you.",
+        columns: ["Ratio", "Measures"],
+        pairs: [
+          { left: "[[roe|ROE]]: net income ÷ equity", right: "Profit on each unit of the owners' money", wrong: "ROE puts profit over equity, the owners' stake. Debt can inflate it by shrinking that stake." },
+          { left: "[[net-debt|Net debt]] ÷ EBITDA", right: "Years of operating earnings needed to repay the debt", wrong: "Net debt over EBITDA, operating profit before depreciation, is roughly how many years of earnings the debt equals." },
+          { left: "[[interest-coverage|Interest coverage]]: EBIT ÷ interest", right: "How many times operating profit pays the interest bill", wrong: "Coverage divides operating profit by interest. Near 1, any dip in profit leaves the interest unpaid." },
+          { left: "Inventory days", right: "How long goods sit before they're sold", wrong: "Inventory days measure how long stock waits on the shelf. Rising faster than sales means goods are piling up." },
+        ],
+        concept: "earnings-quality",
+      },
+      {
+        kind: "callout",
+        tone: "warning",
+        text: "LABD's ROE is 20%: net income 100m ÷ equity 500m. But debt funds 2,000m of its 2,500m of assets, a debt-to-equity ratio of 4. On its assets it earns 4%. That 20% is borrowed: a rate rise or a weak year hits it first.",
+      },
+      // Try (ratio-detective isn't built yet): read the table, then tag the three companies.
+      {
+        kind: "worked",
+        title: "Three companies, eight ratios",
+        lines: [
+          "LABA: ROE 18%, ROIC 16%, net debt/EBITDA 0.4×, coverage 22×, current ratio 1.8, inventory days 40 → 41, receivable days 35, FCF margin 14%.",
+          "LABD: ROE 20%, ROIC 7%, net debt/EBITDA 4.8×, coverage 1.9×, current ratio 0.9, inventory days 37 → 38, receivable days 40, FCF margin 5%.",
+          "LABE: ROE 11%, ROIC 10%, net debt/EBITDA 1.2×, coverage 9×, current ratio 2.4, inventory days 60 → 95, receivable days 58, FCF margin −3%. Sales grew 4%.",
+        ],
+        after: "ROIC is the return on all the capital, debt included. Arrows show last year → this year.",
+        concept: "earnings-quality",
+      },
+      {
+        kind: "match",
+        title: "Tag the three",
+        prompt: "From the table, tag the levered company, the one with an inventory problem and the steady compounder.",
+        columns: ["Company", "Tag"],
+        pairs: [
+          { left: "LABA", right: "Steady compounder", wrong: "LABA: high returns on capital, little debt, flat inventory days and real free cash flow." },
+          { left: "LABD", right: "Levered", wrong: "LABD's 20% ROE sits on a 7% ROIC, net debt of 4.8× EBITDA and interest covered just 1.9×. The return is borrowed." },
+          { left: "LABE", right: "Inventory problem", wrong: "LABE's inventory days jumped from 60 to 95 while sales grew 4%: goods are piling up, and free cash flow turned negative." },
+        ],
+        correct: "Leverage shows in net debt/EBITDA and coverage, not in ROE. Inventory days rising faster than sales is the warning sign.",
+        concept: "earnings-quality",
+      },
+    ],
+    check: ["q-3.8.2-1", "q-3.8.2-2", "q-3.8.2-3"],
+    recap: {
+      takeaways: [
+        "Rank by free cash flow per share: adjusted EPS hides recurring costs, dilution and capex.",
+        "A buyback lifts EPS with the same profit; that growth isn't the business growing.",
+        "Leverage shows in net debt/EBITDA and interest coverage, not in a high ROE.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.3 · Multiples: what the price already assumes ──────────────────────
+
+const L383: Lesson = {
+  id: "3.8.3",
+  title: "Multiples: what the price already assumes",
+  topic: "market_fundamentals",
+  level: "intermediate",
+  tier: "free",
+  minutes: 7,
+  summary: "P/E and EV/EBITDA summarise what the price assumes; EV counts debt and cash, and fast growers are the most sensitive to discount rates.",
+  objectives: [
+    "Compute P/E, enterprise value and EV/EBITDA from price, shares, debt and cash.",
+    "Explain why EV multiples compare companies with different debt fairly.",
+    "Predict which stock falls more when discount rates rise one point.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "arena", ref: "event_shock", label: "Arena: unexpected event" },
+    { kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.3",
+    hook: {
+      prompt: "Discount rates rise from 8% to 9%. LABB grows fast, LABA slowly; both earn the same cash today. Which stock falls more, and by roughly how much?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "b33", label: "LABB, about −33%" },
+          { id: "b12", label: "LABB, about −12%", feedback: "LABB does fall more, by far more than 12%: its price goes from 50 times its cash to 33 times." },
+          { id: "a33", label: "LABA, about −33%", feedback: "The slow grower's cash arrives sooner, so a higher rate hurts it less: −12.5%." },
+          { id: "same", label: "Both about −11%", feedback: "One point of rate isn't one fixed percentage. The closer growth is to the rate, the bigger the hit." },
+        ],
+        answer: "b33",
+      },
+      compare: "You picked {yours}. With price = cash ÷ (r − g): LABB, g = 6%, goes from 1 ÷ 0.02 = 50 to 1 ÷ 0.03 = 33.33, −33%. LABA, g = 1%, goes from 14.29 to 12.50, −12.5%.",
+      concept: "equity-duration",
+    },
+    learn: [
+      {
+        kind: "worked",
+        title: "Price multiples and EV",
+        lines: [
+          "LABD: price 40.00, EPS 2.00. [[pe-ratio|P/E]] = 40 ÷ 2 = 20.",
+          "100m shares × 40.00 = market cap 4,000m.",
+          "Add net debt of 1,000m: [[enterprise-value|enterprise value]] = 5,000m, the price of the whole business.",
+          "EBITDA, operating profit before depreciation: 500m. [[ev-ebitda|EV/EBITDA]] = ?",
+        ],
+        ask: {
+          answer: 10,
+          tolerance: 0.05,
+          unit: "×",
+          feedback: [{ value: 8, text: "4,000 ÷ 500 uses the market cap alone. EV adds the 1,000m of net debt." }],
+          correct: "Right: 10×. A buyer of the whole company pays 5,000m: the shares plus the debt it takes on.",
+          incorrect: "EV ÷ EBITDA = 5,000 ÷ 500.",
+        },
+        after: "P/E looks only at the shares. EV/EBITDA looks at the whole business, debt included, so it compares companies with different balance sheets.",
+        concept: "valuation-multiples",
+      },
+      {
+        kind: "predict",
+        title: "Cheaper, or financed differently?",
+        prompt: "LABA has the same market cap, 4,000m, and the same EBITDA, 500m, but 1,000m of net cash instead of net debt. Which business is cheaper?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "laba", label: "LABA" },
+            { id: "labd", label: "LABD", feedback: "LABD's buyer also takes on 1,000m of debt. Its whole business costs 5,000m, not 4,000m." },
+            { id: "same", label: "Neither: same market cap, same EBITDA", feedback: "Market cap ignores debt and cash. Buy all of LABA's shares and 1,000m of cash comes with them." },
+          ],
+          answer: "laba",
+        },
+        reveal: "LABA. Buy all its shares for 4,000m and 1,000m of cash comes with them: the business costs 3,000m, 6× EBITDA, against LABD's 10×. Market cap ÷ EBITDA says 8× for both. 'Cheaper' still isn't 'undervalued': find out why before calling it a bargain.",
+        concept: "valuation-multiples",
+      },
+      {
+        kind: "figure",
+        title: "Same rate rise, different falls",
+        figure: {
+          kind: "chart",
+          chart: {
+            candles: blank(9, 100),
+            hideCandles: true,
+            range: [30, 105],
+            describe: "Price against the discount rate from 8% to 12%, both set to 100 at 8%. Growth 1%: 100, 93.33, 87.50, 82.35, 77.78, 73.68, 70.00, 66.67, 63.64. Growth 6%: 100, 80.00, 66.67, 57.14, 50.00, 44.44, 40.00, 36.36, 33.33.",
+          },
+          steps: [
+            { text: "Both stocks set to 100 at an 8% rate. Each slot right adds half a point.", layers: [{ kind: "level", price: 100, role: "neutral", label: "100 at 8%" }] },
+            {
+              text: "Slow grower, g = 1%: 87.50 at 9%, 63.64 at 12%.",
+              layers: [
+                { kind: "line", values: RATE_G1, role: "neutral", label: "g = 1%" },
+                { kind: "marker", index: 2, price: 87.5, label: "9%", role: "neutral" },
+              ],
+            },
+            {
+              text: "Fast grower, g = 6%: 66.67 at 9%, 33.33 at 12%. A far steeper curve.",
+              layers: [
+                { kind: "line", values: RATE_G6, role: "accent", label: "g = 6%" },
+                { kind: "marker", index: 2, price: 66.67, label: "9%", role: "accent" },
+              ],
+            },
+          ],
+        },
+        text: "Equity duration: the further away a company's cash lies, the more a change in the [[discount-rate]] moves its value. Fast growers' cash lies years ahead, so they behave like long bonds. That's how rate news reaches stock prices: through the multiples.",
+        concept: "equity-duration",
+      },
+      {
+        kind: "callout",
+        tone: "warning",
+        text: "Cheap can stay cheap. A low P/E can mean slow growth, high risk or decline: a [[value-trap]]. A cyclical company's P/E looks high at the bottom of its cycle, because profit is depressed. Multiples are poor short-term timing tools (grade D); value as a long-run factor is graded A/B, with long dry spells.",
+      },
+      // Try (multiple-ranker isn't built yet): rank four durations, then compute one.
+      {
+        kind: "order",
+        title: "Rank the rate shock",
+        prompt: "Four stocks earn the same cash today. Expected growth: LABA 1%, LABD 3%, LABE 5%, LABB 6.5%. The discount rate rises from 8% to 9%. Order them from the biggest fall to the smallest.",
+        items: ["LABB, growth 6.5%", "LABE, growth 5%", "LABD, growth 3%", "LABA, growth 1%"],
+        explain: "By growth, which here means by duration: LABB −40%, LABE −25%, LABD −16.7%, LABA −12.5%. The closer growth sits to the discount rate, the further away the cash, and the bigger the fall.",
+        wrong: "Compute 1 ÷ (r − g) before and after for each. The closer g is to r, the bigger the change.",
+        concept: "equity-duration",
+      },
+      {
+        kind: "worked",
+        title: "One of them, by hand",
+        lines: [
+          "LABE, g = 5%. Before: 1 ÷ (0.08 − 0.05) = 33.33 times its cash.",
+          "After: 1 ÷ (0.09 − 0.05) = 25.00 times its cash.",
+          "Fall, in % = ?",
+        ],
+        ask: {
+          answer: 25,
+          tolerance: 0.1,
+          unit: "%",
+          feedback: [
+            { value: 33.33, text: "That measures the drop against the new price. Measure it from the old one: 8.33 ÷ 33.33." },
+            { value: 8.33, text: "8.33 is the drop in the multiple. As a share of 33.33, it's 25%." },
+          ],
+          correct: "Right: −25%. One point of rate took a quarter off LABE, with no change in its business.",
+          incorrect: "1 − 25.00 ÷ 33.33, in %.",
+        },
+        after: "Same cash, same company, one point of rate: −25%. When a rate surprise hits, the stocks priced furthest into the future move most.",
+        concept: "equity-duration",
+      },
+    ],
+    check: ["q-3.8.3-1", "q-3.8.3-2", "q-3.8.3-3"],
+    recap: {
+      takeaways: [
+        "P/E prices the shares; EV/EBITDA prices the whole business, so debt and cash count.",
+        "A low multiple can mean slow growth or a value trap, not a bargain.",
+        "The closer growth sits to the discount rate, the more a rate rise hits the price.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.4 · DCF and what the price implies ─────────────────────────────────
+
+const L384: Lesson = {
+  id: "3.8.4",
+  title: "DCF and what the price implies",
+  topic: "market_fundamentals",
+  level: "intermediate",
+  tier: "free",
+  minutes: 8,
+  summary: "A DCF values five years of free cash flow plus a terminal value; run in reverse, it shows the growth that today's price already assumes.",
+  objectives: [
+    "Value a company as the present value of five years of free cash flow plus a terminal value.",
+    "Measure how much of the value depends on the terminal value and on the discount rate.",
+    "Reverse a DCF to find the growth that today's price implies.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" },
+    { kind: "mission", ref: "M10", label: "No Trade Is a Trade" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.4",
+    hook: {
+      prompt: "A model values LABB at 1,968m vUSD with a 9% discount rate. Lower the rate to 8% and keep everything else the same. What is the new value?",
+      control: {
+        kind: "slider",
+        min: 1500,
+        max: 2600,
+        step: 10,
+        unit: "m",
+        start: 1970,
+        answer: 2340,
+        tolerance: 20,
+        feedback: [
+          { from: 1500, to: 2050, text: "One point of rate moves a DCF far more than one percent. The value rises about 19%." },
+          { from: 2060, to: 2310, text: "Right direction, too small. Most of the value sits in the terminal value, which is very rate-sensitive." },
+          { from: 2370, to: 2600, text: "Too far. The new value is 2,337m, +18.8%." },
+        ],
+      },
+      compare: "You said {yours}. At 8% the same cash flows are worth 2,337m: +18.8% from one point of discount rate, with nothing about the business changed.",
+      concept: "discounted-cash-flow",
+    },
+    learn: [
+      {
+        kind: "worked",
+        title: "Five years and a tail",
+        lines: [
+          "Free cash flow: 100, 110, 121, 133.1, 146.41m (10% growth a year).",
+          "[[present-value|Present value]] of the five years at 9%: 467.2m.",
+          "[[terminal-value|Terminal value]] = 146.41 × 1.025 ÷ (0.09 − 0.025) = 2,308.8m; discounted five years: 1,500.5m.",
+          "Total: 467.2 + 1,500.5 = 1,967.8m.",
+          "Terminal value's share of the total, in % = ?",
+        ],
+        ask: {
+          answer: 76,
+          tolerance: 1,
+          unit: "%",
+          feedback: [
+            { value: 117, text: "That uses the undiscounted 2,308.8m. Use its present value, 1,500.5m." },
+            { value: 24, text: "That's the five years' share. The rest is the terminal value." },
+          ],
+          correct: "Right: 76%. Three quarters of this value is everything after year five.",
+          incorrect: "1,500.5 ÷ 1,967.8, in %.",
+        },
+        after: "Over three quarters of the value rests on one assumption about the far future: growth of 2.5% a year, forever. That's normal for a [[dcf|DCF]], and it's why small changes move it so much.",
+        concept: "discounted-cash-flow",
+      },
+      {
+        kind: "figure",
+        title: "Two assumptions, big swings",
+        figure: {
+          kind: "bars",
+          unit: "m",
+          bars: [
+            { label: "WACC 8%", value: 2337, role: "up" },
+            { label: "WACC 9% (base)", value: 1968, role: "neutral" },
+            { label: "WACC 10%", value: 1697, role: "down" },
+            { label: "Terminal growth 1.5%", value: 1755, role: "down" },
+            { label: "Terminal growth 2.5% (base)", value: 1968, role: "neutral" },
+            { label: "Terminal growth 3.5%", value: 2258, role: "up" },
+          ],
+          steps: [
+            "WACC 8%, 9%, 10%: 2,337m, 1,968m, 1,697m. One point either way moves the value 14–19%.",
+            "Terminal growth 1.5%, 2.5%, 3.5%: 1,755m, 1,968m, 2,258m. One point moves it 11–15%.",
+          ],
+        },
+        text: "[[wacc|WACC]], the discount rate, and terminal growth are the two least knowable inputs. One point in either moves the value more than most quarters' news.",
+        concept: "discounted-cash-flow",
+      },
+      {
+        kind: "predict",
+        title: "The market disagrees",
+        prompt: "The market values LABB at 2,600m, 632m above the model. What does the gap tell you first?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "short", label: "LABB is overvalued: sell it short", feedback: "That treats your model as the truth. The price may be right and your growth estimate too low." },
+            { id: "implied", label: "The price assumes faster growth than the model; find out how much" },
+            { id: "rate", label: "The model is wrong: lower the rate until it matches", feedback: "Bending the rate to fit the price hides the question. Ask what the price assumes, then judge that." },
+          ],
+          answer: "implied",
+        },
+        reveal: "Run the model in reverse: keep the 9% rate and 2.5% terminal growth, and find the five-year growth that gives 2,600m. That's a [[reverse-dcf]]. It turns 'the price is wrong' into a question you can judge: is that growth believable?",
+        concept: "implied-expectations",
+      },
+      // Try (dcf-slider isn't built yet): interpolate the growth the price implies.
+      {
+        kind: "worked",
+        title: "Reverse the DCF",
+        lines: [
+          "Keep WACC 9% and terminal growth 2.5%. Change only the five-year growth.",
+          "Growth 15% a year: 2,304.6m. Growth 20% a year: 2,686.3m. The price, 2,600m, lies between.",
+          "Interpolate: 15 + 5 × (2,600 − 2,304.6) ÷ (2,686.3 − 2,304.6) = ?",
+        ],
+        ask: {
+          answer: 18.9,
+          tolerance: 0.4,
+          unit: "%",
+          feedback: [{ value: 10, text: "10% is the model's own growth, which gives 1,968m. The price needs more." }],
+          correct: "Right: about 18.9% a year. Solving the model exactly gives 18.9% too.",
+          incorrect: "15 + 5 × 295.4 ÷ 381.7.",
+        },
+        after: "The price implies about 18.9% growth a year for five years, almost double the model's 10%. Not 'overvalued', but 'priced for 18.9%'. Now you can ask whether that's believable, and what would show it.",
+        concept: "implied-expectations",
+      },
+      {
+        kind: "callout",
+        tone: "warning",
+        text: "A model, not a forecast. A DCF to one decimal looks precise, but its inputs are guesses about the far future, and it says nothing about when price and model might meet. As a trading signal it's grade D. Watch for anchoring: once you've built a model, you'll want the market to agree with it.",
+      },
+      {
+        kind: "fields",
+        title: "Your view on LABB",
+        prompt: "Write what you'd have to believe. The price implies about 18.9% growth a year for five years.",
+        fields: [
+          { id: "view", label: "Is 18.9% a year believable for LABB? Why?", kind: "text", default: "", placeholder: "e.g. Only if the new product doubles sales; nothing yet shows that", required: true },
+          { id: "wrong", label: "What would prove you wrong?", kind: "text", default: "", placeholder: "e.g. Two quarters of free cash flow growing faster than 18%", required: true },
+        ],
+        correct: "Saved. You've turned a valuation into a testable view, with the evidence that would change your mind.",
+        concept: "implied-expectations",
+      },
+    ],
+    check: ["q-3.8.4-1", "q-3.8.4-2", "q-3.8.4-3"],
+    recap: {
+      takeaways: [
+        "A DCF is five years of discounted free cash flow plus a terminal value.",
+        "The terminal value is often most of the total; one point of WACC moves value 14–19%.",
+        "Reverse the DCF: find the growth the price implies, then judge whether it's believable.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.5 · Earnings season: expectations, surprise and the gap ────────────
+
+const L385: Lesson = {
+  id: "3.8.5",
+  title: "Earnings season: expectations, surprise and the gap",
+  topic: "risk_management",
+  level: "intermediate",
+  tier: "free",
+  minutes: 8,
+  summary: "A beat is the base case; the surprise's size and guidance move price, and a position held through a report is sized for the gap, not the stop.",
+  objectives: [
+    "Treat a beat as the base case and judge a report by the size of the surprise and by guidance.",
+    "Size a position held through earnings so a gap past the stop costs at most 2R.",
+    "Name the extended-hours risks: thin liquidity, limit-only orders, stops that fill at the open.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "calculator", ref: "risk-calculator", label: "Risk calculator" },
+    { kind: "mission", ref: "M05", label: "Size Matters" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.5",
+    hook: {
+      prompt: "LABB beats the EPS consensus, 2.05 against 2.00. After the close it drops 6%. What is the most likely reason?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "algo", label: "Algorithms misread the number", feedback: "Headline algorithms do react first, but a misread reverses within minutes. A 6% drop that holds has a reason." },
+          { id: "bar", label: "A beat was expected; the real bar was higher" },
+          { id: "never", label: "Earnings never move prices", feedback: "This report moved LABB 6%. The puzzle is why a beat moved it down." },
+          { id: "manip", label: "Short sellers manipulated it", feedback: "Nothing here points to that. A simpler reason fits: the market expected more than the consensus." },
+        ],
+        answer: "bar",
+      },
+      compare: "You picked {yours}. In the S&P 500, about 78% of companies beat the EPS consensus on average over five years, and about 86% in Q2 2026 (FactSet data). A beat is the usual case; the surprise's size and guidance decide the move.",
+      concept: "earnings-surprise",
+    },
+    learn: [
+      {
+        kind: "explain",
+        title: "A beat is the base case",
+        text: "The [[consensus-estimate]] is the visible bar, and most companies clear it: an [[earnings-beat]] is the base case. The real bar can sit higher: a [[whisper-number]], or what buyers already paid for in a run-up. Judge a report by how big the surprise is against usual surprises, and by guidance (next lesson).",
+      },
+      {
+        kind: "figure",
+        title: "Report day, step by step",
+        figure: {
+          kind: "chart",
+          chart: { candles: REPORT },
+          steps: [
+            { text: "Ten days of run-up into the report: +7%, from 93.46 to 100.00.", visible: 10, layers: [{ kind: "bracket", from: 93.46, to: 100, index: 9, label: "+7%", role: "up" }] },
+            { text: "The report lands after the close, at 100.00. The regular session is over.", layers: [{ kind: "marker", index: 9, at: "close", label: "Report", role: "neutral" }] },
+            { text: "Extended hours: thin trading, wide spreads, limit orders only. Price swings to 87.20.", visible: 11, layers: [{ kind: "marker", index: 10, at: "low", label: "87.20", role: "down" }] },
+            {
+              text: "Next morning LABB opens at 88.00, far below a 95.00 stop.",
+              visible: 12,
+              layers: [
+                { kind: "level", price: 95, role: "stop", label: "Stop 95.00" },
+                { kind: "marker", index: 11, at: "open", label: "Open 88.00", role: "down" },
+              ],
+            },
+          ],
+        },
+        text: "A stop is an order, not a guarantee. It usually waits for the regular session, then fills at the first price there, wherever that is.",
+        concept: "gap-risk",
+      },
+      {
+        kind: "worked",
+        title: "Past the stop",
+        lines: ["Long LABB at 100.00, stop 95.00: 1R = 5.00 a unit.", "It opens at 88.00, and the stop fills there: a loss of 12.00 a unit.", "Loss in R = 12.00 ÷ 5.00 = ?"],
+        ask: {
+          answer: 2.4,
+          tolerance: 0.05,
+          unit: "R",
+          feedback: [
+            { value: 1, text: "That's the plan. The gap skipped the stop, so the loss is 12.00, not 5.00." },
+            { value: 1.4, text: "That's the extra loss beyond the plan. The whole loss is 2.4R." },
+          ],
+          correct: "Right: 2.4R, before costs. The stop worked as an order; it just couldn't fill at 95.00.",
+          incorrect: "12.00 ÷ 5.00.",
+        },
+        after: "Planned 1R, lost 2.4R. Nothing went wrong with the order: through a report, your real risk is the gap, not the stop distance.",
+        concept: "gap-risk",
+      },
+      {
+        kind: "worked",
+        title: "Size for the gap",
+        lines: [
+          "Account 10,000, risk 1%: 1R = 100.00. A stop 5.00 away allows 19 units, both commissions included.",
+          "LABB's largest gap in its synthetic history: 15.00, an open at 85.00.",
+          "19 units there lose 285.00 + 1.76 of commissions = 286.76: 2.9R.",
+          "Most whole units that keep that gap within 2R, 200.00, commissions included = ?",
+        ],
+        ask: {
+          answer: 13,
+          tolerance: 0,
+          unit: "units",
+          feedback: [
+            { value: 14, text: "14 units lose 211.30 in that gap, commissions included: over 200.00." },
+            { value: 6, text: "6 units keep the gap within 1R. The rule here allows 2R: 200.00." },
+          ],
+          correct: "Right: 13 units lose 196.21 in that gap; 14 would lose 211.30.",
+          incorrect: "200.00 ÷ 15.00 = 13.3. Check that 13 units, with commissions, stay within 200.00.",
+        },
+        after: "Holding through a report, size from the worst gap you plan for, not from the stop: 13 units, not 19. 'Gap ≤ 2R' accepts a bigger loss than 1R on rare days, never an unplanned one. Gaps beyond the worst one on record can still happen.",
+        concept: "gap-risk",
+      },
+      {
+        kind: "match",
+        title: "Extended hours",
+        prompt: "Reports land when liquidity is thinnest. Match each extended-hours risk with what it does to you.",
+        columns: ["Risk", "What it does"],
+        pairs: [
+          { left: "No NBBO protection", right: "You can fill worse than a price shown elsewhere", wrong: "In regular hours, rules protect you from fills worse than the best displayed quote. In extended hours that protection doesn't apply." },
+          { left: "Few participants", right: "Wide spreads and big swings on small orders", wrong: "With few traders in the book, each order moves price more, and spreads widen." },
+          { left: "Brokers often accept limit orders only", right: "Market orders and stops wait for the open", wrong: "Many brokers allow only limits outside regular hours, so a stop waits for the regular session." },
+          { left: "Options don't trade", right: "No option hedge until the session opens", wrong: "Options generally trade in regular hours only. Overnight, the hedge you'd want isn't available." },
+        ],
+        concept: "gap-risk",
+      },
+      // Try (earnings-sim isn't built yet): sort the plans by the 2R gap rule.
+      {
+        kind: "match",
+        title: "Hold, cut or wait?",
+        prompt: "LABB reports tonight: implied move ±8%, run-up +7%, largest past gap 15.00. Does each plan keep the worst-case gap within 2R?",
+        columns: ["Plan", "Worst-case gap"],
+        pairs: [
+          { left: "Go flat before the report", right: "Within 2R", wrong: "Flat means no gap risk at all. Missing a move is a cost you can afford." },
+          { left: "Hold 13 units through the report", right: "Within 2R", wrong: "13 units lose 196.21 in a 15.00 gap: inside 200.00." },
+          { left: "Wait, then enter after the report with a stop", right: "Within 2R", wrong: "Entering after the report, the gap is behind you. Your risk is the stop again." },
+          { left: "Hold 19 units, stop at 95.00", right: "Breaks the rule", wrong: "The stop fills at the open. In a 15.00 gap, 19 units lose 286.76: 2.9R." },
+          { left: "Hold 19 units, stop moved up to 97.00", right: "Breaks the rule", wrong: "A tighter stop doesn't help against a gap. The open still fills it far below." },
+          { left: "Hold 19 units; sell after hours if it drops", right: "Breaks the rule", wrong: "After hours, liquidity is thin and orders are usually limit-only. A fill near your price isn't guaranteed." },
+        ],
+        correct: "Three valid choices: flat, sized for the gap, or in after the report. Holding a normal-size position through the report breaks the rule.",
+        concept: "gap-risk",
+      },
+      {
+        kind: "callout",
+        tone: "info",
+        text: "Around reports, analysts make [[estimate-revision|estimate revisions]] and move price targets. Rating changes can move a stock for a while, but targets often follow the price rather than lead it (grade C). Read a target raised after a rally as a description of the rally, not a forecast.",
+      },
+    ],
+    check: ["q-3.8.5-1", "q-3.8.5-2", "q-3.8.5-3"],
+    recap: {
+      takeaways: [
+        "A beat is the base case; the surprise's size and guidance move price.",
+        "Holding through a report, size from the worst gap: units within 2R at that gap.",
+        "After hours: thin liquidity, limit-only orders, no option hedges; stops fill at the open.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.6 · Guidance and the reaction matrix ───────────────────────────────
+
+const L386: Lesson = {
+  id: "3.8.6",
+  title: "Guidance and the reaction matrix",
+  topic: "scenario_analysis",
+  level: "intermediate",
+  tier: "free",
+  minutes: 6,
+  summary: "Results and guidance place a report in a 3×3 matrix: aligned cells lean clearly, mixed cells are wide coin flips, and a habitual sandbagger's raise is already priced.",
+  objectives: [
+    "Place an earnings report in the results × guidance matrix.",
+    "Predict the gap sign for the clear cells and flag the mixed cells as uncertain.",
+    "Explain why a habitual sandbagger's raise is already in the price.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "arena", ref: "event_shock", label: "Arena: unexpected event" },
+    { kind: "check", ref: "scenario_analysis", label: "Scenario analysis check" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.6",
+    hook: {
+      prompt: "LABA misses EPS by 3% but raises full-year guidance by 8%. Gap up, gap down, or a coin flip?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "up", label: "Gap up", feedback: "That's the lean: guidance moves future cash more than one quarter does. But the lean is slight, and the spread very wide." },
+          { id: "down", label: "Gap down", feedback: "The miss pulls down, but the raise usually pulls harder. In the simulator this cell leaned slightly up." },
+          { id: "flip", label: "A coin flip", feedback: "Close to the data: a slight lean up, with the widest spread of any cell." },
+        ],
+      },
+      compare: "You said {yours}. In 40 synthetic miss-and-raise reports, 22 gapped up and 17 down, from −14.1% to +13.8%: the widest spread in the grid. A slight lean up, too wide to call.",
+      concept: "earnings-guidance",
+    },
+    learn: [
+      {
+        kind: "figure",
+        title: "Median gap by cell",
+        figure: {
+          kind: "bars",
+          unit: "%",
+          bars: [
+            { label: "Beat + raise", value: 4.9, role: "up" },
+            { label: "In-line + raise", value: 3.85, role: "up" },
+            { label: "Beat + maintain", value: 1.95, role: "up" },
+            { label: "Miss + cut", value: -5.7, role: "down" },
+            { label: "Miss + maintain", value: -3.45, role: "down" },
+            { label: "In-line + cut", value: -2.25, role: "down" },
+            { label: "Miss + raise", value: 1.35, role: "neutral" },
+            { label: "Beat + cut", value: 0.1, role: "neutral" },
+            { label: "In-line + maintain", value: 0.6, role: "neutral" },
+          ],
+          steps: [
+            "Aligned up: beat-and-raise, +4.9%, 35 of 40 gapped up. A raise or a beat alone leans up too.",
+            "Aligned down: miss-and-cut, −5.7%, 39 of 40 gapped down. A miss or a cut alone leans down too.",
+            "Mixed and no-news cells: medians near zero, with miss + raise spanning −14.1% to +13.8%.",
+          ],
+        },
+        text: "Median overnight gap in each cell of the results × [[guidance]] matrix: 40 synthetic reports per cell, simulator design data. The real-world pattern is grade C, from practitioner sources; the simulator copies its shape, not its numbers.",
+        concept: "earnings-guidance",
+      },
+      {
+        kind: "match",
+        title: "Place the report",
+        prompt: "Six synthetic headlines. Place each one in its cell: results against consensus, then the new guidance against the old.",
+        columns: ["Headline", "Cell"],
+        pairs: [
+          { left: "LABA: EPS 2.12 vs 2.00 expected; full-year outlook raised to 8.80 from 8.40", right: "Beat + raise", wrong: "EPS above consensus, outlook up: the [[beat-and-raise]] corner." },
+          { left: "LABD: EPS 1.40 vs 1.55 expected; outlook cut to 5.20 from 5.90", right: "Miss + cut", wrong: "Below consensus and a lower outlook: the miss-and-cut corner." },
+          { left: "LABB: EPS 0.95 vs 0.88 expected; outlook cut to 3.40 from 3.70", right: "Beat + cut", wrong: "The quarter beat, but the outlook fell: a mixed cell." },
+          { left: "LABE: EPS 0.50 vs 0.56 expected; outlook raised to 2.40 from 2.20", right: "Miss + raise", wrong: "The quarter missed, but the outlook rose: a mixed cell." },
+          { left: "LABA: EPS 2.00, as expected; outlook unchanged at 8.80", right: "In-line + maintain", wrong: "Nothing new on either line: the centre of the grid." },
+          { left: "LABD: EPS 1.55, as expected; outlook cut to 5.00 from 5.20", right: "In-line + cut", wrong: "Results matched; the outlook fell. The cut does the work." },
+        ],
+        correct: "Read two comparisons: results against consensus, new guidance against old. The cell comes first; the story comes later.",
+        concept: "earnings-guidance",
+      },
+      {
+        kind: "explain",
+        title: "Three twists",
+        text: "**[[sandbagging|Sandbagging]]**: a company that guides low by habit makes its raises expected, so a small raise disappoints. **Withdrawal**: in a crisis a company may pull its guidance, and the uncertainty itself moves price. **Two waves**: the gap on the release can reverse during the conference call, as management answers questions.",
+      },
+      {
+        kind: "predict",
+        title: "The sandbagger",
+        prompt: "LABE has raised guidance at each of its last 8 reports, always by about 5%. Today it beats and raises by 2%. Which way does it gap?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "up", label: "Up: beat-and-raise is the best cell", feedback: "On paper, yes. But for LABE a raise is the habit, and 2% is less than the 5% traders expected." },
+            { id: "flat", label: "Flat: it's in line with history", feedback: "History says 5%. A 2% raise is below LABE's own usual bar." },
+            { id: "down", label: "Down: the raise is smaller than expected" },
+          ],
+          answer: "down",
+        },
+        reveal: "Down. A habitual sandbagger's raise is already in the price: the market expects its usual 5%. A 2% raise disappoints against that bar. The cell says beat-and-raise; the expectation says miss.",
+        concept: "earnings-guidance",
+      },
+      // Try (reaction-matrix isn't built yet): map all nine cells.
+      {
+        kind: "match",
+        title: "Your map of the grid",
+        prompt: "Predict the gap for all nine cells: up, down or uncertain. Use 'uncertain' where results and guidance disagree, or nothing changed.",
+        columns: ["Cell", "Gap"],
+        pairs: [
+          { left: "Beat + raise", right: "Up", wrong: "35 of 40 gapped up, median +4.9%: the clearest up cell." },
+          { left: "Beat + maintain", right: "Up", wrong: "32 of 40 gapped up, median +1.95%: the beat leans it up." },
+          { left: "In-line + raise", right: "Up", wrong: "34 of 40 gapped up: the raise does the work." },
+          { left: "Miss + cut", right: "Down", wrong: "39 of 40 gapped down, median −5.7%: the clearest down cell." },
+          { left: "Miss + maintain", right: "Down", wrong: "34 of 40 gapped down, median −3.45%." },
+          { left: "In-line + cut", right: "Down", wrong: "31 of 40 gapped down: the cut does the work." },
+          { left: "Miss + raise", right: "Uncertain", wrong: "22 up, 17 down, from −14.1% to +13.8%: too wide to call." },
+          { left: "Beat + cut", right: "Uncertain", wrong: "20 up, 19 down, from −13.3% to +8.5%: a coin flip whose worst gaps are down." },
+          { left: "In-line + maintain", right: "Uncertain", wrong: "No new information: 23 up, 16 down, mostly small moves." },
+        ],
+        correct: "Six cells lean clearly; three are flags, not forecasts. Size a flagged report as if anything can happen.",
+        concept: "earnings-guidance",
+      },
+      {
+        kind: "callout",
+        tone: "info",
+        text: "The matrix is a map of tendencies, graded C: practitioner sources, with academic evidence on guidance not reviewed here. Every cell has outliers, and the bar is what the market expected, not the consensus alone. Write your map in your playbook and correct it against your own record.",
+      },
+    ],
+    check: ["q-3.8.6-1", "q-3.8.6-2", "q-3.8.6-3"],
+    recap: {
+      takeaways: [
+        "Place a report on two lines: results against consensus, new guidance against old.",
+        "Aligned cells lean clearly; mixed cells are wide coin flips: flag them uncertain.",
+        "A habitual sandbagger's raise is expected, so a small raise can gap down.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.7 · Implied move and IV crush ──────────────────────────────────────
+
+const L387: Lesson = {
+  id: "3.8.7",
+  title: "Implied move and IV crush",
+  topic: "scenario_analysis",
+  level: "intermediate",
+  tier: "free",
+  minutes: 8,
+  summary: "The at-the-money straddle prices the expected earnings move; after the report implied volatility collapses, so a call can lose even when the stock rises.",
+  objectives: [
+    "Estimate the market's implied earnings move from the at-the-money straddle price.",
+    "Explain why a call can lose money after the stock rises.",
+    "Compare realised moves with implied moves before calling options cheap or rich.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "arena", ref: "high_volatility", label: "Arena: high volatility" },
+    { kind: "check", ref: "scenario_analysis", label: "Scenario analysis check" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.7",
+    hook: {
+      prompt: "LABB trades at 100.00. The at-the-money straddle for the expiry just after earnings costs 7.95. How big a move, up or down, is the market pricing?",
+      control: {
+        kind: "slider",
+        min: 1,
+        max: 20,
+        step: 0.5,
+        unit: "%",
+        start: 4,
+        answer: 8,
+        tolerance: 0.5,
+        feedback: [
+          { from: 1, to: 6, text: "Higher. The straddle pays for any move beyond its cost: 7.95 on a 100.00 stock." },
+          { from: 10, to: 20, text: "Lower. 7.95 ÷ 100.00 is just under 8%." },
+        ],
+      },
+      compare: "You said {yours}. Straddle ÷ price = 7.95 ÷ 100.00 ≈ 8%: the market prices a move of about ±8% either way through the report.",
+      concept: "implied-move",
+    },
+    learn: [
+      {
+        kind: "explain",
+        title: "Calls, puts and the straddle",
+        text: "A call is the right to buy at the strike price; a put, the right to sell. An option's price is its intrinsic value plus a premium for uncertainty, set by [[implied-volatility]]. A [[straddle]] buys both at the same strike: it pays if price moves far either way. Greeks and strategies come in 4.1.",
+      },
+      {
+        kind: "worked",
+        title: "Before and after the report",
+        lines: [
+          "Before: 7 days left, implied volatility 72%. The call and the put cost 3.98 each (3.976 unrounded): straddle 7.95.",
+          "The report: LABB rises 3%, to 103.00. Implied volatility drops to 30%, with 6 days left.",
+          "The call is now worth 3.50: intrinsic 3.00 plus 0.50 of uncertainty.",
+          "P&L on the call bought at 3.98 = ?",
+        ],
+        ask: {
+          answer: -0.48,
+          tolerance: 0.01,
+          unit: "vUSD",
+          feedback: [
+            { value: 0.48, text: "Check the sign: you paid 3.98 and it's worth 3.50." },
+            { value: 3, text: "That's the gain in intrinsic value. The call also lost most of its uncertainty premium." },
+          ],
+          correct: "Right: −0.48, or −12%, though you called the direction. The premium for uncertainty collapsed.",
+          incorrect: "3.50 − 3.98.",
+        },
+        after: "Most of the 3.98 was paying for uncertainty. The report resolved it, implied volatility fell from 72% to 30%, and that premium vanished faster than the 3% rise could make up: [[iv-crush]].",
+        concept: "iv-crush",
+      },
+      {
+        kind: "predict",
+        title: "The straddle after the report",
+        prompt: "You bought the straddle for 7.95. LABB opens at 103.00 and implied volatility falls to 30%. Roughly what is the straddle worth now?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "11", label: "About 11.00", feedback: "That would need a big move and the old volatility. Both legs lost their uncertainty premium." },
+            { id: "8", label: "About 7.95", feedback: "The 3% move is well under the 8% priced. The straddle can't hold its value." },
+            { id: "4", label: "About 4.00" },
+            { id: "3", label: "About 3.00", feedback: "Close: that's the call's intrinsic value. The two legs still hold about 0.99 of time value." },
+          ],
+          answer: "4",
+        },
+        reveal: "About 3.99: the call 3.50, the put 0.50. That's −50% on a 3% move. After the report, the straddle needs about ±7.9% just to get back to 7.95: the move it was pricing all along.",
+        concept: "iv-crush",
+      },
+      // Try (straddle-pricer isn't built yet): the call's break-even after the report.
+      {
+        kind: "worked",
+        title: "Where the call breaks even",
+        lines: [
+          "After the report, the call is worth its intrinsic value, price − 100, plus a little time value.",
+          "At 30% volatility with 6 days left, the time value near 103.60 is about 0.38.",
+          "Break-even: price − 100 + 0.38 = 3.98. Price = ?",
+        ],
+        ask: {
+          answer: 103.6,
+          tolerance: 0.1,
+          unit: "vUSD",
+          feedback: [
+            { value: 103.98, text: "That ignores the 0.38 of time value still in the call." },
+            { value: 103, text: "At 103.00 the call is worth 3.50, not 3.98. Price has to rise about 0.60 more." },
+          ],
+          correct: "Right: about 103.60, a 3.6% rise, just to break even.",
+          incorrect: "100 + 3.98 − 0.38.",
+        },
+        after: "Below 103.60, LABB can rise and the call still loses. Buying calls before a report isn't a cheap bet on a beat: most of the premium pays for uncertainty, and the report takes it away.",
+        concept: "iv-crush",
+      },
+      {
+        kind: "worked",
+        title: "Cheap or rich? Check the record",
+        lines: [
+          "LABB's last 8 reports, implied move: 8.0, 7.5, 8.5, 9.0, 7.0, 8.0, 7.5, 8.5%. Average 8.0%.",
+          "Actual moves: 6.6, 12.4, 3.0, 6.8, 2.6, 4.4, 4.6, 14.0%. Average 6.8%.",
+          "Average actual ÷ average implied = ?",
+        ],
+        ask: {
+          answer: 0.85,
+          tolerance: 0.01,
+          feedback: [{ value: 1.18, text: "That's implied over actual. Put the actual move on top." }],
+          correct: "Right: 0.85. On average LABB moved 85% of what options priced.",
+          incorrect: "6.8 ÷ 8.0.",
+        },
+        after: "Options were rich here on average: 6 of 8 moves were smaller than priced. But the 2 misses were 12.4% and 14.0%, against 7.5% and 8.5% priced. Eight reports is a tiny sample; compare many before calling options cheap or rich.",
+        concept: "implied-move",
+      },
+      {
+        kind: "callout",
+        tone: "warning",
+        text: "The evidence is mixed (grade C). In one dataset, actual moves averaged about 85% of implied; another study finds earnings options fairly priced in aggregate. Selling straddles wins often and loses rarely, but big: one tail move can erase many crushes. 'Straddles are expensive' is not a free trade.",
+      },
+    ],
+    check: ["q-3.8.7-1", "q-3.8.7-2", "q-3.8.7-3"],
+    recap: {
+      takeaways: [
+        "Implied move ≈ at-the-money straddle ÷ share price: the move the market already prices.",
+        "After the report, implied volatility collapses; a call can lose even when price rises.",
+        "Compare realised and implied moves over many reports before calling options cheap or rich.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.8 · Post-earnings drift (PEAD) ─────────────────────────────────────
+
+const L388: Lesson = {
+  id: "3.8.8",
+  title: "Post-earnings drift (PEAD)",
+  topic: "decision_making",
+  level: "intermediate",
+  tier: "free",
+  minutes: 8,
+  summary: "Prices once drifted for weeks after big earnings surprises; since publication the effect has shrunk, and it survives mainly where costs are highest.",
+  objectives: [
+    "Compute a standardised unexpected earnings (SUE) score.",
+    "Describe PEAD and how much of it has disappeared since publication.",
+    "Find the cost at which a drift portfolio stops paying, and where the drift still survives.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "check", ref: "decision_making", label: "Decision-making check" },
+    { kind: "mission", ref: "M10", label: "No Trade Is a Trade" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.8",
+    hook: {
+      prompt: "After big earnings surprises, prices tend to keep drifting the same way for weeks. Since the 1980s, has that drift grown, stayed the same, or shrunk?",
+      control: {
+        kind: "choice",
+        choices: [
+          { id: "grown", label: "Grown", feedback: "More data and faster markets made it smaller, not bigger: once published, traders went after it." },
+          { id: "same", label: "Stayed the same", feedback: "It hasn't held up. Published edges usually shrink, and this one shrank a lot." },
+          { id: "shrunk", label: "Shrunk" },
+        ],
+        answer: "shrunk",
+      },
+      compare: "You said {yours}. The top-minus-bottom drift spread fell from about 5% in the 1980s–90s to 3% or less in the late 2010s, and Martineau (2021) finds no drift in large caps since about 2006.",
+      concept: "post-earnings-drift",
+    },
+    learn: [
+      {
+        kind: "worked",
+        title: "How big was the surprise?",
+        lines: [
+          "LABB reports EPS of 2.30; the expected figure was 2.00. Surprise: +0.30.",
+          "Its past surprises usually varied by 0.12: their standard deviation.",
+          "[[sue|SUE]] = 0.30 ÷ 0.12 = ?",
+        ],
+        ask: {
+          answer: 2.5,
+          tolerance: 0.05,
+          feedback: [
+            { value: 0.3, text: "That's the raw surprise. Divide it by the usual size of surprises, 0.12." },
+            { value: 0.15, text: "0.30 ÷ 2.00 is the surprise as a share of EPS. SUE divides by the usual surprise, 0.12." },
+          ],
+          correct: "Right: 2.5. A surprise two and a half times the usual size.",
+          incorrect: "0.30 ÷ 0.12.",
+        },
+        after: "Standardising makes surprises comparable across companies, like the standardised surprise for economic data in 2.10. Studies rank stocks by SUE and compare the top and bottom tenths, the deciles.",
+        concept: "earnings-surprise",
+      },
+      {
+        kind: "figure",
+        title: "The drift, as first measured",
+        figure: {
+          kind: "chart",
+          chart: {
+            candles: blank(13, 0),
+            hideCandles: true,
+            range: [-3, 3.2],
+            describe: "Synthetic average cumulative return after the report day, days 0 to 60 in 5-day steps. Top SUE decile: 0 to +2.70%. Bottom decile: 0 to −2.30%. Spread at day 60: 5.0 points.",
+          },
+          steps: [
+            {
+              text: "Top decile of surprises: after the report day, prices keep rising, +2.70% over 60 days.",
+              layers: [
+                { kind: "level", price: 0, role: "neutral", label: "Report-day close" },
+                { kind: "line", values: DRIFT_TOP, role: "up", label: "Top SUE" },
+              ],
+            },
+            { text: "Bottom decile: prices keep falling, −2.30% over the same 60 days.", layers: [{ kind: "line", values: DRIFT_BOTTOM, role: "down", label: "Bottom SUE" }] },
+            { text: "Spread at day 60: 5.0 points, as in the 1980s–90s. By the late 2010s, 3 or less.", layers: [{ kind: "bracket", from: -2.3, to: 2.7, index: 12, label: "5.0", role: "neutral" }] },
+          ],
+        },
+        text: "A synthetic illustration shaped like the early studies: the drift after the report, not the report-day jump. About 25–30% of the original drift came at the next quarters' reports, as the surprise kept surprising.",
+        concept: "post-earnings-drift",
+      },
+      {
+        kind: "explain",
+        title: "Where it came from",
+        text: "[[pead|PEAD]] was first documented by Ball and Brown (1968). Bernard and Thomas (1989) found the top-minus-bottom SUE spread positive in 41 of 48 quarters, 1974–1985. The usual explanations: investors underreact to earnings news, and limits to arbitrage, such as costs and risk, stop traders closing the gap. Grade B, strongly decayed.",
+      },
+      {
+        kind: "callout",
+        tone: "warning",
+        text: "Where it lives: small, illiquid stocks few analysts follow, exactly where spreads, impact and borrowing costs are highest. In large caps it's about zero since around 2006 (Martineau 2021). Across 97 published predictors, returns fell 26% out of sample and 58% after publication (McLean and Pontiff): an [[anomaly]] shrinks once it's known.",
+      },
+      {
+        kind: "match",
+        title: "True or false?",
+        prompt: "Four claims about PEAD. Sort them.",
+        columns: ["Claim", "Verdict"],
+        pairs: [
+          { left: "PEAD has been strongest in small, thinly followed stocks", right: "True", wrong: "The drift concentrates where few analysts look and trading is costly." },
+          { left: "Part of the drift came at the next quarters' reports", right: "True", wrong: "About 25–30% of the drift appeared around the following reports." },
+          { left: "In large caps, PEAD is still a reliable edge", right: "False", wrong: "Martineau (2021) finds no drift in large caps since about 2006." },
+          { left: "The spread was positive in 41 of 48 quarters, so it will keep working", right: "False", wrong: "41 of 48 describes 1974–1985. Since publication, the effect has shrunk sharply." },
+        ],
+        concept: "anomaly-decay",
+      },
+      // Try (sue-portfolio isn't built yet): the cost at which the drift stops paying.
+      {
+        kind: "worked",
+        title: "Where the drift stops paying",
+        lines: [
+          "Simulator, 8 years: buy the top SUE decile and hold 60 days. Gross return per trade: small caps +1.10%, large caps +0.15%.",
+          "Commission: 0.05% each side, 0.10% a round trip.",
+          "Small caps: the widest bid–ask spread, in % of price, at which the drift still breaks even = ?",
+        ],
+        ask: {
+          answer: 1,
+          tolerance: 0.01,
+          unit: "%",
+          feedback: [
+            { value: 1.1, text: "That forgets the 0.10% of commissions. They come out of the same 1.10%." },
+            { value: 0.05, text: "That's the large-cap answer. Small caps start from +1.10%." },
+          ],
+          correct: "Right: 1.00%. Any wider and the small-cap drift loses money.",
+          incorrect: "1.10 − 0.10.",
+        },
+        after: "The simulator's small caps trade at a 1.20% spread: net −0.20% a trade. Large caps leave 0.05% for the spread, about what it costs, so net is about zero. The drift lives where costs eat it.",
+        concept: "anomaly-decay",
+      },
+      {
+        kind: "fields",
+        title: "Your stop rule",
+        prompt: "Before you trade any published edge, write when you'll stop. Make it checkable: a number, a window, a test.",
+        fields: [{ id: "rule", label: "I stop trading the drift when…", kind: "text", default: "", placeholder: "e.g. The 2-year net expectancy's 95% interval includes zero", required: true }],
+        correct: "Saved. A stop rule written before the results can't be bent by them.",
+        concept: "anomaly-decay",
+      },
+    ],
+    check: ["q-3.8.8-1", "q-3.8.8-2", "q-3.8.8-3"],
+    recap: {
+      takeaways: [
+        "SUE = surprise ÷ the usual size of surprises; studies rank stocks by it.",
+        "PEAD is grade B and strongly decayed: about zero in large caps since 2006.",
+        "The drift survives where costs are highest; find the break-even cost before trading it.",
+      ],
+    },
+  },
+};
+
+// ─── 3.8.9 · Corporate events ───────────────────────────────────────────────
+
+const L389: Lesson = {
+  id: "3.8.9",
+  title: "Corporate events: buybacks, offerings, mergers, index changes",
+  topic: "market_fundamentals",
+  level: "intermediate",
+  tier: "free",
+  minutes: 7,
+  summary: "Buybacks, offerings, takeovers and index changes have typical reactions; a merger spread prices the deal's odds, and splits and dividends must be adjusted out of price history.",
+  objectives: [
+    "Predict the typical price reaction to a buyback, a share offering, a takeover bid and an index inclusion.",
+    "Compute the deal-success probability implied by a merger spread.",
+    "Adjust price history for splits and dividends so indicators and backtests show no fake gaps.",
+  ],
+  blocks: [],
+  practice: [
+    { kind: "arena", ref: "event_shock", label: "Arena: unexpected event" },
+    { kind: "check", ref: "market_fundamentals", label: "Market fundamentals check" },
+  ],
+  script: {
+    unit: "3.8",
+    courseId: "3.8.9",
+    hook: {
+      prompt: "LABD agrees to be bought for 50.00 cash per share. It trades at 47.00. If the deal fails, it falls back to 35.00. What deal-success probability does 47.00 imply?",
+      control: {
+        kind: "slider",
+        min: 0,
+        max: 100,
+        step: 5,
+        unit: "%",
+        start: 50,
+        answer: 80,
+        tolerance: 0,
+        feedback: [
+          { from: 0, to: 50, text: "Too low. 47.00 is much closer to 50.00 than to 35.00, so the market thinks the deal is likely." },
+          { from: 90, to: 100, text: "Too high. If the deal were near-certain, LABD would trade almost at 50.00." },
+        ],
+      },
+      compare: "You said {yours}. p × 50.00 + (1 − p) × 35.00 = 47.00 gives p = 12 ÷ 15 = 80%. The 3.00 left to gain is the market's price for a 20% chance of a 12.00 fall.",
+      concept: "corporate-actions",
+    },
+    learn: [
+      {
+        kind: "match",
+        title: "Typical reactions",
+        prompt: "Match each event with its typical first reaction. Typical, not guaranteed.",
+        columns: ["Event", "Typical reaction"],
+        pairs: [
+          { left: "Buyback announced", right: "A modest rise that, on average, doesn't reverse", wrong: "About 95% of buybacks are open-market programmes the company needn't complete, so the effect is modest (grade C)." },
+          { left: "[[secondary-offering|Secondary offering]]", right: "A drop: dilution and extra supply", wrong: "New shares split the profit more ways and add supply, so the price usually falls on the news." },
+          { left: "Takeover bid", right: "The target jumps toward the offer; the buyer often falls", wrong: "The target trades near the offer, less a discount for deal risk; the buyer pays a premium." },
+          { left: "[[index-inclusion|Index inclusion]]", right: "Mechanical buying by index funds", wrong: "Funds that track the index must buy the stock, whatever they think of it." },
+          { left: "Insiders buying shares", right: "Read as information about the company", wrong: "Managers buying with their own money is read as a sign they see value." },
+        ],
+        concept: "corporate-actions",
+      },
+      {
+        kind: "worked",
+        title: "The deal odds in the price",
+        lines: [
+          "Offer 50.00. Price 47.00. Price if the deal fails: 35.00.",
+          "If it closes: +3.00. If it fails: −12.00.",
+          "Fair price: p × 50.00 + (1 − p) × 35.00 = 47.00.",
+          "p = (47 − 35) ÷ (50 − 35), in % = ?",
+        ],
+        ask: {
+          answer: 80,
+          tolerance: 0.5,
+          unit: "%",
+          feedback: [
+            { value: 94, text: "47 ÷ 50 compares the price with the offer alone. The price if the deal fails matters too." },
+            { value: 20, text: "That's the chance the deal fails. The question asks for success." },
+          ],
+          correct: "Right: 80%. The 3.00 spread pays for a 20% chance of losing 12.00.",
+          incorrect: "12 ÷ 15, in %.",
+        },
+        after: "[[merger-arbitrage|Merger arbitrage]] buys that spread: small, frequent gains and rare large losses when deals break. It's Expert-level practice (grade C); here, use it to read what a price believes.",
+        concept: "corporate-actions",
+      },
+      {
+        kind: "figure",
+        title: "A crash that isn't",
+        figure: {
+          kind: "chart",
+          chart: { candles: SPLIT },
+          steps: [
+            { text: "LABA climbs from about 108 to 120.00 over 30 bars.", visible: 30 },
+            { text: "Bar 31 opens at 30.10: a 4-for-1 split, not a 75% crash.", visible: 36, layers: [{ kind: "marker", index: 30, at: "open", label: "Split 4:1", role: "neutral" }] },
+            { text: "The unadjusted 20-bar average follows the fake drop: 116.20 to 91.37 in six bars.", layers: [{ kind: "ma", period: 20, role: "concept", label: "MA 20" }] },
+          ],
+        },
+        text: "A [[stock-split]] changes the share count and the price, never the value. Unadjusted, the chart and every indicator built on it see a crash, and a backtest would trade it.",
+        concept: "adjusted-price-data",
+      },
+      {
+        kind: "predict",
+        title: "Fix the history",
+        prompt: "To remove the fake crash, what do you do to LABA's price history?",
+        control: {
+          kind: "choice",
+          choices: [
+            { id: "before", label: "Divide every price before the split by 4" },
+            { id: "after", label: "Multiply every price after the split by 4", feedback: "The shape works, but today's real price disappears from the chart. Adjust the past, not the present." },
+            { id: "delete", label: "Delete the bar with the gap", feedback: "The gap would still be there, one bar later: every earlier price is on the old share basis." },
+            { id: "all", label: "Divide every price on the chart by 4", feedback: "Prices after the split are already on the new basis. Dividing them again breaks the series." },
+          ],
+          answer: "before",
+        },
+        figure: {
+          kind: "chart",
+          chart: { candles: SPLIT_ADJ },
+          steps: [{ text: "Adjusted: bars 1–30 ÷ 4. The 20-bar average runs from 29.05 to 29.16 across the split.", layers: [{ kind: "ma", period: 20, role: "concept", label: "MA 20" }] }],
+        },
+        reveal: "Divide everything before the event, change nothing after it. The adjusted history shows LABA's real path: a steady climb, no crash. Most charting tools adjust for you; check whether your data source does before a backtest trusts it.",
+        concept: "adjusted-price-data",
+      },
+      {
+        kind: "explain",
+        title: "Dividends and the ex-date",
+        text: "On the [[ex-dividend-date]], the price usually drops by about the dividend: value moves from the share into your cash. In the US, with T+1 settlement since May 2024, the ex-date is the record date for regular dividends. So buying just before it and selling after isn't free money: the drop, taxes and costs come first.",
+      },
+      // Try (corp-action-lab isn't built yet): adjust one bar for both events.
+      {
+        kind: "worked",
+        title: "Adjust for both",
+        lines: [
+          "LABA's last 50 bars: a 4-for-1 split at bar 31, a 0.80 dividend at bar 40.",
+          "Split: every price before bar 31 ÷ 4. Bar 30's close: 120.00 ÷ 4 = 30.00.",
+          "Dividend: bar 39 closed at 32.00, so every price before bar 40 × (1 − 0.80 ÷ 32.00) = × 0.975.",
+          "Bar 30's fully adjusted close = ?",
+        ],
+        ask: {
+          answer: 29.25,
+          tolerance: 0.01,
+          unit: "vUSD",
+          feedback: [
+            { value: 30, text: "That's the split only. The dividend factor, × 0.975, applies to bar 30 too." },
+            { value: 117, text: "That's the dividend factor on the unsplit price. Divide by 4 as well." },
+          ],
+          correct: "Right: 29.25. Each adjustment applies to every bar before its event.",
+          incorrect: "30.00 × 0.975.",
+        },
+        after: "Adjust everything before an event, nothing after it. Then a 20-bar average runs through bar 31 without a false crash, and a backtest doesn't trade a split. Use adjusted data for signals and actual prices for fills.",
+        concept: "adjusted-price-data",
+      },
+    ],
+    check: ["q-3.8.9-1", "q-3.8.9-2", "q-3.8.9-3"],
+    recap: {
+      takeaways: [
+        "Buybacks lift modestly, offerings drop, targets jump toward the bid, index adds draw fund buying.",
+        "A merger spread prices deal odds: p = (price − fail price) ÷ (offer − fail price).",
+        "Adjust every price before a split or dividend, none after, or charts show fake gaps.",
+      ],
+    },
+  },
+};
+
+// ─── Check questions ────────────────────────────────────────────────────────
+
+const QUESTIONS: Question[] = [
+  // 3.8.1
+  {
+    id: "q-3.8.1-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 1,
+    prompt: "LABA's operating cash flow for the year is 140m vUSD and its capex is 55m. What is its free cash flow, in millions?",
+    numeric: { answer: 85, tolerance: 0, unit: "m" },
+    explanation: "Free cash flow = operating cash flow − capex = 140 − 55 = 85m: the cash left after the business has paid for its own investment.",
+    lesson: "3.8.1",
+    concepts: ["free-cash-flow"],
+    hints: ["Free cash flow is what's left after the company invests in itself.", "FCF = operating cash flow − capex."],
+    vary: {
+      fields: { ocf: [50, 300, 5], capex: [10, 120, 5] },
+      constraints: ["capex < ocf"],
+      answer: "ocf - capex",
+      prompt: "LABA's operating cash flow for the year is {ocf}m vUSD and its capex is {capex}m. What is its free cash flow, in millions?",
+      explanation: "Free cash flow = operating cash flow − capex = {ocf} − {capex} = {answer}m: the cash left after the business has paid for its own investment.",
+      hint: "FCF = {ocf} − {capex}.",
+    },
+  },
+  {
+    id: "q-3.8.1-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "LABA earns net income of 30m and pays no dividend. Where does that 30m show up on its balance sheet?",
+    options: [
+      { id: "a", label: "Cash rises by exactly 30m", rationale: "Profit isn't cash. Receivables, inventory and capex decide how much cash actually arrives." },
+      { id: "b", label: "Retained earnings, part of shareholders' equity, rise by 30m" },
+      { id: "c", label: "Receivables rise by 30m", rationale: "Receivables rise only by sales not yet paid for. That's one reason cash differs from profit, not where profit goes." },
+      { id: "d", label: "Liabilities rise by 30m", rationale: "Profit belongs to the owners. It adds to equity, not to what the company owes." },
+    ],
+    correct: "b",
+    explanation: "Net income that isn't paid out accumulates in retained earnings, inside equity. The assets that match it can be cash, receivables, inventory or machines: that's why the balance sheet balances while cash moves differently.",
+    lesson: "3.8.1",
+    concepts: ["financial-statements"],
+    hints: ["Who does a company's profit belong to?", "Profit not paid out is kept: retained."],
+  },
+  {
+    id: "q-3.8.1-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "LABE's net income has risen for three quarters in a row: 20m, 24m, 29m. Over the same quarters its operating cash flow fell: 18m, 9m, −4m.",
+    prompt: "What is the most likely explanation?",
+    options: [
+      { id: "a", label: "Large depreciation charges", rationale: "Depreciation lowers profit, not cash, and it's added back in operating cash flow. It can't push cash below a rising profit." },
+      { id: "b", label: "A share buyback", rationale: "A buyback is a financing cash flow. It reduces cash, but not operating cash flow." },
+      { id: "c", label: "Receivables and inventory growing, so sales and stock tie up cash" },
+      { id: "d", label: "Lower interest costs", rationale: "Lower interest raises both profit and operating cash flow. It can't make them move apart." },
+    ],
+    correct: "c",
+    explanation: "When profit rises but operating cash flow falls, working capital is usually absorbing the cash: sales booked but unpaid, goods bought but unsold. It's the first line to check in the cash-flow statement, and an early sign of weak earnings quality.",
+    lesson: "3.8.1",
+    concepts: ["financial-statements", "free-cash-flow"],
+    hints: ["Which items in operating cash flow can make cash fall while profit rises?", "Look at the working-capital lines: receivables and inventory."],
+  },
+  // 3.8.2
+  {
+    id: "q-3.8.2-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "LABA's net income stays at 50m vUSD. A buyback cuts its shares from 25m to 24m. What is its EPS after the buyback, to 2 decimals?",
+    numeric: { answer: 2.08, tolerance: 0.01, unit: "vUSD" },
+    explanation: "EPS = 50 ÷ 24 = 2.083, up from 50 ÷ 25 = 2.00: +4.2% with zero business growth. Same profit, fewer shares.",
+    lesson: "3.8.2",
+    concepts: ["earnings-quality"],
+    hints: ["EPS = net income ÷ shares, after the buyback.", "50 ÷ 24 = ?"],
+    vary: {
+      fields: { ni: [20, 200, 5], shares: [10, 80, 1], cut: [1, 5, 1] },
+      constraints: ["cut * 4 < shares"],
+      answer: "round(ni / (shares - cut), 2)",
+      prompt: "LABA's net income stays at {ni}m vUSD. A buyback cuts its shares from {shares}m to {shares - cut}m. What is its EPS after the buyback, to 2 decimals?",
+      explanation: "EPS = {ni} ÷ {shares - cut} = {ni / (shares - cut):3}, up from {ni} ÷ {shares} = {ni / shares:2}: +{(shares / (shares - cut) - 1) * 100:1}% with zero business growth. Same profit, fewer shares.",
+      hint: "{ni} ÷ {shares - cut} = ?",
+    },
+  },
+  {
+    id: "q-3.8.2-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "A friend says: 'Adjusted EPS is the real number; GAAP EPS is just accounting noise.' What's wrong with that?",
+    options: [
+      { id: "a", label: "Nothing: adjusted EPS removes one-off items, so it shows the true run rate", rationale: "Only if the items really are one-off. Companies choose the exclusions, and many come back every year." },
+      { id: "b", label: "GAAP EPS always includes buybacks, so it's always higher", rationale: "Buybacks affect both through the share count. And GAAP EPS is usually lower than adjusted, not higher." },
+      { id: "c", label: "Adjusted EPS is audited more strictly than GAAP EPS", rationale: "It's the reverse: GAAP figures follow the accounting rules; adjusted figures are the company's own definition." },
+      { id: "d", label: "The company chooses what adjusted EPS leaves out, and recurring costs or share-based pay are still real costs" },
+    ],
+    correct: "d",
+    explanation: "Adjusted EPS is a company-defined number. It can be useful, but read what it excludes: share-based pay is paid in new shares, and 'one-off' costs that recur every year are part of running the business.",
+    lesson: "3.8.2",
+    concepts: ["earnings-quality"],
+    hints: ["Who decides what adjusted EPS excludes?"],
+  },
+  {
+    id: "q-3.8.2-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "LABD reports ROE of 25%, net debt of 5× EBITDA and interest coverage of 1.8×.",
+    prompt: "What do the three ratios together signal?",
+    options: [
+      { id: "a", label: "Borrowed profitability: the balance sheet is fragile if rates rise or earnings dip" },
+      { id: "b", label: "A high-quality business: 25% ROE is excellent", rationale: "ROE alone can't tell skill from leverage. With debt at 5× EBITDA, much of that 25% is borrowed." },
+      { id: "c", label: "A cheap stock: high ROE and debt mean a low valuation", rationale: "These are quality and risk ratios, not valuation. Nothing here says what the price is." },
+      { id: "d", label: "Nothing worrying: coverage above 1 means the debt is safe", rationale: "1.8× leaves little room. A 45% fall in operating profit would leave too little to pay the interest." },
+    ],
+    correct: "a",
+    explanation: "High ROE with high net debt/EBITDA and thin coverage means the return rests on borrowed money. If rates rise or profit dips, interest eats the earnings first. Leverage shows in net debt/EBITDA and coverage, not in ROE.",
+    lesson: "3.8.2",
+    concepts: ["earnings-quality"],
+    hints: ["Which of the three ratios measure debt?", "Coverage of 1.8× means operating profit is under twice the interest bill."],
+  },
+  // 3.8.3
+  {
+    id: "q-3.8.3-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "LABD: market cap 2,400m vUSD, debt 900m, cash 300m, EBITDA 300m. What is its EV/EBITDA, to 1 decimal?",
+    numeric: { answer: 10, tolerance: 0.1, unit: "×" },
+    explanation: "EV = market cap + debt − cash = 2,400 + 900 − 300 = 3,000m. EV/EBITDA = 3,000 ÷ 300 = 10×.",
+    lesson: "3.8.3",
+    concepts: ["valuation-multiples"],
+    hints: ["EV = market cap + net debt.", "Net debt = 900 − 300 = 600m."],
+    vary: {
+      fields: { cap: [1000, 6000, 100], debt: [0, 2000, 100], cash: [0, 1000, 50], ebitda: [100, 800, 20] },
+      constraints: ["cap + debt - cash > ebitda * 3"],
+      answer: "round((cap + debt - cash) / ebitda, 1)",
+      prompt: "LABD: market cap {cap}m vUSD, debt {debt}m, cash {cash}m, EBITDA {ebitda}m. What is its EV/EBITDA, to 1 decimal?",
+      explanation: "EV = market cap + debt − cash = {cap} + {debt} − {cash} = {cap + debt - cash}m. EV/EBITDA = {cap + debt - cash} ÷ {ebitda} = {answer:1}×.",
+      hint: "Net debt = {debt} − {cash} = {debt - cash}m.",
+    },
+  },
+  {
+    id: "q-3.8.3-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "LABE trades at a P/E of 6, against 18 for its sector. Why isn't that automatically a sign it's undervalued?",
+    options: [
+      { id: "a", label: "Because P/E ignores the share price", rationale: "P/E is the share price divided by EPS. It ignores debt, not price." },
+      { id: "b", label: "Because a low P/E always means profits are about to rise", rationale: "A low P/E often means the market expects profits to fall, not rise." },
+      { id: "c", label: "A low P/E can reflect slow growth, high risk, heavy debt or falling profits, so the price may be right" },
+      { id: "d", label: "It is automatically undervalued: low-P/E stocks always catch up", rationale: "That's the value-trap mistake. Cheap stocks can stay cheap, or get cheaper, for years." },
+    ],
+    correct: "c",
+    explanation: "A multiple is the market's summary of growth, risk and discount rate. A P/E of 6 says the market expects little from LABE's profits. It can be wrong, but you need a reason, not just the low number.",
+    lesson: "3.8.3",
+    concepts: ["valuation-multiples"],
+    hints: ["What has to be true for a P/E to be low?"],
+  },
+  {
+    id: "q-3.8.3-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "LABE makes steel. At the bottom of the cycle its profit has collapsed, and its P/E is 45 against a long-run average of 12.",
+    prompt: "What does the P/E of 45 most likely show?",
+    options: [
+      { id: "a", label: "Profit is temporarily depressed, so the P/E is high without the stock being expensive" },
+      { id: "b", label: "The stock is very expensive and due to fall", rationale: "The 45 comes from a tiny E, not a big P. At a cyclical low, a high P/E often means depressed profit." },
+      { id: "c", label: "The market expects steel to become a fast-growth business", rationale: "Possible, but unlikely. The usual reason at a cycle low is profit far below its normal level." },
+      { id: "d", label: "P/E doesn't apply to cyclical companies", rationale: "P/E applies whenever profit is positive. The issue is that this year's profit isn't a normal year's." },
+    ],
+    correct: "a",
+    explanation: "P/E divides by this year's earnings. For a cyclical company at the bottom of its cycle, earnings are far below normal, so the P/E is high while the price may be low. Cyclicals often look cheapest on P/E at the top, just before profits fall.",
+    lesson: "3.8.3",
+    concepts: ["valuation-multiples"],
+    hints: ["P/E = price ÷ earnings. Which of the two has changed?", "Where in the cycle are this year's earnings?"],
+  },
+  // 3.8.4
+  {
+    id: "q-3.8.4-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 1,
+    prompt: "You will receive 110 vUSD in one year. With a 10% discount rate, what is it worth today, to 2 decimals?",
+    numeric: { answer: 100, tolerance: 0.01, unit: "vUSD" },
+    explanation: "Present value = 110 ÷ 1.10 = 100.00. Put 100.00 away at 10% and you have 110 in a year: that's why the two are worth the same today.",
+    lesson: "3.8.4",
+    concepts: ["discounted-cash-flow"],
+    hints: ["Divide the future amount by 1 + the rate.", "110 ÷ 1.10 = ?"],
+    vary: {
+      fields: { amount: [50, 500, 5], rate: [2, 15, 1] },
+      answer: "round(amount / (1 + pct(rate)), 2)",
+      prompt: "You will receive {amount} vUSD in one year. With a {rate}% discount rate, what is it worth today, to 2 decimals?",
+      explanation: "Present value = {amount} ÷ {1 + pct(rate):2} = {answer:2}. Put {answer:2} away at {rate}% and you have {amount} in a year: that's why the two are worth the same today.",
+      hint: "{amount} ÷ {1 + pct(rate):2} = ?",
+    },
+  },
+  {
+    id: "q-3.8.4-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "Why does the terminal value usually dominate a five-year DCF?",
+    options: [
+      { id: "a", label: "Analysts add a safety premium to it", rationale: "No premium is added. It's large because it sums all the cash flows after the forecast years." },
+      { id: "b", label: "It covers every year after year five, forever, while the forecast covers only five" },
+      { id: "c", label: "It isn't discounted", rationale: "It is discounted, back from year five. Even so, it's often over 60–70% of the total." },
+      { id: "d", label: "It dominates only for loss-making companies", rationale: "It dominates for most companies, profitable ones included: all the years after five outweigh five." },
+    ],
+    correct: "b",
+    explanation: "The terminal value stands for all cash flows after the forecast, forever. Even discounted, it's often over 60–70% of the total (a rule of thumb). So a DCF depends heavily on long-run growth and the discount rate, its two least knowable inputs.",
+    lesson: "3.8.4",
+    concepts: ["discounted-cash-flow"],
+    hints: ["How many years does the terminal value stand for?"],
+  },
+  {
+    id: "q-3.8.4-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "Your DCF says LABB is worth 2,000m. The market values it at 2,600m. A friend says: 'The DCF says 2,000, the price is 2,600, so short it.'",
+    prompt: "What's missing from that reasoning?",
+    options: [
+      { id: "a", label: "Nothing: the model shows the stock is 30% overvalued", rationale: "That treats the model as the truth. It's an opinion built on guessed inputs." },
+      { id: "b", label: "Only that the discount rate should be lowered until the model matches", rationale: "Fitting the inputs to the price hides the real question: what growth does the price assume, and is it believable?" },
+      { id: "c", label: "The DCF is an opinion with no timing, and the market's higher growth assumption may be right" },
+      { id: "d", label: "Shorting is fine, but only after the next earnings report", rationale: "Waiting adds a date, but the model is still an opinion, not a signal." },
+    ],
+    correct: "c",
+    explanation: "A DCF turns guesses about growth and rates into a value. The gap to the price is a disagreement, not a signal: the market may assume more growth for good reasons, and nothing says when the gap closes. As a trading signal, a DCF is grade D.",
+    lesson: "3.8.4",
+    concepts: ["implied-expectations", "discounted-cash-flow"],
+    hints: ["What would have to be true for 2,600m to be right?", "Does the model say when the gap closes?"],
+  },
+  // 3.8.5
+  {
+    id: "q-3.8.5-1",
+    topic: "risk_management",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "You're long LABA at 50.00 with a stop at 48.00. After a report it opens at 44.00, and your stop fills there. What was your loss in R, before costs?",
+    numeric: { answer: 3, tolerance: 0.05, unit: "R" },
+    explanation: "1R = 50.00 − 48.00 = 2.00 a unit. The fill at 44.00 loses 6.00 a unit: 6.00 ÷ 2.00 = 3R. The stop didn't fail; the gap skipped it.",
+    lesson: "3.8.5",
+    concepts: ["gap-risk"],
+    hints: ["1R is the distance from entry to stop.", "The loss runs from entry to the actual fill, 44.00."],
+    vary: {
+      fields: { entry: [20, 150, 0.5], dist: [1, 5, 0.5], gap: [2, 15, 0.5] },
+      constraints: ["gap > dist * 1.2", "gap * 3 < entry"],
+      answer: "round(gap / dist, 2)",
+      prompt: "You're long LABA at {entry:2} with a stop at {entry - dist:2}. After a report it opens at {entry - gap:2}, and your stop fills there. What was your loss in R, before costs, to 2 decimals?",
+      explanation: "1R = {entry:2} − {entry - dist:2} = {dist:2} a unit. The fill at {entry - gap:2} loses {gap:2} a unit: {gap:2} ÷ {dist:2} = {answer:2}R. The stop didn't fail; the gap skipped it.",
+      hint: "Loss = {entry:2} − {entry - gap:2} = {gap:2} a unit.",
+    },
+  },
+  {
+    id: "q-3.8.5-2",
+    topic: "risk_management",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "Why is 'LABB beat the consensus' weak information on its own?",
+    options: [
+      { id: "a", label: "Because consensus estimates are always wrong", rationale: "Consensus is often close. The point is that companies usually clear it, so clearing it says little." },
+      { id: "b", label: "Most companies beat consensus, so a beat is the usual case; the surprise's size and guidance carry the news" },
+      { id: "c", label: "Because only revenue matters, not EPS", rationale: "Both matter, along with guidance. The issue is that a beat of either is the norm." },
+      { id: "d", label: "It isn't weak: a beat reliably sends the stock up", rationale: "Beats are so common that they're expected. Stocks often fall on a beat smaller than hoped." },
+    ],
+    correct: "b",
+    explanation: "About 78% of S&P 500 companies beat on average over five years (FactSet data), so a beat is the base rate. What's informative is how big the surprise is, compared with usual surprises, and what guidance says.",
+    lesson: "3.8.5",
+    concepts: ["earnings-surprise", "base-rates"],
+    hints: ["What share of companies usually beat?"],
+  },
+  {
+    id: "q-3.8.5-3",
+    topic: "risk_management",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "LABE reports at 22:05, after the close. You hold a long with a stop at 30.00; LABE closed at 32.50.",
+    prompt: "What can you usually do tonight, and what happens to your stop if LABE opens at 27.00?",
+    options: [
+      { id: "a", label: "Place a market order tonight; the stop fills at 30.00 regardless", rationale: "Outside regular hours, brokers often accept limit orders only. And a stop can't fill at a price the market skipped." },
+      { id: "b", label: "Nothing tonight; the stop fills at 30.00 at the open", rationale: "Limit orders are often possible after hours. But the stop fills at the open's price, about 27.00, not at 30.00." },
+      { id: "c", label: "Any order type; the stop fills at the after-hours low", rationale: "Stops usually trigger in the regular session only, and fill at the first price there, not at an overnight low." },
+      { id: "d", label: "Usually only limit orders tonight; the stop waits for the session and fills near 27.00" },
+    ],
+    correct: "d",
+    explanation: "Extended hours usually allow limit orders only, with thin liquidity and no NBBO protection. A stop is a market order waiting for its trigger: when the session opens below it, it fills near the open, 27.00, 3.00 below the stop.",
+    lesson: "3.8.5",
+    concepts: ["gap-risk"],
+    hints: ["Which order type do brokers usually allow after hours?", "A stop becomes a market order at the first price after its trigger."],
+  },
+  // 3.8.6
+  {
+    id: "q-3.8.6-1",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "LABB beats the EPS consensus but cuts its full-year guidance. What is the typical reaction in this cell?",
+    options: [
+      { id: "a", label: "A sure gap up: the beat comes first", rationale: "Results and guidance disagree. Guidance often weighs more, because it changes the future, not one quarter." },
+      { id: "b", label: "No reaction: the two cancel out", rationale: "Mixed cells rarely mean quiet. They mean big moves in either direction." },
+      { id: "c", label: "Uncertain, with a wide spread: the cut can outweigh the beat, and sharp drops happen" },
+      { id: "d", label: "A sure gap down of at least 10%", rationale: "Sharp drops happen in this cell, but not reliably. Its outcomes spread widely around zero." },
+    ],
+    correct: "c",
+    explanation: "Beat-and-lower is a mixed cell: results say up, guidance says down. Guidance often weighs more because it changes future cash flows, and sharp drops happen, but outcomes spread widely. Flag it as uncertain and size for a big move either way.",
+    lesson: "3.8.6",
+    concepts: ["earnings-guidance"],
+  },
+  {
+    id: "q-3.8.6-2",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "LABE has guided low and then raised at every report for two years. Why does its latest raise barely move the stock?",
+    options: [
+      { id: "a", label: "Traders expect its habitual raise, so the raise is already in the price" },
+      { id: "b", label: "Raises never move stocks", rationale: "Raises often move stocks when they're unexpected. LABE's aren't." },
+      { id: "c", label: "Guidance matters less than the quarter's results", rationale: "Guidance usually matters more. Here, the expectation of a raise takes away the news." },
+      { id: "d", label: "Analysts stopped covering LABE", rationale: "Coverage isn't the issue. The market has learned LABE's pattern and prices the raise in advance." },
+    ],
+    correct: "a",
+    explanation: "A habitual sandbagger teaches the market that its first guidance is too low. Traders price in the usual raise, so only a raise bigger than usual is news, and a smaller one can disappoint.",
+    lesson: "3.8.6",
+    concepts: ["earnings-guidance"],
+    hints: ["What do traders expect from LABE before the report?"],
+  },
+  {
+    id: "q-3.8.6-3",
+    topic: "scenario_analysis",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "LABD reports results exactly in line with consensus and cuts its full-year guidance by 6%. The stock opens 4% higher.",
+    prompt: "What is the most likely explanation?",
+    options: [
+      { id: "a", label: "The market misread the report", rationale: "A misread usually reverses within minutes. A 4% gain that holds needs a reason." },
+      { id: "b", label: "Traders expected a bigger cut, so a 6% cut was a relief" },
+      { id: "c", label: "Guidance cuts usually lift prices", rationale: "In-line with a cut leans down: in the simulator, 31 of 40 such reports gapped down. This one is an exception." },
+      { id: "d", label: "The cut doesn't matter because results were in line", rationale: "Guidance often matters more than one quarter. The reaction depends on what was expected." },
+    ],
+    correct: "b",
+    explanation: "Reactions are measured against expectations, positioning included. If traders feared a 10% cut and sold beforehand, a 6% cut is better than feared. The cell says down; the expectation says relief.",
+    lesson: "3.8.6",
+    concepts: ["earnings-guidance", "earnings-surprise"],
+    hints: ["The reaction compares the news with what traders expected, not with zero.", "What might traders have expected before the report?"],
+  },
+  // 3.8.7
+  {
+    id: "q-3.8.7-1",
+    topic: "scenario_analysis",
+    kind: "numeric",
+    difficulty: 1,
+    prompt: "LABE trades at 90.00. The at-the-money straddle for the expiry just after its report costs 6.30. What move, in %, is the market pricing either way, to 1 decimal?",
+    numeric: { answer: 7, tolerance: 0.1, unit: "%" },
+    explanation: "Implied move ≈ straddle ÷ price = 6.30 ÷ 90.00 = 7.0%. The market prices a move of about ±7% through the report.",
+    lesson: "3.8.7",
+    concepts: ["implied-move"],
+    hints: ["Divide the straddle price by the share price.", "6.30 ÷ 90.00 = ?"],
+    vary: {
+      fields: { price: [20, 300, 1], move: [3, 15, 0.5] },
+      answer: "round(round(price * pct(move), 2) / price * 100, 1)",
+      prompt: "LABE trades at {price:2}. The at-the-money straddle for the expiry just after its report costs {round(price * pct(move), 2):2}. What move, in %, is the market pricing either way, to 1 decimal?",
+      explanation: "Implied move ≈ straddle ÷ price = {round(price * pct(move), 2):2} ÷ {price:2} = {answer:1}%. The market prices a move of about ±{answer:1}% through the report.",
+      hint: "{round(price * pct(move), 2):2} ÷ {price:2} = ?",
+    },
+  },
+  {
+    id: "q-3.8.7-2",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "You bought a LABB call before earnings. The stock rose 3% on the report, yet your call lost 12%. Why?",
+    options: [
+      { id: "a", label: "The broker mispriced the option", rationale: "Nothing was mispriced. The call fell because the uncertainty it was pricing disappeared." },
+      { id: "b", label: "Calls lose value whenever the stock rises", rationale: "A call gains from a rise, all else equal. Here, implied volatility fell from 72% to 30%." },
+      { id: "c", label: "Implied volatility collapsed, and the uncertainty premium vanished faster than the rise added value" },
+      { id: "d", label: "The rise came after expiry", rationale: "The option still had 6 days left. Its value fell because volatility collapsed, not because it expired." },
+    ],
+    correct: "c",
+    explanation: "Before the report, most of the call's price was a premium for uncertainty. The report resolved it, implied volatility fell, and the premium vanished: IV crush. The 3% rise added less than that loss.",
+    lesson: "3.8.7",
+    concepts: ["iv-crush"],
+    hints: ["What was most of the call's price paying for before the report?"],
+  },
+  {
+    id: "q-3.8.7-3",
+    topic: "scenario_analysis",
+    kind: "mcq",
+    difficulty: 3,
+    prompt: "A forum post says: 'Earnings straddles usually lose, so always sell them.' What's missing?",
+    options: [
+      { id: "a", label: "Nothing: if buyers usually lose, sellers usually win, so it's an edge", rationale: "Winning often isn't positive expectancy. The rare losses can outweigh all the wins." },
+      { id: "b", label: "Only the commissions, which make every option trade lose", rationale: "Costs matter, but they're not the main issue. The tail risk of a big gap is." },
+      { id: "c", label: "Selling straddles is safe as long as you use a stop-loss", rationale: "A stop can't fill at your price through an overnight gap. The open sets the loss." },
+      { id: "d", label: "The rare big moves: sellers win often but can lose many crushes' worth at once, and the evidence is mixed" },
+    ],
+    correct: "d",
+    explanation: "Selling straddles collects the IV crush most of the time, but a gap far beyond the implied move can wipe out many wins at once. The evidence is mixed: one dataset found actual moves about 85% of implied, another found fair pricing in aggregate (grade C).",
+    lesson: "3.8.7",
+    concepts: ["iv-crush", "implied-move"],
+    hints: ["How often does a seller win, and how much can one loss cost?", "Can a stop protect a short straddle through an overnight gap?"],
+  },
+  // 3.8.8
+  {
+    id: "q-3.8.8-1",
+    topic: "decision_making",
+    kind: "numeric",
+    difficulty: 1,
+    prompt: "LABE reports EPS of 1.42 against an expected 1.30. Its past surprises have a standard deviation of 0.08. What is its SUE, to 2 decimals?",
+    numeric: { answer: 1.5, tolerance: 0.05, unit: "" },
+    explanation: "SUE = (actual − expected) ÷ the standard deviation of past surprises = (1.42 − 1.30) ÷ 0.08 = 0.12 ÷ 0.08 = 1.50.",
+    lesson: "3.8.8",
+    concepts: ["post-earnings-drift"],
+    hints: ["First the surprise: actual − expected.", "Then divide by the usual size of surprises, 0.08."],
+    vary: {
+      fields: { exp: [0.5, 4, 0.05], surprise: [-0.4, 0.4, 0.01], sd: [0.04, 0.2, 0.01] },
+      constraints: ["abs(surprise) >= 0.03", "exp + surprise > 0.1"],
+      answer: "round(surprise / sd, 2)",
+      prompt: "LABE reports EPS of {exp + surprise:2} against an expected {exp:2}. Its past surprises have a standard deviation of {sd:2}. What is its SUE, to 2 decimals?",
+      explanation: "SUE = ({exp + surprise:2} − {exp:2}) ÷ {sd:2} = {surprise:2} ÷ {sd:2} = {answer:2}.",
+      hint: "Surprise = {exp + surprise:2} − {exp:2} = {surprise:2}.",
+    },
+  },
+  {
+    id: "q-3.8.8-2",
+    topic: "decision_making",
+    kind: "mcq",
+    difficulty: 2,
+    prompt: "Where has PEAD survived best, and why is it hard to capture there?",
+    options: [
+      { id: "a", label: "In small, illiquid, thinly covered stocks, where spreads, impact and borrowing costs are highest" },
+      { id: "b", label: "In large caps, because they're the most traded", rationale: "The reverse: heavy trading and coverage make prices adjust fast. In large caps the drift is about zero since around 2006." },
+      { id: "c", label: "In every stock equally, so it's easy to capture", rationale: "The drift is concentrated, not spread evenly, and it has shrunk sharply since publication." },
+      { id: "d", label: "In stocks with no earnings reports", rationale: "PEAD follows earnings reports by definition. It survives in stocks with reports but few followers." },
+    ],
+    correct: "a",
+    explanation: "The drift lives where information spreads slowly: small, illiquid stocks with little analyst coverage. Those are exactly the stocks with wide spreads, high market impact and costly shorting, so costs can eat the edge.",
+    lesson: "3.8.8",
+    concepts: ["post-earnings-drift", "anomaly-decay"],
+    hints: ["Where does news spread slowest?"],
+  },
+  {
+    id: "q-3.8.8-3",
+    topic: "decision_making",
+    kind: "mcq",
+    difficulty: 3,
+    prompt: "A course advert says: 'The PEAD spread was positive in 41 of 48 quarters. Trade it!' What does that statistic say, and what doesn't it?",
+    options: [
+      { id: "a", label: "It proves the strategy works today, with 85% reliability", rationale: "41 of 48 describes 1974–1985. It says nothing direct about markets after publication, costs or today's large caps." },
+      { id: "b", label: "It means each trade wins 85% of the time", rationale: "It counts quarters in which the whole top-minus-bottom portfolio was positive, not single trades." },
+      { id: "c", label: "It describes 1974–1985, before costs; it doesn't show the drift survives today, after publication and costs" },
+      { id: "d", label: "Nothing: academic results never apply to real trading", rationale: "Too strong. The result was real for its period; the question is what's left after publication and costs." },
+    ],
+    correct: "c",
+    explanation: "Bernard and Thomas measured a gross top-minus-bottom portfolio in 1974–1985. Since then the spread has shrunk, large caps show about zero since 2006, and published edges typically lose much of their return after publication. Grade B, strongly decayed.",
+    lesson: "3.8.8",
+    concepts: ["anomaly-decay", "post-earnings-drift"],
+    hints: ["Which years does the 41 of 48 cover?", "Was it measured before or after costs?"],
+  },
+  // 3.8.9
+  {
+    id: "q-3.8.9-1",
+    topic: "market_fundamentals",
+    kind: "numeric",
+    difficulty: 2,
+    prompt: "LABE receives a cash offer of 30.00 a share. It trades at 28.50; if the deal fails, it should fall to 22.00. What deal-success probability does the price imply, in %?",
+    numeric: { answer: 81.25, tolerance: 0.5, unit: "%" },
+    explanation: "p = (28.50 − 22.00) ÷ (30.00 − 22.00) = 6.50 ÷ 8.00 = 81.25%. The 1.50 spread pays for the 18.75% chance of a 6.50 fall.",
+    lesson: "3.8.9",
+    concepts: ["corporate-actions"],
+    hints: ["Set p × offer + (1 − p) × fail price equal to the price.", "p = (price − fail price) ÷ (offer − fail price)."],
+    vary: {
+      fields: { offer: [20, 100, 1], down: [3, 30, 0.5], up: [0.25, 3, 0.25] },
+      constraints: ["up * 2 < down", "down * 2 < offer"],
+      answer: "round((down - up) / down * 100, 2)",
+      prompt: "LABE receives a cash offer of {offer:2} a share. It trades at {offer - up:2}; if the deal fails, it should fall to {offer - down:2}. What deal-success probability does the price imply, in %?",
+      explanation: "p = ({offer - up:2} − {offer - down:2}) ÷ ({offer:2} − {offer - down:2}) = {down - up:2} ÷ {down:2} = {answer:2}%. The {up:2} spread pays for the {100 - answer:2}% chance of a {down - up:2} fall.",
+      hint: "p = {down - up:2} ÷ {down:2}.",
+    },
+  },
+  {
+    id: "q-3.8.9-2",
+    topic: "market_fundamentals",
+    kind: "mcq",
+    difficulty: 1,
+    prompt: "LABA splits 4-for-1. Before the split you held 100 shares at 120.00. What changed?",
+    options: [
+      { id: "a", label: "Your position is worth four times as much", rationale: "The price is divided by 4 as the shares are multiplied by 4. The value stays 12,000." },
+      { id: "b", label: "You lost 75% of your money", rationale: "The price fell 75%, but you hold four times the shares. The value is unchanged." },
+      { id: "c", label: "You now hold 400 shares at about 30.00: the same 12,000 of value" },
+      { id: "d", label: "The company's profit per share rose", rationale: "Profit is split over four times as many shares, so EPS falls to a quarter, along with the price." },
+    ],
+    correct: "c",
+    explanation: "A split cuts each share into smaller pieces: 4 times the shares at a quarter of the price. The company, its profit and your stake are unchanged. Only unadjusted charts and indicators see a crash.",
+    lesson: "3.8.9",
+    concepts: ["corporate-actions", "adjusted-price-data"],
+  },
+  {
+    id: "q-3.8.9-3",
+    topic: "market_fundamentals",
+    kind: "scenario",
+    difficulty: 3,
+    scenario: "A video suggests: 'Buy LABA before the ex-dividend date, collect the 1.00 dividend, and sell the next day. Free money, every quarter.'",
+    prompt: "Why isn't it a profit?",
+    options: [
+      { id: "a", label: "The dividend is paid only to long-term holders", rationale: "Anyone who holds on the record date gets it. The catch is that the price drops by about the dividend." },
+      { id: "b", label: "It is a profit, as long as you buy at the open", rationale: "The time of day doesn't remove the ex-date drop in price." },
+      { id: "c", label: "Brokers keep the dividend on short holdings", rationale: "Brokers pass dividends on to holders. The value simply moves from the price into your cash." },
+      { id: "d", label: "The price usually drops by about the dividend on the ex-date, and taxes and trading costs come on top" },
+    ],
+    correct: "d",
+    explanation: "On the ex-date the share drops by about the dividend: value moves from the price into cash. Collecting 1.00 while the price falls about 1.00 is no gain, and the spread, commissions and tax on the dividend make it a loss.",
+    lesson: "3.8.9",
+    concepts: ["corporate-actions"],
+    hints: ["What happens to the price on the ex-dividend date?", "Add the costs of two trades and the tax."],
+  },
+];
+
+// ─── Glossary terms ─────────────────────────────────────────────────────────
+
+const TERMS: GlossaryTerm[] = [
+  // 3.8.1
+  {
+    id: "income-statement",
+    term: "Income statement",
+    definition: "A financial statement of revenue, costs and profit over a period, ending in net income.",
+    plain: "Report of revenue, costs and profit over a period.",
+    related: ["balance-sheet", "cash-flow-statement", "eps"],
+    lesson: "3.8.1",
+    aka: ["Profit and loss statement"],
+  },
+  {
+    id: "balance-sheet",
+    term: "Balance sheet",
+    definition: "A statement of what a company owns (assets), what it owes (liabilities) and the owners' equity on one date. Assets always equal liabilities plus equity.",
+    plain: "Snapshot of what a company owns, what it owes and the owners' equity on one date.",
+    related: ["income-statement", "cash-flow-statement", "net-debt"],
+    lesson: "3.8.1",
+  },
+  {
+    id: "cash-flow-statement",
+    term: "Cash-flow statement",
+    definition: "A statement of the cash that came in and went out over a period, split into operating, investing and financing cash flows.",
+    plain: "Report of cash coming in and going out from operations, investing and financing.",
+    related: ["operating-cash-flow", "free-cash-flow", "income-statement"],
+    lesson: "3.8.1",
+  },
+  {
+    id: "operating-cash-flow",
+    term: "Operating cash flow",
+    definition: "Cash generated by the business itself: net income plus non-cash costs such as depreciation, minus increases in working capital such as receivables and inventory.",
+    plain: "Cash produced by the business itself after paying suppliers, staff and taxes.",
+    related: ["cash-flow-statement", "free-cash-flow", "capex"],
+    lesson: "3.8.1",
+    aka: ["OCF", "Cash from operations"],
+  },
+  {
+    id: "free-cash-flow",
+    term: "Free cash flow",
+    definition: "Operating cash flow minus capital spending: the cash a business generates after investing in itself.",
+    plain: "Operating cash flow minus spending on equipment: the cash left after investing.",
+    related: ["operating-cash-flow", "capex", "dcf"],
+    lesson: "3.8.1",
+    aka: ["FCF"],
+  },
+  {
+    id: "capex",
+    term: "Capex",
+    definition: "Capital expenditure: spending on long-lasting assets such as machines and buildings. It leaves cash at once and reaches profit slowly, through depreciation.",
+    plain: "Money spent on long-lasting assets such as machines and buildings.",
+    related: ["free-cash-flow", "operating-cash-flow"],
+    lesson: "3.8.1",
+    aka: ["Capital expenditure"],
+  },
+  {
+    id: "eps",
+    term: "EPS",
+    definition: "Earnings per share: net income divided by the number of shares outstanding. Diluted EPS also counts shares that options and convertible securities could create.",
+    plain: "Earnings per share: net profit divided by the number of shares.",
+    related: ["adjusted-eps", "pe-ratio", "dilution"],
+    lesson: "3.8.1",
+    aka: ["Earnings per share"],
+  },
+  // 3.8.2
+  {
+    id: "adjusted-eps",
+    term: "Adjusted EPS",
+    definition: "EPS as defined by the company, leaving out items it calls non-recurring or non-cash, such as share-based pay or restructuring. Accounting rules don't set it.",
+    plain: "Company-defined EPS that leaves out some costs; check what was excluded.",
+    related: ["eps", "dilution"],
+    lesson: "3.8.2",
+    aka: ["Non-GAAP EPS"],
+  },
+  {
+    id: "dilution",
+    term: "Dilution",
+    definition: "The fall in each existing share's claim on profit and assets when a company issues new shares, for example to pay staff or raise money.",
+    plain: "New shares shrinking each existing share's slice of the profit.",
+    related: ["eps", "share-buyback", "secondary-offering"],
+    lesson: "3.8.2",
+  },
+  {
+    id: "share-buyback",
+    term: "Share buyback",
+    definition: "A company buying back its own shares, usually on the open market. It lowers the share count, so EPS rises even when profit doesn't.",
+    plain: "A company buying back its own shares, which lowers the share count.",
+    related: ["eps", "dilution"],
+    lesson: "3.8.2",
+    aka: ["Buyback", "Share repurchase"],
+  },
+  {
+    id: "roe",
+    term: "ROE",
+    definition: "Return on equity: net income divided by shareholders' equity. Debt can inflate it, because borrowing shrinks the equity behind the same profit.",
+    plain: "Return on equity: profit divided by shareholders' equity; debt can inflate it.",
+    related: ["net-debt", "interest-coverage", "balance-sheet"],
+    lesson: "3.8.2",
+    aka: ["Return on equity"],
+  },
+  {
+    id: "net-debt",
+    term: "Net debt",
+    definition: "Total borrowings minus cash. Net debt ÷ EBITDA is roughly how many years of operating earnings the debt equals.",
+    plain: "Total debt minus cash.",
+    related: ["enterprise-value", "interest-coverage", "roe"],
+    lesson: "3.8.2",
+  },
+  {
+    id: "interest-coverage",
+    term: "Interest coverage",
+    definition: "Operating profit (EBIT) divided by interest expense: how many times the company's operating earnings cover its interest bill.",
+    plain: "Operating profit divided by interest costs: how easily the debt is serviced.",
+    related: ["net-debt", "roe"],
+    lesson: "3.8.2",
+  },
+  // 3.8.3
+  {
+    id: "pe-ratio",
+    term: "P/E ratio",
+    definition: "Share price divided by earnings per share: how many years of current profit the price pays for.",
+    plain: "Share price divided by earnings per share.",
+    related: ["eps", "ev-ebitda", "value-trap"],
+    lesson: "3.8.3",
+    aka: ["P/E", "Price-to-earnings ratio"],
+  },
+  {
+    id: "enterprise-value",
+    term: "Enterprise value",
+    definition: "The market value of the shares plus net debt: what a buyer would pay for the whole business, taking on its debt and receiving its cash.",
+    plain: "Market value of the shares plus net debt: the price of the whole business.",
+    related: ["net-debt", "ev-ebitda"],
+    lesson: "3.8.3",
+    aka: ["EV"],
+  },
+  {
+    id: "ev-ebitda",
+    term: "EV/EBITDA",
+    definition: "Enterprise value divided by EBITDA, earnings before interest, tax, depreciation and amortisation. Because EV includes debt, it compares companies with different capital structures.",
+    plain: "Enterprise value divided by operating profit before depreciation; compares companies with different debt.",
+    related: ["enterprise-value", "pe-ratio", "net-debt"],
+    lesson: "3.8.3",
+  },
+  {
+    id: "value-trap",
+    term: "Value trap",
+    definition: "A stock that looks cheap on multiples but stays cheap or falls further, because the low price reflects real problems.",
+    plain: "A stock that looks cheap and stays cheap, or gets cheaper.",
+    related: ["pe-ratio", "ev-ebitda"],
+    lesson: "3.8.3",
+  },
+  {
+    id: "discount-rate",
+    term: "Discount rate",
+    definition: "The annual return used to turn future cash into today's value; higher when interest rates or risk are higher.",
+    plain: "The return used to convert future cash into today's value.",
+    related: ["present-value", "wacc"],
+    lesson: "3.8.3",
+  },
+  // 3.8.4
+  {
+    id: "present-value",
+    term: "Present value",
+    definition: "The value today of money received in the future: the future amount divided by (1 + discount rate) for each year of waiting.",
+    plain: "What a future amount of money is worth today.",
+    related: ["discount-rate", "dcf"],
+    lesson: "3.8.4",
+    aka: ["PV"],
+  },
+  {
+    id: "dcf",
+    term: "DCF",
+    definition: "Discounted cash flow: valuing a business as the sum of the present values of its expected free cash flows, plus a terminal value.",
+    plain: "Valuing a business as the present value of its future cash flows.",
+    related: ["present-value", "terminal-value", "wacc", "reverse-dcf"],
+    lesson: "3.8.4",
+    aka: ["Discounted cash flow"],
+  },
+  {
+    id: "terminal-value",
+    term: "Terminal value",
+    definition: "In a DCF, the value of all cash flows after the forecast years, often from a perpetual-growth formula: last cash flow × (1 + g) ÷ (r − g).",
+    plain: "The value of all cash flows after the forecast years, often most of a DCF.",
+    related: ["dcf", "present-value"],
+    lesson: "3.8.4",
+  },
+  {
+    id: "wacc",
+    term: "WACC",
+    definition: "Weighted average cost of capital: the blend of the returns that lenders and shareholders require, used as the discount rate for a company's free cash flow.",
+    plain: "The blended return that lenders and owners require.",
+    related: ["discount-rate", "dcf"],
+    lesson: "3.8.4",
+    aka: ["Weighted average cost of capital"],
+  },
+  {
+    id: "reverse-dcf",
+    term: "Reverse DCF",
+    definition: "Running a DCF backwards: fixing the value at today's price and solving for the growth that price implies.",
+    plain: "Solving a DCF for the growth that today's price implies.",
+    related: ["dcf", "terminal-value"],
+    lesson: "3.8.4",
+  },
+  // 3.8.5
+  {
+    id: "consensus-estimate",
+    term: "Consensus estimate",
+    definition: "The average or median of analysts' forecasts for a reported figure, such as EPS or revenue, published before the report.",
+    plain: "The average analyst forecast for a reported figure.",
+    related: ["consensus", "earnings-beat", "whisper-number"],
+    lesson: "3.8.5",
+  },
+  {
+    id: "whisper-number",
+    term: "Whisper number",
+    definition: "The unofficial expectation traders actually hold for a report, often above the published consensus. It can't be checked: treat it as a reminder that the real bar is unknown.",
+    plain: "The unofficial expectation traders actually hold, often above the consensus.",
+    related: ["consensus-estimate", "earnings-beat"],
+    lesson: "3.8.5",
+  },
+  {
+    id: "earnings-beat",
+    term: "Earnings beat",
+    definition: "Reported results above the consensus estimate. Most companies beat in a typical season, so a beat is the base case, not news by itself.",
+    plain: "Reported results above the consensus; the usual case, not news by itself.",
+    related: ["consensus-estimate", "surprise", "base-rate"],
+    lesson: "3.8.5",
+    aka: ["Beat"],
+  },
+  {
+    id: "extended-hours",
+    term: "Extended hours",
+    definition: "Trading before the regular open or after the close, with fewer participants, wider spreads, usually limit orders only and no NBBO protection.",
+    plain: "Trading before the open or after the close, with thin liquidity and wider spreads.",
+    related: ["gap", "nbbo", "limit-order"],
+    lesson: "3.8.5",
+    aka: ["Pre-market", "After-hours"],
+  },
+  {
+    id: "estimate-revision",
+    term: "Estimate revision",
+    definition: "An analyst raising or cutting a forecast. Revisions cluster around reports, and price targets often follow the price.",
+    plain: "An analyst raising or cutting a forecast.",
+    related: ["consensus-estimate", "revision"],
+    lesson: "3.8.5",
+  },
+  // 3.8.6
+  {
+    id: "guidance",
+    term: "Guidance",
+    definition: "Management's own forecast for coming results, such as full-year revenue or EPS. Changes in it often move price more than the quarter just reported.",
+    plain: "Management's own forecast for the coming results.",
+    related: ["beat-and-raise", "sandbagging", "consensus-estimate"],
+    lesson: "3.8.6",
+    aka: ["Outlook"],
+  },
+  {
+    id: "beat-and-raise",
+    term: "Beat and raise",
+    definition: "A report with results above the consensus together with higher guidance: the most reliably positive combination, though not a guarantee.",
+    plain: "Results above expectations together with higher guidance.",
+    related: ["guidance", "earnings-beat"],
+    lesson: "3.8.6",
+  },
+  {
+    id: "sandbagging",
+    term: "Sandbagging",
+    definition: "Setting guidance low on purpose so it's easy to beat. Once traders learn the habit, they expect the beat and the raise.",
+    plain: "Setting guidance low on purpose so it is easy to beat.",
+    related: ["guidance", "beat-and-raise"],
+    lesson: "3.8.6",
+  },
+  // 3.8.7
+  {
+    id: "implied-volatility",
+    term: "Implied volatility",
+    definition: "The volatility, as an annual percentage, that makes an option-pricing model match an option's market price: the uncertainty the market is pricing in.",
+    plain: "The volatility the options market is pricing in.",
+    related: ["historical-volatility", "straddle", "iv-crush"],
+    lesson: "3.8.7",
+    aka: ["IV"],
+  },
+  {
+    id: "straddle",
+    term: "Straddle",
+    definition: "Buying a call and a put with the same strike and expiry. It profits if price moves further, either way, than the total premium paid.",
+    plain: "Buying a call and a put at the same strike: a bet on a big move.",
+    related: ["implied-volatility", "implied-move"],
+    lesson: "3.8.7",
+  },
+  {
+    id: "implied-move",
+    term: "Implied move",
+    definition: "The move the options market prices for an event, roughly the at-the-money straddle price divided by the share price.",
+    plain: "The move options price for an event: straddle price divided by share price.",
+    related: ["straddle", "implied-volatility"],
+    lesson: "3.8.7",
+  },
+  {
+    id: "iv-crush",
+    term: "IV crush",
+    definition: "The sharp fall in implied volatility, and so in option prices, once an event such as an earnings report resolves the uncertainty.",
+    plain: "The drop in option prices after an event removes the uncertainty.",
+    related: ["implied-volatility", "straddle"],
+    lesson: "3.8.7",
+  },
+  // 3.8.8
+  {
+    id: "sue",
+    term: "SUE",
+    definition: "Standardised unexpected earnings: actual minus expected EPS, divided by the standard deviation of past surprises, so surprises are comparable across companies.",
+    plain: "The earnings surprise divided by the usual size of surprises.",
+    related: ["pead", "surprise", "standard-deviation"],
+    lesson: "3.8.8",
+    aka: ["Standardised unexpected earnings"],
+  },
+  {
+    id: "pead",
+    term: "PEAD",
+    definition: "Post-earnings announcement drift: the tendency of prices to keep moving in the direction of an earnings surprise for weeks. Much weaker since publication.",
+    plain: "Post-earnings announcement drift: prices keep moving in the surprise's direction for weeks.",
+    related: ["sue", "anomaly"],
+    lesson: "3.8.8",
+    aka: ["Post-earnings drift"],
+  },
+  {
+    id: "anomaly",
+    term: "Anomaly",
+    definition: "A return pattern that standard risk explanations don't account for. Published anomalies tend to shrink out of sample and after publication.",
+    plain: "A return pattern that standard risk explanations do not account for.",
+    related: ["pead", "out-of-sample"],
+    lesson: "3.8.8",
+  },
+  // 3.8.9
+  {
+    id: "secondary-offering",
+    term: "Secondary offering",
+    definition: "A listed company selling new shares to investors. It dilutes existing holders and adds supply, so the price usually falls on the announcement.",
+    plain: "A listed company selling new shares to investors.",
+    related: ["dilution", "stock"],
+    lesson: "3.8.9",
+    aka: ["Follow-on offering"],
+  },
+  {
+    id: "merger-arbitrage",
+    term: "Merger arbitrage",
+    definition: "Buying a takeover target below the offer price to earn the spread if the deal closes, accepting a large loss if it fails. The spread implies the market's odds for the deal.",
+    plain: "Trading the gap between a takeover target's price and the offered price.",
+    related: ["stock"],
+    lesson: "3.8.9",
+    aka: ["Merger arb", "Risk arbitrage"],
+  },
+  {
+    id: "index-inclusion",
+    term: "Index inclusion",
+    definition: "A stock being added to an index, which makes funds that track the index buy it; a deletion makes them sell.",
+    plain: "A stock joining an index, which makes index funds buy it.",
+    related: ["index", "etf"],
+    lesson: "3.8.9",
+  },
+];
+
+// ─── Concepts ───────────────────────────────────────────────────────────────
+
+const CONCEPTS: Concept[] = [
+  {
+    id: "financial-statements",
+    name: "Financial statements",
+    category: "market_fundamentals",
+    summary: "The income statement, balance sheet and cash-flow statement, linked through net income.",
+    body: [
+      "The income statement covers a period and ends in net income. The balance sheet is a snapshot on one date: assets equal liabilities plus equity. The cash-flow statement shows the cash that actually moved, split into operating, investing and financing.",
+      "Net income ties them together. Profit not paid out adds to retained earnings, in equity, and the cash-flow statement starts from it: it adds back non-cash costs such as depreciation and subtracts increases in receivables and inventory. Capex raises PP&E on the balance sheet and leaves as investing cash flow.",
+      "Profit is counted when a sale is made and cash when it's paid, so the two can move in opposite directions for quarters at a time.",
+    ],
+    example: "LABA earns 60m. Depreciation adds back 20m; receivables rise 80m and inventory 30m: operating cash flow −30m. Capex of 15m makes free cash flow −45m, and with no financing, cash falls 45m in a record-profit quarter.",
+    related: ["free-cash-flow", "earnings-quality", "stocks-and-etfs"],
+    missions: [],
+    lessons: ["3.8.1"],
+  },
+  {
+    id: "free-cash-flow",
+    name: "Free cash flow",
+    category: "market_fundamentals",
+    summary: "Operating cash flow minus capital spending: the cash a business generates after investing in itself.",
+    body: [
+      "Free cash flow is what's left for owners and lenders after the business has paid its suppliers, staff, taxes and its own investment. It's harder to flatter than earnings: it moves only when cash does.",
+      "It can be negative for good reasons, such as heavy investment in a growth phase, or bad ones, such as customers who don't pay. Per share, it shows what each owner's slice actually generates, after dilution.",
+    ],
+    example: "Operating cash flow 140m, capex 55m: free cash flow 85m. With 100m shares, that's 0.85 a share, whatever the adjusted EPS says.",
+    related: ["financial-statements", "earnings-quality", "discounted-cash-flow"],
+    missions: [],
+    lessons: ["3.8.1", "3.8.2"],
+  },
+  {
+    id: "earnings-quality",
+    name: "Earnings quality",
+    category: "market_fundamentals",
+    summary: "How well reported earnings reflect cash and repeatable results, net of adjustments, dilution and buyback effects.",
+    body: [
+      "High-quality earnings turn into cash and repeat. Warning signs: adjusted EPS far above GAAP EPS, 'one-off' costs that recur every year, share-based pay that dilutes owners, and receivables or inventory growing faster than sales.",
+      "EPS can also grow without the business growing: a buyback shrinks the share count, so the same profit is split fewer ways. And a high ROE can come from debt rather than skill; net debt to EBITDA and interest coverage show which.",
+    ],
+    example: "LABA and LABB both report adjusted EPS of 2.00. LABA's free cash flow is 2.10 a share; LABB's is 0.80, its GAAP EPS is 1.10 and its share count grows 6% a year. Same headline, different quality.",
+    related: ["free-cash-flow", "financial-statements", "valuation-multiples"],
+    missions: [],
+    lessons: ["3.8.2"],
+  },
+  {
+    id: "valuation-multiples",
+    name: "Valuation multiples",
+    category: "market_fundamentals",
+    summary: "Ratios such as P/E and EV/EBITDA that relate price or enterprise value to a company's fundamentals.",
+    body: [
+      "A multiple compresses the market's view of growth, risk and discount rates into one number. P/E relates the share price to EPS; EV/EBITDA relates the whole business, debt and cash included, to operating earnings, so it compares companies with different balance sheets fairly. In one CFA Institute survey, about 93% of practitioners used multiples.",
+      "Low isn't automatically cheap: a low multiple can reflect slow growth, high risk or falling profits, and a cyclical company's P/E looks high at the bottom of its cycle. As short-term timing tools, multiples are grade D; value as a long-run factor is graded A/B, with long dry spells.",
+    ],
+    example: "Market cap 4,000m plus net debt 1,000m: EV 5,000m. EBITDA of 500m gives 10×. A company with the same market cap and 1,000m of net cash has an EV of 3,000m: 6×.",
+    related: ["earnings-quality", "equity-duration", "discounted-cash-flow"],
+    missions: [],
+    lessons: ["3.8.3"],
+  },
+  {
+    id: "equity-duration",
+    name: "Equity duration",
+    category: "market_fundamentals",
+    summary: "How sensitive a stock's value is to discount-rate changes; higher when cash flows lie further in the future.",
+    body: [
+      "A stock's value is the present value of its future cash. The further away that cash lies, the more a change in the discount rate moves the value, as with a long bond. Fast growers, whose cash lies mostly years ahead, have long duration.",
+      "With value = cash ÷ (r − g), the closer growth g sits to the discount rate r, the steeper the sensitivity. That's how rate surprises reach stock prices: through the multiples.",
+    ],
+    example: "Same cash today, rate from 8% to 9%: with growth of 6%, the value falls from 50 to 33.33 times the cash (−33%); with growth of 1%, from 14.29 to 12.50 times (−12.5%).",
+    related: ["valuation-multiples", "discounted-cash-flow", "central-bank-decisions"],
+    missions: [],
+    lessons: ["3.8.3"],
+  },
+  {
+    id: "discounted-cash-flow",
+    name: "Discounted cash flow",
+    category: "market_fundamentals",
+    summary: "Valuing an asset as the present value of its expected future cash flows plus a terminal value.",
+    body: [
+      "A DCF forecasts free cash flow for a few years, discounts each year at a rate such as WACC, and adds a terminal value for everything after. The terminal value is often most of the total, commonly over 60–70% (a rule of thumb).",
+      "That makes a DCF very sensitive to its two least knowable inputs: the discount rate and long-run growth. It's a model, not a forecast: as a trading signal it's grade D, and it says nothing about when price and model might meet. If you built it yourself, watch for anchoring on it.",
+    ],
+    example: "Free cash flow of 100m growing 10% a year for five years, WACC 9%, terminal growth 2.5%: 467.2m from the five years plus 1,500.5m of discounted terminal value = 1,967.8m, 76% of it terminal. At 8% WACC: 2,337m.",
+    related: ["free-cash-flow", "valuation-multiples", "implied-expectations", "anchoring"],
+    missions: [],
+    lessons: ["3.8.4"],
+  },
+  {
+    id: "implied-expectations",
+    name: "Implied expectations",
+    category: "market_fundamentals",
+    summary: "The growth or outcome that today's price assumes, found by running a valuation model in reverse.",
+    body: [
+      "Instead of asking what a company is worth, ask what its price assumes. Fix the valuation at today's price and solve for growth: a reverse DCF. The answer is a claim you can judge against the business, its history and its competitors.",
+      "A gap between your model and the price is a disagreement, not a signal. The market may know something you don't, and even if you're right, nothing says when the price will move. Write down what would prove you wrong before acting.",
+    ],
+    example: "LABB's model gives 1,968m at 10% growth; the market says 2,600m. Keeping WACC at 9% and terminal growth at 2.5%, the price implies about 18.9% growth a year for five years.",
+    related: ["discounted-cash-flow", "news-surprise", "anchoring"],
+    missions: [],
+    lessons: ["3.8.4"],
+  },
+  {
+    id: "earnings-surprise",
+    name: "Earnings surprise",
+    category: "market_fundamentals",
+    summary: "The gap between reported results and expectations; its size and the guidance matter more than a beat itself.",
+    body: [
+      "Earnings season compares reported EPS and revenue with the consensus. Beats are the norm: in the S&P 500, about 78% of companies beat on average over five years (FactSet data). So a beat is the base case; what matters is the surprise's size against usual surprises, and guidance.",
+      "The bar can sit above the consensus: a whisper number, or what buyers already paid for in a run-up. Reports usually land outside regular hours, so the reaction arrives as an overnight gap that a stop can't stop.",
+    ],
+    example: "LABB beats, 2.05 against 2.00, and falls 6% after the close. Standardised, a surprise of 0.30 when surprises usually vary by 0.12 gives a SUE of 2.5.",
+    related: ["news-surprise", "base-rates", "gap-risk", "earnings-guidance"],
+    missions: [],
+    lessons: ["3.8.5", "3.8.6", "3.8.8"],
+  },
+  {
+    id: "earnings-guidance",
+    name: "Earnings guidance",
+    category: "scenario_analysis",
+    summary: "Management's outlook for future results; changes in it often move price more than the quarter's numbers.",
+    body: [
+      "Results and guidance place a report in a 3×3 matrix: miss, in-line or beat, against cut, maintain or raise. Where the two agree, the gap tends to follow them; where they disagree, outcomes spread widely, so flag those cells as uncertain.",
+      "Expectations shape every cell. A habitual sandbagger's raise is already priced, so a small raise can disappoint, and a cut smaller than feared can lift the stock. The second wave, during the conference call, can reverse the first. The matrix is grade C, from practitioner sources.",
+    ],
+    example: "Simulator, 40 reports per cell: 35 of 40 beat-and-raise reports gapped up, median +4.9%; 39 of 40 miss-and-cut reports gapped down. Miss-and-raise: 22 up, 17 down, from −14.1% to +13.8%.",
+    related: ["earnings-surprise", "second-move", "base-rates"],
+    missions: [],
+    lessons: ["3.8.6"],
+  },
+  {
+    id: "implied-move",
+    name: "Implied move",
+    category: "scenario_analysis",
+    summary: "The move the options market prices for an event, roughly the at-the-money straddle price divided by the share price.",
+    body: [
+      "Before a report, options price its uncertainty. The at-the-money straddle for the first expiry after the event, divided by the share price, approximates the move the market expects, up or down.",
+      "It's a benchmark, not a forecast. Compare a stock's realised moves with its implied moves over many reports before calling options cheap or rich: the evidence is mixed (grade C), and a few big moves decide the average.",
+    ],
+    example: "LABB at 100.00 with the straddle at 7.95: an implied move of about ±8%. Over 8 reports, LABB moved 6.8% on average against 8.0% implied, a ratio of 0.85, but two of the moves were 12.4% and 14.0%.",
+    related: ["iv-crush", "volatility", "earnings-surprise"],
+    missions: [],
+    lessons: ["3.8.7"],
+  },
+  {
+    id: "iv-crush",
+    name: "IV crush",
+    category: "scenario_analysis",
+    summary: "The fall in implied volatility once an event's uncertainty is resolved, which lowers option prices.",
+    body: [
+      "Implied volatility rises into a scheduled event and collapses once the event resolves the uncertainty. Option prices fall with it, often by more than the stock's move adds.",
+      "So buying a call before earnings isn't a cheap bet on a beat: the call can lose even when the stock rises. Selling options to collect the crush wins often and loses rarely but big, when the gap beats the implied move.",
+    ],
+    example: "A call bought at 3.98 with 7 days left and IV at 72%. After the report LABB is up 3% at 103.00, IV is 30%, and the call is worth 3.50: −12%. It breaks even only above about 103.60.",
+    related: ["implied-move", "historical-volatility", "return-skew"],
+    missions: [],
+    lessons: ["3.8.7"],
+  },
+  {
+    id: "post-earnings-drift",
+    name: "Post-earnings announcement drift",
+    category: "market_fundamentals",
+    summary: "Prices tending to keep moving in the direction of an earnings surprise for weeks; much weaker since publication.",
+    body: [
+      "After big earnings surprises, prices tended to keep moving in the surprise's direction for weeks. Ball and Brown (1968) documented it; Bernard and Thomas (1989) found the top-minus-bottom SUE spread positive in 41 of 48 quarters, 1974–1985. About 25–30% of the drift came at the next reports. The usual explanations: underreaction and limits to arbitrage.",
+      "The spread fell from about 5% in the 1980s–90s to 3% or less in the late 2010s, and Martineau (2021) finds no drift in large caps since about 2006. What's left lives in small, illiquid, thinly covered stocks, where costs are highest. Grade B, strongly decayed.",
+    ],
+    example: "Simulator: top-SUE small caps earn a gross +1.10% per 60-day hold. After 0.10% of commissions, the drift breaks even at a 1.00% spread; the small caps' 1.20% spread leaves −0.20% a trade.",
+    related: ["earnings-surprise", "anomaly-decay", "trading-costs", "evidence-grades"],
+    missions: [],
+    lessons: ["3.8.8"],
+  },
+  {
+    id: "anomaly-decay",
+    name: "Anomaly decay",
+    category: "decision_making",
+    summary: "The shrinking of a published return pattern out of sample and after publication, as traders learn and costs bite.",
+    body: [
+      "Published return patterns shrink. Across 97 predictors, McLean and Pontiff (2016) found returns 26% lower out of sample and 58% lower after publication, consistent with traders learning from the papers. Costs and crowding then take part of what's left.",
+      "Treat any published edge as smaller and more crowded than its paper suggests, measure it net of your own costs, and write the rule for stopping before you start, so the results can't bend it.",
+    ],
+    example: "PEAD's spread fell from about 5% to 3% or less, and in large caps it's about zero since around 2006. A rule written in advance, such as 'stop when the 2-year net expectancy interval includes zero', decides when to quit.",
+    related: ["post-earnings-drift", "evidence-grades", "performance-claims", "expectancy-confidence-interval"],
+    missions: [],
+    lessons: ["3.8.8"],
+  },
+  {
+    id: "adjusted-price-data",
+    name: "Adjusted price data",
+    category: "technical_analysis",
+    summary: "Price history corrected for splits, dividends or contract rolls so charts and backtests show no artificial gaps.",
+    body: [
+      "A split divides the price without changing the value; a dividend moves value from the price into cash. Unadjusted, both show up on a chart as drops that never happened to holders, and indicators and backtests react to them.",
+      "The fix: adjust every price before the event and nothing after. For a 4-for-1 split, divide earlier prices by 4; for a dividend, multiply earlier prices by (1 − dividend ÷ the previous close). Use adjusted data for signals and actual prices for fills.",
+    ],
+    example: "LABA closes at 120.00, splits 4-for-1, then pays 0.80 when it trades at 32.00. Bar 30's adjusted close: 120.00 ÷ 4 × 0.975 = 29.25.",
+    related: ["corporate-actions", "look-ahead-bias", "survivorship-bias", "moving-average"],
+    missions: [],
+    lessons: ["3.8.9"],
+  },
+];
 
 /** Unit 3.8 · Company fundamentals and earnings (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_8: UnitContent = { lessons: [], questions: [], terms: [], concepts: [] };
+export const UNIT_3_8: UnitContent = { lessons: [L381, L382, L383, L384, L385, L386, L387, L388, L389], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
