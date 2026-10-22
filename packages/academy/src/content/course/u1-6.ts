@@ -1,4 +1,1277 @@
-import type { UnitContent } from "../../types";
+import type { CandleData, ChartLayer, UnitContent } from "../../types";
+
+/**
+ * 1.6.4: one closed LABX trade. Pullback low 48.20 (c6), entry 50.00 on the close of c9, stop 48.00, target 54.00 (2R).
+ * Dip to 48.10 on c13 (bid 48.05, the 48.00 stop holds); the stop is moved to 47.00 there. c17 opens at 47.80 and
+ * trades to 46.80: the 47.00 stop fills without a gap. 48 units: planned risk 98.36 with costs, loss at 47.00 146.33 (−1.49R).
+ */
+const JOURNAL_CANDLES: CandleData[] = [
+  { o: 47.2, h: 47.6, l: 47.0, c: 47.5 },
+  { o: 47.5, h: 48.1, l: 47.4, c: 47.95 },
+  { o: 47.95, h: 48.6, l: 47.8, c: 48.45 },
+  { o: 48.45, h: 49.2, l: 48.3, c: 49.05 },
+  { o: 49.05, h: 49.7, l: 48.9, c: 49.55 },
+  { o: 49.55, h: 49.65, l: 48.9, c: 49.0 },
+  { o: 49.0, h: 49.1, l: 48.2, c: 48.4 },
+  { o: 48.4, h: 49.0, l: 48.3, c: 48.9 },
+  { o: 48.9, h: 49.6, l: 48.8, c: 49.45 },
+  { o: 49.45, h: 50.1, l: 49.35, c: 50.0 },
+  { o: 50.0, h: 50.7, l: 49.9, c: 50.55 },
+  { o: 50.55, h: 50.9, l: 50.2, c: 50.3 },
+  { o: 50.3, h: 50.4, l: 49.2, c: 49.4 },
+  { o: 49.4, h: 49.5, l: 48.1, c: 48.35 },
+  { o: 48.35, h: 49.1, l: 48.25, c: 48.9 },
+  { o: 48.9, h: 49.3, l: 48.4, c: 48.55 },
+  { o: 48.55, h: 48.7, l: 47.6, c: 47.8 },
+  { o: 47.8, h: 47.9, l: 46.8, c: 47.1 },
+];
+
+const JOURNAL_ENTRY: ChartLayer[] = [
+  { kind: "level", price: 50.0, role: "entry", label: "Entry 50.00" },
+  { kind: "level", price: 48.0, role: "stop", label: "Planned stop 48.00" },
+];
+const JOURNAL_STOP_MOVE: ChartLayer = {
+  kind: "path",
+  points: [
+    { index: 9, price: 48.0 },
+    { index: 13, price: 48.0 },
+    { index: 13, price: 47.0 },
+    { index: 17, price: 47.0 },
+  ],
+  role: "down",
+  label: "Stop",
+};
+const JOURNAL_EXIT: ChartLayer = { kind: "marker", index: 17, price: 47.0, label: "Exit 47.00", role: "down" };
+
+/** The pre-trade checklist of 1.6.3 as a decision flow. `wrongStop` makes the stop question's right answer "no" (ticket 2). */
+function checklistFlow(wrongStop: boolean) {
+  return [
+    { id: "c1", text: "Setup in my playbook?", kind: "question" as const, yes: "c2", no: "nogo", ...(wrongStop ? { correct: "yes" as const, explain: "It's your pullback setup, from the playbook." } : {}) },
+    { id: "c2", text: "Every condition yes?", kind: "question" as const, yes: "c3", no: "nogo", ...(wrongStop ? { correct: "yes" as const, explain: "The ticket says every condition is a yes." } : {}) },
+    {
+      id: "c3",
+      text: "Stop at the invalidation?",
+      kind: "question" as const,
+      yes: "c4",
+      no: "nogo",
+      ...(wrongStop ? { correct: "no" as const, explain: "The stop field is empty. Watching the trade and exiting by hand is not a stop." } : {}),
+    },
+    { id: "c4", text: "Size within 1%, costs included?", kind: "question" as const, yes: "c5", no: "resize" },
+    { id: "c5", text: "Daily limit OK?", kind: "question" as const, yes: "c6", no: "nogo" },
+    { id: "c6", text: "No pause running?", kind: "question" as const, yes: "c7", no: "nogo" },
+    { id: "c7", text: "Calm enough: 3 of 5 or lower?", kind: "question" as const, yes: "go", no: "nogo" },
+    { id: "go", text: "Go: send the order", kind: "end" as const },
+    { id: "resize", text: "Resize within the limit, or skip", kind: "end" as const },
+    { id: "nogo", text: "No trade", kind: "end" as const },
+  ];
+}
 
 /** Unit 1.6 · Your first plan and journal (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_1_6: UnitContent = { lessons: [], questions: [], terms: [], concepts: [] };
+export const UNIT_1_6: UnitContent = {
+  lessons: [
+    // ─── 1.6.2 · Your plan v1 ────────────────────────────────────────────────
+    {
+      id: "1.6.2",
+      title: "Your plan v1",
+      topic: "decision_making",
+      level: "beginner",
+      tier: "free",
+      minutes: 7,
+      summary: "Write a short, checkable plan v1 with one setup, your risk capital and limits written as numbers.",
+      objectives: [
+        "Write a one-page plan v1: market, timeframe, one setup, risk rules, exits and limits.",
+        "Set your risk capital and personal limits as numbers the app can check.",
+        "Version the plan and change it only through its own rule for changes.",
+      ],
+      blocks: [],
+      practice: [
+        { kind: "arena", ref: "bullish", label: "Arena: trending market" },
+        { kind: "check", ref: "decision_making", label: "Knowledge check: decision making" },
+      ],
+      script: {
+        unit: "1.6",
+        courseId: "1.6.2",
+        hook: {
+          prompt: "Which of these plan lines can the app check for you?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "trend", label: "Trade with the trend", feedback: "Which trend, on which timeframe, measured how? Two people could disagree, so no app can check it." },
+              { id: "risk", label: "Risk 1% of current equity per trade", feedback: "Right. The ticket shows the stop, the size and your equity, so the risk can be checked before the order goes in." },
+              { id: "patient", label: "Be patient", feedback: "A good intention, but not a rule. Nothing on a ticket shows whether you were patient." },
+            ],
+            answer: "risk",
+          },
+          compare: "You picked “{yours}”. Only “Risk 1% of current equity per trade” is a number the app can check on every ticket. The other two are intentions.",
+          concept: "trading-plan",
+        },
+        learn: [
+          {
+            kind: "explain",
+            title: "Start small",
+            text: "Your first written [[trading-plan|plan]], v1, is short, checkable and has **one setup**. Short, because you'll actually read it. Checkable, because every rule can be answered yes or no from a chart or a ticket. One setup, because 30 trades of one setup tell you something; 30 trades spread over five setups tell you very little.",
+          },
+          {
+            kind: "figure",
+            title: "The sections of plan v1",
+            text: "Eight sections, each with an example line. Yours will say different things; the shape stays the same.",
+            figure: {
+              kind: "flow",
+              start: "goal",
+              nodes: [
+                { id: "goal", text: "Goal and constraints, with your risk capital", kind: "end" },
+                { id: "market", text: "Market and timeframes", kind: "end" },
+                { id: "setup", text: "One setup, with yes-or-no conditions", kind: "end" },
+                { id: "risk", text: "Risk rules: per trade, per day, trades per day", kind: "end" },
+                { id: "exits", text: "Exits: stop, target, time", kind: "end" },
+                { id: "routine", text: "Routine: before, during and after the session", kind: "end" },
+                { id: "journal", text: "Journal and review", kind: "end" },
+                { id: "changes", text: "Rule for changes", kind: "end" },
+              ],
+              steps: [
+                "Goal: learn the process over 30 trades, using only risk capital. Market: LABX, 1H chart.",
+                "Setup: pullback in an uptrend, with three conditions, each yes or no.",
+                "Risk: 1% per trade, stop for the day at −3R, three trades a day at most.",
+                "Exits: stop, 2R target or time. Checklist before, journal after, weekly review. Changes only by the rule.",
+              ],
+            },
+            concept: "trading-plan",
+          },
+          {
+            kind: "worked",
+            title: "Risk capital",
+            lines: [
+              "Savings, in any currency: 20,000.",
+              "Emergency fund, six months of expenses: 12,000.",
+              "Already promised, next year's tuition: 5,000.",
+              "[[risk-capital|Risk capital]] = 20,000 − 12,000 − 5,000 = ?",
+            ],
+            ask: {
+              answer: 3000,
+              tolerance: 0,
+              feedback: [
+                { value: 8000, text: "That keeps the tuition in. Money already promised can't be lost either: subtract it too." },
+                { value: 15000, text: "That keeps the emergency fund in. It's there for emergencies, not for trading: subtract it." },
+              ],
+              correct: "Right: 3,000. Only this money belongs in a trading account. Here it's virtual; the habit isn't.",
+            },
+            after: "Risk capital is money you could lose entirely without touching living costs, debts or emergency savings. Your plan's limits sit inside it.",
+            concept: "risk-capital",
+          },
+          {
+            kind: "match",
+            title: "Vague or checkable?",
+            prompt: "A plan line is only useful if anyone could check it, on the chart or the ticket, and get the same answer. Match each vague line to its checkable version.",
+            columns: ["Vague", "Checkable"],
+            pairs: [
+              { left: "The trend is up", right: "The last two swing highs and lows are each higher than the ones before", wrong: "'Up' needs a test anyone can run: compare the last swing highs and lows." },
+              { left: "Don't risk too much", right: "Risk 1% of current equity, costs included", wrong: "'Too much' is about money on one trade: a percentage of equity, with costs." },
+              { left: "Stop if it's a bad day", right: "Stop for the day after −3R", wrong: "'A bad day' needs a number: the loss in R after which the session ends." },
+              { left: "Use a sensible stop", right: "Stop 0.20 below the pullback low", wrong: "'Sensible' needs a place: a fixed distance beyond the level that proves the idea wrong." },
+            ],
+            correct: "Each checkable line names a number or a test. If two people could disagree about a line, rewrite it.",
+            concept: "trading-plan",
+          },
+          {
+            kind: "explain",
+            title: "Versions",
+            text: "Your plan starts as **v1.0**. Change a rule only after at least 30 trades with it, or when a clear breach shows a gap in the plan; never during a session; always with the reason written. The new version, v1.1, starts a fresh count. Rules changed after every loss never get tested.",
+          },
+          {
+            kind: "callout",
+            tone: "key",
+            text: "Your plan is the yardstick. **Decision Quality** and **Risk Discipline** measure each trade against it, so write its limits as numbers that can be checked on every ticket.",
+          },
+          {
+            kind: "order",
+            title: "Write plan v1",
+            prompt: "Now write yours. Put the steps in order, from what limits you to what you'll do. Then write your one setup in a line.",
+            items: [
+              "Work out your risk capital.",
+              "Pick one market and the timeframes you read.",
+              "Write one setup as yes-or-no conditions.",
+              "Set risk per trade, the daily limit and the maximum trades a day.",
+              "Add exits, the routine and the rule for changes, then save it as v1.0.",
+            ],
+            wrong: "Start from what limits you: the money you can afford to lose. The setup comes before the risk numbers, because the stop depends on it.",
+            explain: "Constraints first, then what you trade, then the setup, then the numbers that protect you. The stop and the size depend on the setup, so the risk rules follow it.",
+            note: {
+              key: "1.6.2:6",
+              label: "Your one setup, in one line (optional)",
+              placeholder: "Pullback in an uptrend: higher swing lows, pullback holds above the last one, target at least 2R.",
+            },
+            concept: "trading-plan",
+          },
+          {
+            kind: "fields",
+            title: "Your plan v1 numbers",
+            prompt: "Set the numbers of your plan v1. Risk per trade is capped at 2%; 1% is the usual start. The daily limit ends the session after a set loss in R. Save them: they are what you'll check every trade against.",
+            fields: [
+              { id: "riskPct", label: "Risk per trade, costs included", kind: "choice", options: [0.5, 1, 2, 3], unit: "%", default: 1 },
+              { id: "dailyLimit", label: "Stop for the day after a loss of __R", kind: "stepper", min: 1, max: 6, step: 1, unit: "R", default: 3 },
+              { id: "maxTrades", label: "At most __ trades a day", kind: "stepper", min: 1, max: 10, step: 1, default: 3 },
+            ],
+            valid: { field: "riskPct", lte: 2 },
+            correct: "Saved as plan v1.0. From now on, judge every trade against these numbers, and change them only through your rule for changes.",
+            feedback: [
+              {
+                when: { field: "riskPct", gt: 2 },
+                text: "At 3% per trade, ten losses in a row would cost 26.3% of the account. Plan v1 caps risk at 2% per trade.",
+              },
+            ],
+            concept: "trading-plan",
+          },
+        ],
+        check: ["q-1.6.2-1", "q-1.6.2-2", "q-1.6.2-3"],
+        recap: {
+          takeaways: [
+            "Plan v1 is short and checkable: one market, one setup, risk rules, exits and limits.",
+            "Risk capital is money you can lose entirely; your limits are numbers a ticket can check.",
+            "Change rules only through the plan's own rule: after 30 trades, between sessions, reason written.",
+          ],
+        },
+      },
+    },
+
+    // ─── 1.6.3 · The pre-trade checklist ─────────────────────────────────────
+    {
+      id: "1.6.3",
+      title: "The pre-trade checklist",
+      topic: "decision_making",
+      level: "beginner",
+      tier: "free",
+      minutes: 5,
+      summary: "Run a short yes-or-no checklist before every order, and treat any 'no' as no trade or a smaller size.",
+      objectives: [
+        "Run a short go / no-go checklist before every order.",
+        "Separate the items the app can verify from those only you can answer.",
+        "Treat any 'no' as no trade, or resize within the limit.",
+      ],
+      blocks: [],
+      practice: [
+        { kind: "mission", ref: "M10", label: "Mission: No Trade Is a Trade" },
+        { kind: "arena", ref: "sideways", label: "Arena: sideways market" },
+      ],
+      script: {
+        unit: "1.6",
+        courseId: "1.6.3",
+        hook: {
+          prompt: "Pilots and surgeons run checklists for routine steps. Which trading mistake is a checklist most likely to catch?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "pattern", label: "A misread chart pattern", feedback: "A checklist can ask whether the setup is in your playbook, but it can't read the chart for you." },
+              { id: "nostop", label: "Entering with no stop", feedback: "Right. A skipped routine step is exactly what checklists catch." },
+              { id: "market", label: "A bad market", feedback: "No list can change the market. It can only make sure your own steps are done." },
+            ],
+            answer: "nostop",
+          },
+          compare: "You chose “{yours}”. A checklist catches skipped routine steps, like entering with no stop. It can't read a chart or fix a market.",
+          concept: "pre-trade-checklist",
+        },
+        learn: [
+          {
+            kind: "explain",
+            text: "A [[pre-trade-checklist|pre-trade checklist]] is 5 to 9 yes-or-no questions you answer at the moment of decision, just before the order goes in. It doesn't find trades. It stops you skipping steps you already know, when excitement or boredom would. The evidence comes from aviation and surgery, not from trading, but the failure it targets is the same.",
+          },
+          {
+            kind: "figure",
+            title: "Your checklist",
+            text: "Seven questions, in the order you meet them. A trade needs a yes to every one.",
+            figure: {
+              kind: "flow",
+              start: "c1",
+              nodes: checklistFlow(false),
+              steps: [
+                "Setup first: is it in your playbook, and is every condition a yes?",
+                "Then risk: a stop at the invalidation, and a size within 1% with costs.",
+                "Then limits and you: daily limit, no pause, and calm at 3 of 5 or lower.",
+                "Seven yeses: go. A 'no' on size: resize or skip. Any other 'no': no trade.",
+              ],
+            },
+            concept: "pre-trade-checklist",
+          },
+          {
+            kind: "match",
+            title: "Who can check it?",
+            prompt: "Some questions can be verified from the ticket and your account. Others only you can answer. Sort each one.",
+            pairs: [
+              { left: "A stop on the order?", right: "The app can verify", wrong: "The stop is a field on the ticket: it's either there or not. That's a check the app can make." },
+              { left: "Size within 1%, costs included?", right: "The app can verify", wrong: "Size, stop and equity are all on the ticket, so the loss at the stop can be computed for you." },
+              { left: "Daily limit OK?", right: "The app can verify", wrong: "Today's results are in your account history, so the limit can be checked automatically." },
+              { left: "No pause running?", right: "The app can verify", wrong: "A pause is a timer the app can see. It doesn't need your judgement." },
+              { left: "Setup in my playbook?", right: "Only you can answer", wrong: "The app can test single conditions, like a close above a level. Whether the chart shows your setup is your call." },
+              { left: "Every condition yes?", right: "Only you can answer", wrong: "The app can help with some conditions, but reading the chart against your playbook stays your job." },
+              { left: "Calm enough: 3 of 5 or lower?", right: "Only you can answer", wrong: "No ticket shows how you feel. Only you can rate it, honestly." },
+            ],
+            correct: "The app can catch the number errors. The setup, the conditions and your state stay your job.",
+            concept: "pre-trade-checklist",
+          },
+          {
+            kind: "predict",
+            title: "One 'no'",
+            prompt: "Six yeses and one 'no': buying 65 units at 50.00 with the stop at 48.00, the loss at the stop is 133.19 with costs, 1.3% of 10,000.00. Your plan allows 1%. What now?",
+            control: {
+              kind: "choice",
+              choices: [
+                { id: "anyway", label: "Trade anyway", feedback: "One 'no' is still a 'no'. A little over today becomes a habit of being over." },
+                { id: "resize", label: "Resize within the limit, or skip", feedback: "Right. Size is the one 'no' you can fix on the spot." },
+                { id: "move", label: "Move the stop closer, so 65 units fit", feedback: "That drags the stop off the invalidation and into the noise. The stop comes from the chart; the size adjusts to it." },
+              ],
+              answer: "resize",
+            },
+            reveal: "Cut the units until the loss at the stop fits: at 48 units it's 98.36 with costs; 49 would lose 100.41. Size is the only 'no' you can fix this way. Any other 'no' means no trade.",
+            concept: "pre-trade-checklist",
+          },
+          {
+            kind: "explain",
+            title: "Keep it short",
+            text: "A checklist only works if you read it. Thirty items get skimmed; seven get read. Its main risk is ticking boxes on autopilot, so tie each answer to a fact you can see: the stop price, the risk in %, how much of today's limit is left.",
+          },
+          {
+            kind: "figure",
+            title: "Run the checklist",
+            text: "Ticket 2: your pullback setup, every condition yes, 48 units at 50.00. The stop field is empty: you plan to watch the trade and exit by hand. Choose a branch at each question.",
+            figure: {
+              kind: "flow",
+              start: "c1",
+              interactive: true,
+              nodes: checklistFlow(true),
+              steps: [
+                "Setup and conditions: yes and yes.",
+                "Stop at the invalidation: no. No stop means no trade, at any size.",
+                "Fix the ticket first: set the stop at 48.00, under the pullback low, then run the list again.",
+              ],
+            },
+            concept: "pre-trade-checklist",
+          },
+          {
+            kind: "match",
+            title: "Four tickets, and one more",
+            prompt: "Your plan risks 1% of 10,000.00. Run each ticket through the checklist and decide.",
+            pairs: [
+              {
+                left: "Pullback setup, every condition yes, stop at 48.00 under the pullback low, 48 units at 50.00: 98.36 at risk with costs. Limit OK, calm at 2 of 5.",
+                right: "Go",
+                wrong: "Run the seven questions: every answer is yes, and 98.36 is within 1%. That's a go.",
+              },
+              { left: "Every condition yes and the size is fine, but there's no stop on the order.", right: "No-go", wrong: "A missing stop is a 'no' you can't resize away. Add the stop first, or don't trade." },
+              { left: "Everything yes except size: 65 units at 50.00, stop 48.00, put 1.3% at risk with costs.", right: "Resize or skip", wrong: "Size is the one 'no' you can fix: at 48 units the loss at the stop fits within 1%." },
+              { left: "A breakout you like, but breakouts aren't in your playbook.", right: "No-go", wrong: "The first question fails: the setup isn't in your playbook. No size makes it one." },
+              { left: "All yes on the ticket, but after a fast loss you rate yourself 4 of 5.", right: "No-go", wrong: "Calm enough means 3 of 5 or lower. At 4, the last question is a 'no': no trade for now." },
+            ],
+            correct: "Seven yeses: go. A 'no' on size: resize or skip. Any other 'no': no trade.",
+            concept: "pre-trade-checklist",
+          },
+          {
+            kind: "callout",
+            tone: "key",
+            text: "The checklist ends the same way whether you trade or not: with a line in your [[journal]].",
+          },
+        ],
+        check: ["q-1.6.3-1", "q-1.6.3-2", "q-1.6.3-3"],
+        recap: {
+          takeaways: [
+            "Answer 5 to 9 yes-or-no questions at the moment of decision, before every order.",
+            "The app can verify stop, size and limits; the setup, conditions and your state are yours.",
+            "Any 'no' means no trade. A 'no' on size alone: resize within the limit, or skip.",
+          ],
+        },
+      },
+    },
+
+    // ─── 1.6.4 · The trade journal ───────────────────────────────────────────
+    {
+      id: "1.6.4",
+      title: "The trade journal",
+      topic: "decision_making",
+      level: "beginner",
+      tier: "free",
+      minutes: 5,
+      summary: "Record every trade and no-trade with its thesis, invalidation, plan check and emotion, written within minutes.",
+      objectives: [
+        "Record a trade, or a no-trade, with its thesis, invalidation, plan check and emotion.",
+        "Let the simulator fill in the numbers and add the 30-second written part.",
+        "Explain why journaling only losers, or days later, distorts the record.",
+      ],
+      blocks: [],
+      practice: [
+        { kind: "mission", ref: "M10", label: "Mission: No Trade Is a Trade" },
+        { kind: "arena", ref: "bullish", label: "Arena: trending market" },
+      ],
+      script: {
+        unit: "1.6",
+        courseId: "1.6.4",
+        hook: {
+          prompt: "Which journal entry is most useful a month later?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "a", label: "Lost 98.36. Bad luck", feedback: "The number is there, but not the decision. A month later you can't tell whether it was a good trade that lost." },
+              {
+                id: "b",
+                label: "Pullback setup, all three conditions yes. Stop 48.00 under support, 48 units, −1R at the stop. Calm, 2 of 5. Plan followed",
+                feedback: "Right. It records the setup, the risk, your state and the plan check, so the decision can be judged.",
+              },
+              { id: "c", label: "Market was crazy today", feedback: "A mood about the market, nothing about your decision. It can't be reviewed or counted." },
+            ],
+            answer: "b",
+          },
+          compare: "You picked “{yours}”. The useful entry records the setup, the conditions, the risk, your state and the plan check. A month later, it lets you judge the decision, not just the result.",
+          concept: "journaling",
+        },
+        learn: [
+          {
+            kind: "explain",
+            title: "Two halves",
+            text: "A [[journal]] entry has two halves. The simulator fills in the numbers: time, setup, entry, stop, target, size, planned [[r|R]], result in R and costs. You add what only you know: your thesis, the [[invalidation]] price, whether you followed the plan, your emotion from 1 to 5, and one lesson. That takes about 30 seconds.",
+          },
+          {
+            kind: "figure",
+            title: "What the simulator logs",
+            text: "One closed LABX trade, as the simulator records it.",
+            figure: {
+              kind: "chart",
+              chart: { candles: JOURNAL_CANDLES },
+              steps: [
+                {
+                  text: "Entry 50.00, 48 units, stop 48.00, target 54.00. Planned risk: 98.36 with costs, 1R.",
+                  layers: [...JOURNAL_ENTRY, { kind: "level", price: 54.0, role: "target", label: "Target 54.00" }],
+                },
+                { text: "It logs every stop change: 48.00 to 47.00 here, as price dipped to 48.10.", layers: [JOURNAL_STOP_MOVE] },
+                { text: "Exit at 47.00: −146.33 with costs, or −1.49R.", layers: [JOURNAL_EXIT] },
+                { text: "What it can't log: your thesis, invalidation, plan check, emotion and lesson." },
+              ],
+            },
+            concept: "journaling",
+          },
+          {
+            kind: "match",
+            title: "What each field is for",
+            prompt: "Each written field answers a question a review will ask. Match them.",
+            columns: ["Field", "What it's for"],
+            pairs: [
+              { left: "Thesis", right: "What you expected and why", wrong: "The thesis is your reason for the trade, written as it was at entry." },
+              { left: "Invalidation", right: "Where you'd be proven wrong", wrong: "Invalidation is a price: the level where your idea stops being true." },
+              { left: "Emotion, 1 to 5", right: "Patterns in how you feel", wrong: "One rating means little. Across 30 trades it shows whether you trade worse when you're tense." },
+              { left: "Rule followed?", right: "Decision Quality and Risk Discipline", wrong: "This yes or no is what the decision scores are built on." },
+              { left: "Lesson", right: "What changes next time", wrong: "The lesson looks forward: one thing to keep or change." },
+            ],
+            correct: "Five short fields, each one feeding a review.",
+            concept: "journaling",
+          },
+          {
+            kind: "predict",
+            title: "Only the losers?",
+            prompt: "You journal only your losing trades. What does the journal end up showing?",
+            control: {
+              kind: "choice",
+              choices: [
+                { id: "fair", label: "A fair record", feedback: "Every winning trade is missing, including the ones that broke rules. That's not a fair sample." },
+                { id: "tilted", label: "A record tilted towards what went wrong", feedback: "Right. Losses look like the whole story, and rule-breaking wins stay hidden." },
+                { id: "nothing", label: "Nothing useful", feedback: "Losses still teach something. The problem is the tilt: without the wins, you can't compare." },
+              ],
+              answer: "tilted",
+            },
+            reveal: "A selective journal is a biased sample. Log every trade, wins included, or you can't tell a setup that works from one that only feels like it does. A profitable trade that broke a rule is exactly the one you need to see.",
+            concept: "journaling",
+          },
+          {
+            kind: "explain",
+            title: "No trade, no delay",
+            text: "Log your no-trade decisions too: the setup you saw, the condition that failed, and that you followed the plan. Write within minutes, not days: once you know what price did next, [[hindsight-bias|hindsight]] rewrites what you thought at entry. Your journal is the data behind every review and every process KPI.",
+          },
+          {
+            kind: "predict",
+            title: "Rule followed?",
+            prompt: "Now journal the trade from before. The simulator has filled in the numbers, including the stop change. First field: rule followed?",
+            figure: {
+              kind: "chart",
+              chart: { candles: JOURNAL_CANDLES, layers: [...JOURNAL_ENTRY, JOURNAL_STOP_MOVE, JOURNAL_EXIT] },
+              steps: [{ text: "The plan put the stop at 48.00. At 47.00 the loss was −1.49R, not −1R." }],
+            },
+            control: {
+              kind: "choice",
+              choices: [
+                { id: "yes", label: "Yes: the trade had a stop all along", feedback: "The log shows the stop moved from 48.00 to 47.00. That breaks the plan." },
+                { id: "no", label: "No: the stop was moved further away", feedback: "Right. Moving the stop from 48.00 to 47.00 raised the loss at the stop from 98.36 to 146.33." },
+                { id: "cant", label: "Can't tell without the next candles", feedback: "What price did next doesn't change the answer. The rule was about the stop, and the log shows it moved." },
+              ],
+              answer: "no",
+            },
+            reveal: "Answer 'Rule followed?' from the log, never from the result. The same stop move would break the plan even if the trade had ended in profit.",
+            concept: "journaling",
+          },
+          {
+            kind: "fields",
+            title: "Your part of the entry",
+            prompt: "Fill in two fields. Invalidation: the price where the idea was proven wrong, as set at entry, not where the stop ended up. Emotion: how you would have felt during this trade, from 1 (calm) to 5 (very tense).",
+            fields: [
+              { id: "invalidation", label: "Invalidation price", kind: "choice", options: [47, 48, 50, 54], default: 50 },
+              { id: "emotion", label: "Emotion during the trade: __ of 5", kind: "stepper", min: 1, max: 5, step: 1, default: 3 },
+            ],
+            valid: { field: "invalidation", eq: 48 },
+            correct: "Saved. Invalidation at 48.00, under the pullback low, as planned at entry. The emotion rating is yours: across 30 trades it shows patterns.",
+            feedback: [
+              { when: { field: "invalidation", eq: 47 }, text: "47.00 is where the stop ended up, not where the idea was wrong. At entry, the plan put the invalidation at 48.00, under the pullback low." },
+              { when: { field: "invalidation", eq: 50 }, text: "50.00 is the entry. The invalidation is the price that proves the idea wrong: 48.00, under the pullback low." },
+              { when: { field: "invalidation", eq: 54 }, text: "54.00 is the target, where the idea pays. The invalidation is where it fails: 48.00." },
+            ],
+            concept: "journaling",
+          },
+          {
+            kind: "order",
+            title: "Your 30 seconds",
+            prompt: "Put the written part in order, then add your lesson from this trade.",
+            items: [
+              "Check the numbers the simulator filled in.",
+              "Write the thesis and invalidation as they were at entry.",
+              "Mark 'Rule followed?' from the log, and rate your emotion.",
+              "Write one lesson for next time.",
+            ],
+            wrong: "Facts first, then what you knew at entry, then the check, and the lesson last.",
+            explain: "Facts first, then what you knew at entry, then the check, and the lesson last, once everything else is on the page.",
+            note: {
+              key: "1.6.4:7",
+              label: "Your lesson from this trade (optional)",
+              placeholder: "Keep the stop where the plan put it, even when price comes close.",
+            },
+            concept: "journaling",
+          },
+        ],
+        check: ["q-1.6.4-1", "q-1.6.4-2", "q-1.6.4-3"],
+        recap: {
+          takeaways: [
+            "Log every trade and no-trade: thesis, invalidation, plan check, emotion and one lesson.",
+            "The simulator fills in the numbers; your 30 seconds add what only you know.",
+            "Journaling only losers, or days later, tilts the record and lets hindsight rewrite it.",
+          ],
+        },
+      },
+    },
+
+    // ─── 1.6.6 · Mistake or variance? ────────────────────────────────────────
+    {
+      id: "1.6.6",
+      title: "Mistake or variance?",
+      topic: "decision_making",
+      level: "beginner",
+      tier: "free",
+      minutes: 6,
+      summary: "Sort each loss into variance or a mistake, tag the mistakes, and change rules only for mistakes.",
+      objectives: [
+        "Sort a losing trade into variance (a valid trade that lost) or a mistake (a broken process).",
+        "Tag each mistake with the app's error name.",
+        "Explain why only mistakes are worth fixing and why a streak on its own isn't one.",
+      ],
+      blocks: [],
+      practice: [
+        { kind: "mission", ref: "M07", label: "Mission: Stop or Stay?" },
+        { kind: "check", ref: "decision_making", label: "Knowledge check: decision making" },
+      ],
+      script: {
+        unit: "1.6",
+        courseId: "1.6.6",
+        hook: {
+          prompt: "Five losses in a row, each following every rule at 1% risk. What should change?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "setup", label: "The setup: it stopped working", feedback: "Five trades can't show that. Methods that make money still lose five in a row, and often." },
+              { id: "nothing", label: "Nothing yet: that's within normal variance", feedback: "Right. Every rule was followed, so these losses are the normal cost of trading." },
+              { id: "double", label: "Double the size to win it back", feedback: "That's the revenge pattern. It turns a normal streak into a deep drawdown." },
+            ],
+            answer: "nothing",
+          },
+          compare: "You chose “{yours}”. With every rule followed, nothing should change yet. At a 40% win rate, a run of five or more losses shows up in 97.6% of 100-trade sequences.",
+          concept: "mistake-vs-variance",
+        },
+        learn: [
+          {
+            kind: "explain",
+            title: "Two buckets",
+            text: "Every losing trade goes into one of two buckets. [[variance|Variance]] is a valid trade that lost: the plan was followed, and the loss is the normal cost of trading. A **mistake** is a break in the process: a missing stop, an oversized position, a broken rule. Variance can't be fixed. Mistakes can.",
+          },
+          {
+            kind: "match",
+            title: "Which bucket?",
+            prompt: "Six losing trades from one month. Sort each into Variance or Mistake.",
+            pairs: [
+              { left: "All rules followed, stopped at −1R", right: "Variance", wrong: "Every rule was followed. A loss on its own isn't a mistake." },
+              { left: "Entered without a stop", right: "Mistake", wrong: "Losing isn't the issue: entering without a stop broke the process." },
+              { left: "Stop moved away, lost −2R", right: "Mistake", wrong: "The plan allowed −1R. Moving the stop doubled the loss: that's the process, not the market." },
+              { left: "Gap through the stop, −1.4R, sized at 1%", right: "Variance", wrong: "Size and stop were right. A gap past the stop is a market event, not a broken rule." },
+              { left: "Tripled the size after a loss", right: "Mistake", wrong: "Sizing up to win it back breaks the risk rule, whatever the result." },
+              { left: "Valid setup, target missed by 0.05, then stopped", right: "Variance", wrong: "So close hurts, but the plan was followed. Near misses are variance." },
+            ],
+            correct: "Three of each. Note the gap: −1.4R and still variance, because the size and the stop were right.",
+            concept: "mistake-vs-variance",
+          },
+          {
+            kind: "explain",
+            title: "Name the mistake",
+            text: "Each mistake gets an [[error-tag|error tag]], the app's fixed name for it, so you can count them: Entering without a stop, Risking more than planned, Position too large, Stop inside normal noise, Chasing extended moves, Moving the stop further away, Sizing up after a loss, Trading too often, Breaking your playbook, Misreading your own conditions.",
+          },
+          {
+            kind: "worked",
+            title: "Error cost",
+            lines: [
+              "Moving the stop further away: lost −2R where the plan allowed −1R. Error cost: −1R.",
+              "Sizing up after a loss: lost −3R where the plan allowed −1R. Error cost: −2R.",
+              "Chasing extended moves, outside the plan: lost −1R where the plan said no trade, 0R. Error cost: −1R.",
+              "Total error cost = ?",
+            ],
+            ask: {
+              answer: -4,
+              tolerance: 0,
+              unit: "R",
+              feedback: [
+                { value: 4, text: "Right size, but it's a cost: write it as −4." },
+                { value: -6, text: "That's everything these trades lost. Take away what the plan allowed: −6R − (−2R)." },
+              ],
+              correct: "Right: −4R. That much came from the process, not the market.",
+            },
+            after: "Variance has no error cost: it was the plan working. Count your error cost each week, and you'll know which rule to protect first.",
+            concept: "error-taxonomy",
+          },
+          {
+            kind: "predict",
+            title: "How unusual?",
+            prompt: "Your method wins 40% of its trades. You've just lost six in a row, every rule followed. Over 100 trades, how unusual is a run like that?",
+            control: {
+              kind: "choice",
+              choices: [
+                { id: "rare", label: "Very rare: something must be broken", feedback: "It feels rare, but 100 trades hold many stretches of six. One of them going all wrong is likely." },
+                { id: "common", label: "Common: it shows up in almost 9 of 10 sets of 100 trades", feedback: "Right: 87.3%, assuming each trade's result is independent of the last." },
+              ],
+              answer: "common",
+            },
+            reveal: "At a 40% win rate, a run of six or more losses shows up in 87.3% of 100-trade sequences. A streak on its own is not evidence of a mistake. The journal is: look for error tags, not at the length of the run.",
+            concept: "mistake-vs-variance",
+          },
+          {
+            kind: "callout",
+            tone: "key",
+            text: "Change rules for mistakes, not for variance. Every rule change still goes through your plan's own rule for changes.",
+          },
+          {
+            kind: "match",
+            title: "Tag your journal",
+            prompt: "Eight losses from your journal. Put each one in Variance, or tag the mistake with its error name.",
+            pairs: [
+              { left: "Every condition met, stop kept, stopped out at −1R", right: "Variance", wrong: "Nothing was broken: valid setup, stop kept, −1R. That's variance." },
+              { left: "No stop on the order; closed by hand at −1.8R", right: "Entering without a stop", wrong: "There was no stop when the order went in. That has its own tag." },
+              { left: "Stop moved from 48.00 to 47.00 as price came close; −1.5R", right: "Moving the stop further away", wrong: "The stop moved away from price, raising the risk. Find the tag that names exactly that." },
+              { left: "Doubled the size after two losses, to win it back; −2R", right: "Sizing up after a loss", wrong: "A bigger size right after losses, to recover: that's sizing up after a loss." },
+              { left: "Breakout trade, but breakouts aren't in the playbook; −1R", right: "Breaking your playbook", wrong: "The setup isn't in your playbook, so the plan's answer was no trade." },
+              { left: "Price gapped through the stop; −1.3R, sized at 1%", right: "Variance", wrong: "The size and the stop were right. The gap is a market event, so it's variance." },
+              { left: "Entered on two of three conditions; −1R", right: "Breaking your playbook", wrong: "Every condition must be yes. Two of three means the playbook said no trade." },
+              { left: "Fourth loss in a row, all rules followed; −1R", right: "Variance", wrong: "A streak isn't a mistake. Every rule was followed, so it's variance." },
+            ],
+            correct: "Three variance, five mistakes, four tags. The tags show which rule to protect; the variance asks for no change at all.",
+            concept: "error-taxonomy",
+          },
+        ],
+        check: ["q-1.6.6-1", "q-1.6.6-2", "q-1.6.6-3"],
+        recap: {
+          takeaways: [
+            "Variance is a valid trade that lost; a mistake is a broken process. Only mistakes get fixed.",
+            "Tag each mistake with its error name, and count what mistakes cost in R.",
+            "A losing streak with every rule followed is variance: six in a row is common at 40%.",
+          ],
+        },
+      },
+    },
+
+    // ─── 1.6.7 · Process KPIs ────────────────────────────────────────────────
+    {
+      id: "1.6.7",
+      title: "Process KPIs",
+      topic: "decision_making",
+      level: "beginner",
+      tier: "free",
+      minutes: 6,
+      summary: "Measure how well you follow your process, with KPIs that mean something long before profit does.",
+      objectives: [
+        "Calculate stop integrity, risk accuracy and plan adherence from a list of trades.",
+        "Explain why process KPIs mean something after 30 trades while profit doesn't.",
+        "Set one process goal for your next 30 trades.",
+      ],
+      blocks: [],
+      practice: [
+        { kind: "arena", ref: "bullish", label: "Arena: trending market" },
+        { kind: "check", ref: "decision_making", label: "Knowledge check: decision making" },
+      ],
+      script: {
+        unit: "1.6",
+        courseId: "1.6.7",
+        hook: {
+          prompt: "After 30 trades, Trader A is up 6% with 8 trades taken without a stop. Trader B is down 2% with every trade by the plan. Who is closer to passing Level 1?",
+          control: {
+            kind: "choice",
+            choices: [
+              { id: "a", label: "Trader A", feedback: "A's profit doesn't count toward the level. 22 of 30 trades with a stop is 73.3%, far below the 95% needed." },
+              { id: "b", label: "Trader B", feedback: "Right. Level 1 measures process: B's stops and sizes meet the bar, and profit doesn't count." },
+              { id: "neither", label: "Neither", feedback: "Both still need plan v1 and Capstone 1, but only B's 30 trades meet the process bar. Profit doesn't count." },
+            ],
+            answer: "b",
+          },
+          compare: "You picked “{yours}”. Trader B is closer: Level 1 counts stops, sizes and limits, not profit. Trader A's stops: 22 ÷ 30 = 73.3%, below the 95% needed.",
+          concept: "process-kpis",
+        },
+        learn: [
+          {
+            kind: "explain",
+            title: "Measure the process",
+            text: "[[process-kpi|Process KPIs]] measure how well you follow your plan, not what the market paid. Five matter at Level 1: [[plan-adherence|plan adherence]], [[risk-accuracy|risk accuracy]], [[stop-integrity|stop integrity]], limit compliance and journal completeness. Each is the share of trades, or days, that followed a rule, so every one of them is in your hands.",
+          },
+          {
+            kind: "worked",
+            title: "Stop integrity",
+            lines: ["30 trades in your journal.", "29 had a stop at entry, and none was moved further away.", "Stop integrity = 29 ÷ 30 = ?"],
+            ask: {
+              answer: 96.7,
+              tolerance: 0.1,
+              unit: "%",
+              feedback: [
+                { value: 0.97, text: "That's the fraction. As a percentage, multiply by 100." },
+                { value: 3.3, text: "That's the share that failed. Stop integrity counts the trades that passed: 29 of 30." },
+              ],
+              correct: "Right: 96.7%. Above the 95% the Level 1 gate asks for.",
+            },
+            concept: "process-kpis",
+          },
+          {
+            kind: "figure",
+            title: "Why not profit?",
+            text: "A good system still ends short stretches in the red, and the shorter the stretch, the more often. Over 20 trades it's about 1 time in 8, so profit says little at that size. Process KPIs don't depend on luck: 20 or 30 trades already tell you something real.",
+            figure: {
+              kind: "bars",
+              unit: "%",
+              bars: [
+                { label: "5 trades", value: 33.7, role: "down" },
+                { label: "10 trades", value: 16.7, role: "down" },
+                { label: "20 trades", value: 12.6, role: "down" },
+                { label: "50 trades", value: 5.4, role: "down" },
+                { label: "100 trades", value: 0.8, role: "down" },
+              ],
+              steps: [
+                "Chance of a net loss for a system that wins 40% at +2.5R and loses 60% at −1R.",
+                "That's +0.4R a trade, yet 12.6% of 20-trade stretches still end in a loss.",
+              ],
+            },
+            concept: "process-kpis",
+          },
+          {
+            kind: "match",
+            title: "KPI and formula",
+            prompt: "Each KPI is a simple share. Match it to its formula.",
+            columns: ["KPI", "Formula"],
+            pairs: [
+              { left: "Stop integrity", right: "Trades with a stop at entry, never widened ÷ all trades", wrong: "Stop integrity is about the stop: there at entry, and never moved further away." },
+              { left: "Risk accuracy", right: "Trades sized within the rule ÷ all trades", wrong: "Risk accuracy checks the size: the loss at the stop, with costs, within your rule." },
+              { left: "Plan adherence", right: "Trades that match a playbook setup ÷ all trades", wrong: "Plan adherence asks whether the trade was a playbook setup at all." },
+              { left: "Limit compliance", right: "Days within your limits ÷ days traded", wrong: "Limits are set per day, so this one counts days, not trades." },
+            ],
+            correct: "Every one is a count you can check from the journal, with no luck involved.",
+            concept: "process-kpis",
+          },
+          {
+            kind: "explain",
+            title: "Process goals",
+            text: "Set goals you control. 'A stop at entry on 100% of trades this week' is a process goal: you can meet it every time. 'Make 5% this month' is an outcome goal: luck decides much of it, and chasing it pushes you towards positions that are too large.",
+          },
+          {
+            kind: "callout",
+            tone: "key",
+            text: "The Level 1 gate: 30 simulated trades, with a stop before entry in at least 95% and correct risk in at least 90%, no limit broken, plan v1 written, and Capstone 1 passed.",
+          },
+          {
+            kind: "match",
+            title: "Your 20-trade log",
+            prompt: "Your log: 20 trades. Trade 4's stop was moved further away. Trades 9 and 12 risked 1.4% and 1.6% with costs; your rule is 1%. Trades 9, 15 and 18 weren't playbook setups. Every day stayed within your limits. Match each KPI to its value.",
+            columns: ["KPI", "Value"],
+            pairs: [
+              { left: "Stop integrity", right: "95.0%", wrong: "Only trade 4 broke stop integrity: 19 ÷ 20." },
+              { left: "Risk accuracy", right: "90.0%", wrong: "Trades 9 and 12 were oversized, so 18 of 20 were sized within the rule." },
+              { left: "Plan adherence", right: "85.0%", wrong: "Three trades weren't playbook setups: 17 ÷ 20." },
+              { left: "Limit compliance", right: "100%", wrong: "It counts days, and every day stayed within the limits." },
+            ],
+            correct: "95.0%, 90.0% and 85.0%: stops and risk meet the gate; adherence has room to grow. Trade 9 counted against two KPIs.",
+            concept: "process-kpis",
+          },
+          {
+            kind: "order",
+            title: "Your next 30 trades",
+            prompt: "Put your next block of 30 trades in order. Then write one process goal for it.",
+            items: [
+              "Save plan v1 and start the count.",
+              "Run the checklist before every order.",
+              "Journal every trade and no-trade within minutes.",
+              "After 30 trades, work out your KPIs.",
+              "Pick the weakest KPI as your next process goal.",
+            ],
+            wrong: "Start from the plan: nothing counts before it's saved. The KPIs come from the journal, and the goal comes from the KPIs.",
+            explain: "Plan, checklist, journal, KPIs, goal: the loop you'll repeat for every block of 30 trades.",
+            note: {
+              key: "1.6.7:7",
+              label: "Your process goal for the next 30 trades (optional)",
+              placeholder: "A stop at entry on 100% of trades.",
+            },
+            concept: "process-kpis",
+          },
+        ],
+        check: ["q-1.6.7-1", "q-1.6.7-2", "q-1.6.7-3"],
+        recap: {
+          takeaways: [
+            "Stop integrity, risk accuracy and plan adherence are simple shares of trades that followed a rule.",
+            "Over 20 trades, profit is mostly luck; process KPIs already mean something.",
+            "Set one process goal you control for your next 30 trades, not a profit target.",
+          ],
+        },
+      },
+    },
+  ],
+
+  questions: [
+    // ─── 1.6.2 ───
+    {
+      id: "q-1.6.2-1",
+      topic: "risk_management",
+      kind: "numeric",
+      difficulty: 1,
+      prompt: "Your savings are 15,000 EUR. Your emergency fund is six months of expenses at 1,500 EUR a month, and 2,000 EUR is already promised for a car repair. What is your risk capital, in EUR?",
+      numeric: { answer: 4000, tolerance: 0, unit: "EUR" },
+      explanation: "Risk capital is what's left after the money you can't afford to lose: 15,000 − 6 × 1,500 − 2,000 = 15,000 − 9,000 − 2,000 = 4,000 EUR. Leaving out the emergency fund or the promised repair would put money you need at risk.",
+      lesson: "1.6.2",
+      concepts: ["risk-capital"],
+      hints: [
+        "Start from savings and take out every amount you can't afford to lose.",
+        "The emergency fund is six months of expenses: 6 × 1,500.",
+        "15,000 − 9,000 − 2,000.",
+      ],
+      vary: {
+        fields: { savings: [10000, 40000, 1000], monthly: [800, 2500, 100], promised: [500, 5000, 500] },
+        constraints: ["savings - 6 * monthly - promised >= 1000"],
+        answer: "savings - 6 * monthly - promised",
+        prompt: "Your savings are {savings} EUR. Your emergency fund is six months of expenses at {monthly} EUR a month, and {promised} EUR is already promised for a car repair. What is your risk capital, in EUR?",
+        explanation: "Risk capital is what's left after the money you can't afford to lose: {savings} − 6 × {monthly} − {promised} = {savings} − {6 * monthly} − {promised} = {answer} EUR. Leaving out the emergency fund or the promised repair would put money you need at risk.",
+        hint: "{savings} − {6 * monthly} − {promised}.",
+      },
+    },
+    {
+      id: "q-1.6.2-2",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 2,
+      prompt: "Which line belongs in a plan v1, because it can be checked on every trade?",
+      options: [
+        { id: "a", label: "Only trade when the market feels calm", rationale: "'Feels calm' changes with your mood and can't be checked on a ticket. A checkable line names a number or a test anyone could run." },
+        { id: "b", label: "Keep losses small", rationale: "Everyone agrees with this, so it decides nothing. 'Small' needs a number: a percentage of equity per trade, costs included." },
+        { id: "c", label: "No new trade after a loss of 3R in a day" },
+        { id: "d", label: "Take profits when the move looks tired", rationale: "'Looks tired' can be argued either way after the fact. An exit rule names a price, a multiple of R or a time." },
+      ],
+      correct: "c",
+      explanation: "A checkable line gives the same answer to anyone who looks: after −3R today, is a new trade allowed? No. Vague lines like 'keep losses small' leave room to bend the rule exactly when it matters.",
+      lesson: "1.6.2",
+      concepts: ["trading-plan"],
+      hints: ["Ask of each line: could two people disagree about whether it was followed?", "Look for a number or a test, not a feeling."],
+    },
+    {
+      id: "q-1.6.2-3",
+      topic: "decision_making",
+      kind: "scenario",
+      difficulty: 2,
+      scenario:
+        "Your plan v1.0 puts the stop 0.20 below the pullback low and allows rule changes only after 30 trades, between sessions, with the reason written. Your first three trades under it followed every rule and were each stopped out at −1R. Mid-session, you want to move the stop rule to 0.60 below.",
+      prompt: "What does your rule for changes say?",
+      options: [
+        { id: "a", label: "Change it now: three stop-outs prove the stop is too tight", rationale: "Three trades are a tiny sample; a sound method can lose three in a row. The plan's own rule asks for 30 trades before judging." },
+        { id: "b", label: "Widen it just for the rest of today, then go back to v1.0", rationale: "A change mid-session, after losses, is exactly what the rule forbids. Today's trades would no longer test v1.0." },
+        { id: "c", label: "Drop the setup and try a different one tomorrow", rationale: "Switching setups after three losses resets your evidence to zero. Every setup has losing runs; the change rule exists to stop this." },
+        { id: "d", label: "Keep v1.0, note the idea in your journal, and judge it at a review once 30 trades are in" },
+      ],
+      correct: "d",
+      explanation: "Three losses with every rule followed is a normal run, not evidence. The rule for changes keeps v1.0 in place until 30 trades can show whether the stop rule works. The idea goes into the journal, and any change becomes v1.1, with its reason written.",
+      lesson: "1.6.2",
+      concepts: ["trading-plan", "decision-quality"],
+      hints: ["What does the plan's own rule for changes require before any rule changes?", "Three trades are a very small sample."],
+    },
+
+    // ─── 1.6.3 ───
+    {
+      id: "q-1.6.3-1",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 1,
+      prompt: "What is a pre-trade checklist for?",
+      options: [
+        { id: "a", label: "Finding more trades to take", rationale: "A checklist only filters trades you already see. Its job is to catch skipped steps, and it often ends in no trade." },
+        { id: "b", label: "Catching skipped steps, like a missing stop, before the order goes in" },
+        { id: "c", label: "Predicting whether the trade will win", rationale: "No list can predict an outcome. It checks that the decision follows your plan, win or lose." },
+        { id: "d", label: "Replacing the playbook when markets move fast", rationale: "The checklist asks whether the setup is in your playbook. It relies on the playbook; it doesn't replace it." },
+      ],
+      correct: "b",
+      explanation: "A checklist is a short set of yes-or-no questions run at the moment of decision. It doesn't find or predict trades; it catches routine steps that get skipped under pressure, such as a missing stop or an oversized position.",
+      lesson: "1.6.3",
+      concepts: ["pre-trade-checklist"],
+    },
+    {
+      id: "q-1.6.3-2",
+      topic: "decision_making",
+      kind: "scenario",
+      difficulty: 2,
+      scenario:
+        "Your plan risks 1% of equity per trade. Every checklist answer is yes except one: buying 60 units at 50.00 with the stop at 48.00, the loss at the stop is 122.94 with costs, 1.23% of 10,000.00.",
+      prompt: "What do you do?",
+      options: [
+        { id: "a", label: "Send it: six yeses out of seven is close enough", rationale: "The checklist isn't a majority vote. One 'no' is a 'no', and small breaches of the risk rule add up over many trades." },
+        { id: "b", label: "Move the stop closer, so 60 units fit within 1%", rationale: "That drags the stop off the invalidation and into the noise. The stop comes from the chart; the size adjusts to it." },
+        { id: "c", label: "Cut the size until the loss at the stop fits within 1%, or skip the trade" },
+        { id: "d", label: "Send it, and move the stop away later if price comes close", rationale: "That adds a second breach to the first. Moving a stop further away raises the risk even more." },
+      ],
+      correct: "c",
+      explanation: "Size is the one 'no' you can fix on the spot: at 48 units the loss at the stop is 98.36 with costs, within 1%. Moving the stop to fit the size changes the trade, and 'close enough' turns a limit into a suggestion.",
+      lesson: "1.6.3",
+      concepts: ["pre-trade-checklist", "position-sizing"],
+      hints: ["Which item failed, and can you fix it without changing the trade?", "The stop comes from the chart. What else can change?"],
+    },
+    {
+      id: "q-1.6.3-3",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 2,
+      prompt: "Why should a pre-trade checklist stay short, around 5 to 9 questions?",
+      options: [
+        { id: "a", label: "Fewer questions let more trades through", rationale: "Letting trades through isn't the goal. The list should stop the trades that break your plan, whatever its length." },
+        { id: "b", label: "Only the risk questions matter; the rest is decoration", rationale: "Setup and state questions catch different mistakes. Short means each question earns its place, not that only risk counts." },
+        { id: "c", label: "A long list gets ticked without being read, which defeats its purpose" },
+        { id: "d", label: "The more questions, the lower your win rate", rationale: "A checklist doesn't change how often trades win. Its length matters because of how you read it." },
+      ],
+      correct: "c",
+      explanation: "A checklist works only if each question is actually answered. Long lists invite ticking on autopilot, the main way checklists fail; a short one, tied to facts like the stop price and the risk in %, gets read every time.",
+      lesson: "1.6.3",
+      concepts: ["pre-trade-checklist"],
+      hints: ["Picture your fiftieth trade with a 30-item list."],
+    },
+
+    // ─── 1.6.4 ───
+    {
+      id: "q-1.6.4-1",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 1,
+      prompt: "A month from now, which two journal fields best let you judge a trade's decision, not just its result?",
+      options: [
+        { id: "a", label: "Entry time and exit time", rationale: "Times help you find a trade, but they don't say why you took it or whether the plan allowed it." },
+        { id: "b", label: "Profit in vUSD and the day's high", rationale: "Both describe what happened after the decision. A decision is judged by what you knew and whether you followed the plan." },
+        { id: "c", label: "Your thesis and whether you followed the rule" },
+        { id: "d", label: "The instrument and the timeframe", rationale: "Useful context, but the same for many trades. They don't tell a sound decision from a lucky one." },
+      ],
+      correct: "c",
+      explanation: "The thesis records what you expected and why, at entry; 'Rule followed?' records whether the plan was respected. Together they let a review judge the decision. Profit, times and context describe the trade, not the quality of the choice.",
+      lesson: "1.6.4",
+      concepts: ["journaling", "decision-quality"],
+    },
+    {
+      id: "q-1.6.4-2",
+      topic: "decision_making",
+      kind: "scenario",
+      difficulty: 2,
+      scenario: "A pullback forms in an uptrend, but its low breaks below the previous swing low, so condition 2 of your playbook fails. You don't trade.",
+      prompt: "What goes in your journal?",
+      options: [
+        { id: "a", label: "A no-trade entry: the setup you saw, the condition that failed, and 'plan followed'" },
+        { id: "b", label: "Nothing: no trade, no entry", rationale: "A no-trade is a decision too. Without it, your journal can't show how you behaved when the plan said no." },
+        { id: "c", label: "An entry only if price later rallies, to show what you missed", rationale: "Logging only when price moved afterwards is selective, and it judges the decision by the outcome." },
+        { id: "d", label: "A note to take this setup next time even if condition 2 fails", rationale: "That changes a rule from one example, mid-stream. Rule changes go through your plan's rule for changes." },
+      ],
+      correct: "a",
+      explanation: "Skipping a trade the plan rejects is a decision worth recording. A no-trade entry shows the plan working, keeps the record complete, and is written before you know what price does next.",
+      lesson: "1.6.4",
+      concepts: ["journaling", "trading-plan"],
+      hints: ["Was not trading a decision?", "Think about what a review a month later would need to see."],
+    },
+    {
+      id: "q-1.6.4-3",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 2,
+      prompt: "A trader writes journal entries only for losing trades, a few days after each one. What's the main problem?",
+      options: [
+        { id: "a", label: "None: losses are where the lessons are", rationale: "Losses teach, but so do wins that broke rules. Without them, the record is tilted and can't be compared." },
+        { id: "b", label: "It takes too long to be worth it", rationale: "The written part takes about 30 seconds. The issue is what gets left out, and when it's written." },
+        { id: "c", label: "None, as long as the simulator records the numbers", rationale: "The simulator can't record your thesis, your emotion or what you knew. Written days later, those fill in with hindsight." },
+        { id: "d", label: "The record is tilted towards losses, and hindsight rewrites what was known at entry" },
+      ],
+      correct: "d",
+      explanation: "Two distortions stack up. Logging only losers hides rule-breaking wins and gives a one-sided picture of the setup. Writing days later lets the known outcome reshape what you remember thinking at entry.",
+      lesson: "1.6.4",
+      concepts: ["journaling"],
+      hints: ["Two things are wrong: which trades, and when.", "What happens to your memory of a decision once you know the outcome?"],
+    },
+
+    // ─── 1.6.6 ───
+    {
+      id: "q-1.6.6-1",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 1,
+      prompt:
+        "Your stop was 0.20 below the pullback low, as your plan says. Size was 1% and every condition was met. Price dipped to the stop, filled you at −1R, then rallied to where your target was. Which bucket?",
+      options: [
+        { id: "a", label: "Mistake: the stop was too tight", rationale: "That's hindsight: the rally came after the stop was hit. The stop was where the plan put it, so nothing was broken." },
+        { id: "b", label: "Mistake: you should have moved the stop when price got close", rationale: "Moving the stop away is itself a tagged mistake. The plan was followed; the loss is the normal cost of trading." },
+        { id: "c", label: "Variance: a valid trade that lost" },
+        { id: "d", label: "Neither, because price later reached the target", rationale: "What price did after the exit doesn't change the bucket. A loss with every rule followed is variance." },
+      ],
+      correct: "c",
+      explanation: "Every rule was followed: stop at the invalidation, 1% size, all conditions met. The loss is variance. The later rally tempts you to call the stop a mistake, but that's hindsight; a stop rule changes only through the plan's rule for changes, on many trades.",
+      lesson: "1.6.6",
+      concepts: ["mistake-vs-variance", "decision-quality"],
+    },
+    {
+      id: "q-1.6.6-2",
+      topic: "decision_making",
+      kind: "numeric",
+      difficulty: 2,
+      prompt:
+        "This week's journal: you moved a stop away and lost 1.8R where the plan allowed 1R; you entered without a stop and lost 2.5R where the plan allowed 1R; and you took a trade outside your playbook and lost 1.0R where the plan said no trade. How many R did the mistakes cost in total?",
+      numeric: { answer: 3.3, tolerance: 0.01, unit: "R" },
+      explanation: "Error cost is what you lost beyond what the plan allowed: (1.8 − 1) + (2.5 − 1) + (1.0 − 0) = 0.8 + 1.5 + 1.0 = 3.3R. The trade outside the playbook counts in full, because the plan allowed no trade at all.",
+      lesson: "1.6.6",
+      concepts: ["error-taxonomy", "mistake-vs-variance"],
+      hints: [
+        "For each trade, subtract what the plan allowed from what you lost.",
+        "A trade outside the playbook was allowed 0R, so its whole loss is error cost.",
+        "0.8 + 1.5 + 1.0.",
+      ],
+      vary: {
+        fields: { a: [1.2, 3, 0.1], b: [1.2, 3, 0.1], c: [0.5, 1.5, 0.1] },
+        constraints: ["a != b"],
+        answer: "round(a + b + c - 2, 1)",
+        prompt:
+          "This week's journal: you moved a stop away and lost {a:1}R where the plan allowed 1R; you entered without a stop and lost {b:1}R where the plan allowed 1R; and you took a trade outside your playbook and lost {c:1}R where the plan said no trade. How many R did the mistakes cost in total?",
+        explanation:
+          "Error cost is what you lost beyond what the plan allowed: ({a:1} − 1) + ({b:1} − 1) + ({c:1} − 0) = {a - 1:1} + {b - 1:1} + {c:1} = {answer:1}R. The trade outside the playbook counts in full, because the plan allowed no trade at all.",
+        hint: "{a - 1:1} + {b - 1:1} + {c:1}.",
+      },
+    },
+    {
+      id: "q-1.6.6-3",
+      topic: "decision_making",
+      kind: "scenario",
+      difficulty: 2,
+      scenario:
+        "Over 120 journaled trades, your setup has won 45% of the time at about +2R per win, against −1R per loss. You've now lost six in a row. The journal shows every rule followed and no error tags on any of the six.",
+      prompt: "What should you do?",
+      options: [
+        { id: "a", label: "Change the setup: six losses in a row prove it's broken", rationale: "A run of six is common for a 45% setup: about 73% of 100-trade sequences contain one. Six trades can't outweigh 120." },
+        { id: "b", label: "Keep trading the plan at the same risk, and review at your scheduled time" },
+        { id: "c", label: "Double the next position to recover faster", rationale: "That's sizing up after a loss, a tagged mistake. It turns variance into a deep drawdown." },
+        { id: "d", label: "Tighten your stops now, so each loss is smaller", rationale: "That's a rule change driven by variance, made mid-streak. Changes go through the rule for changes, on evidence, between sessions." },
+      ],
+      correct: "b",
+      explanation: "With no error tags, the six losses are variance. At a 45% win rate, a run of six or more losses shows up in about 73% of 100-trade sequences, so the streak alone is not evidence. Keep the risk fixed and let the scheduled review, on the whole record, decide.",
+      lesson: "1.6.6",
+      concepts: ["mistake-vs-variance"],
+      hints: ["Check the journal first: were any rules broken?", "How often does a 45% setup lose six in a row over 100 trades?"],
+    },
+
+    // ─── 1.6.7 ───
+    {
+      id: "q-1.6.7-1",
+      topic: "decision_making",
+      kind: "numeric",
+      difficulty: 1,
+      prompt: "Over 40 trades, 37 had a stop at entry that was never moved further away. What is your stop integrity, in %?",
+      numeric: { answer: 92.5, tolerance: 0.1, unit: "%" },
+      explanation: "Stop integrity = trades with a stop at entry that was never widened ÷ all trades = 37 ÷ 40 = 92.5%. That's below the 95% the Level 1 gate asks for: 3 trades in 40 broke the rule.",
+      lesson: "1.6.7",
+      concepts: ["process-kpis"],
+      hints: ["Count the trades that passed, not the ones that failed.", "Divide the passing trades by all trades, then multiply by 100.", "37 ÷ 40 × 100."],
+      vary: {
+        fields: { n: [20, 60, 1], bad: [1, 6, 1] },
+        constraints: ["bad < n"],
+        answer: "round((n - bad) / n * 100, 1)",
+        prompt: "Over {n} trades, {n - bad} had a stop at entry that was never moved further away. What is your stop integrity, in %?",
+        explanation: "Stop integrity = trades with a stop at entry that was never widened ÷ all trades = {n - bad} ÷ {n} = {answer:1}%. The Level 1 gate asks for at least 95%.",
+        hint: "{n - bad} ÷ {n} × 100.",
+      },
+    },
+    {
+      id: "q-1.6.7-2",
+      topic: "decision_making",
+      kind: "mcq",
+      difficulty: 2,
+      prompt: "After 20 trades, why does your stop integrity tell you more than your profit?",
+      options: [
+        { id: "a", label: "Profit never matters in trading", rationale: "Over hundreds of trades, profit is the point. Over 20, chance swamps it, so the process is the better measure." },
+        { id: "b", label: "Profit over 20 trades owes a lot to luck; stop integrity measures only what you did" },
+        { id: "c", label: "High stop integrity guarantees a profit over the next 20 trades", rationale: "Nothing guarantees a short-run result. Even a good system ends 20 trades in the red about 1 time in 8." },
+        { id: "d", label: "Stop integrity is easier to calculate", rationale: "Both are easy to compute. The difference is noise: profit over 20 trades swings with luck, process doesn't." },
+      ],
+      correct: "b",
+      explanation: "A system making +0.4R a trade still ends 20 trades with a net loss 12.6% of the time, so a short profit record can't separate skill from luck. Stop integrity has no luck in it: each trade either had its stop kept or didn't.",
+      lesson: "1.6.7",
+      concepts: ["process-kpis", "decision-quality"],
+      hints: ["Which of the two can chance change?", "Even a system making +0.4R a trade loses over 20 trades about 1 time in 8."],
+    },
+    {
+      id: "q-1.6.7-3",
+      topic: "decision_making",
+      kind: "scenario",
+      difficulty: 2,
+      scenario: "You're setting a goal for your next 30 trades. Option 1: 'Make 5% this month.' Option 2: 'A stop at entry on every trade, and every trade journaled within 10 minutes.'",
+      prompt: "Which is the better goal, and why?",
+      options: [
+        { id: "a", label: "Option 2: you control it fully, and it can be checked on every trade" },
+        { id: "b", label: "Option 1: profit is what trading is for", rationale: "Over 30 trades, luck decides much of the result, and chasing a profit target pushes towards oversized positions." },
+        { id: "c", label: "Both are equally good, as long as you write them down", rationale: "Writing helps, but an outcome goal still depends on luck. A process goal is met or missed by your choices alone." },
+        { id: "d", label: "Neither: goals only add pressure", rationale: "A clear process goal lowers pressure: it tells you exactly what a good trade looks like, win or lose." },
+      ],
+      correct: "a",
+      explanation: "A process goal depends only on your actions, so meeting it is in your hands and you can check it trade by trade. An outcome goal over 30 trades is largely luck, and chasing it invites oversizing to catch up.",
+      lesson: "1.6.7",
+      concepts: ["process-kpis"],
+      hints: ["Which goal could you meet even in a month of losing trades?"],
+    },
+  ],
+
+  terms: [
+    {
+      id: "risk-capital",
+      term: "Risk capital",
+      definition: "Money you could lose entirely without affecting living costs, debts or emergency savings. Only risk capital belongs in a trading account.",
+      plain: "Savings minus your emergency fund and money already promised: the most you could afford to lose.",
+      related: ["trading-plan", "risk-per-trade", "equity"],
+      lesson: "1.6.2",
+    },
+    {
+      id: "pre-trade-checklist",
+      term: "Pre-trade checklist",
+      definition: "A short list of yes-or-no questions run before every order. Any 'no' means no trade, or a smaller size when the size is the only problem.",
+      plain: "The last check before you send an order: setup, stop, size, limits and your state.",
+      related: ["trading-plan", "playbook", "stop-loss"],
+      lesson: "1.6.3",
+    },
+    {
+      id: "error-tag",
+      term: "Error tag",
+      definition: "A fixed name for a process mistake on a trade, such as moving the stop further away or entering without one, used to count mistakes and what they cost in R.",
+      plain: "A label for what went wrong in your process, not in the market.",
+      related: ["journal", "variance", "r"],
+      lesson: "1.6.6",
+    },
+    {
+      id: "process-kpi",
+      term: "Process KPI",
+      definition: "A measure of how well you follow your process, such as the share of trades with a stop at entry. It depends on your actions, not on luck.",
+      plain: "A score for following your own rules, which means something even after a few trades.",
+      related: ["stop-integrity", "risk-accuracy", "plan-adherence"],
+      lesson: "1.6.7",
+    },
+    {
+      id: "stop-integrity",
+      term: "Stop integrity",
+      definition: "The share of trades that had a stop at entry that was never moved further away.",
+      plain: "How often your stop was there from the start, and stayed put.",
+      related: ["process-kpi", "stop-loss", "risk-accuracy"],
+      lesson: "1.6.7",
+    },
+    {
+      id: "risk-accuracy",
+      term: "Risk accuracy",
+      definition: "The share of trades sized correctly: the loss at the stop, costs included, within the plan's limit.",
+      plain: "How often your position size matched your risk rule.",
+      related: ["process-kpi", "risk-per-trade", "position-size"],
+      lesson: "1.6.7",
+    },
+    {
+      id: "plan-adherence",
+      term: "Plan adherence",
+      definition: "The share of trades that matched a setup in your playbook.",
+      plain: "How often you traded only what your plan allows.",
+      related: ["process-kpi", "playbook", "trading-plan"],
+      lesson: "1.6.7",
+    },
+  ],
+
+  concepts: [
+    {
+      id: "risk-capital",
+      name: "Risk capital",
+      category: "risk_management",
+      summary: "Risk capital is money that could be lost entirely without harming living costs, debts or emergency savings.",
+      body: [
+        "Before any rule about risk per trade comes a rule about which money may be at risk at all. Start from savings and take out an emergency fund and every amount already promised, such as tuition or a debt payment. What's left is the most a trading account should ever hold.",
+        "Your plan's limits then sit inside it: risk per trade and the daily limit are shares of the trading account, never of money you need.",
+      ],
+      example:
+        "Savings 20,000; emergency fund of six months' expenses, 12,000; next year's tuition, already promised, 5,000. Risk capital = 20,000 − 12,000 − 5,000 = 3,000. Only those 3,000 belong in a trading account.",
+      related: ["trading-plan", "risk-per-trade", "drawdown"],
+      missions: ["M04"],
+      lessons: ["1.6.2"],
+    },
+    {
+      id: "pre-trade-checklist",
+      name: "Pre-trade checklist",
+      category: "decision_making",
+      summary: "A pre-trade checklist is a short yes-or-no list run before every order; any 'no' means no trade, or a resized one.",
+      body: [
+        "The list has 5 to 9 questions asked at the moment of decision: is the setup in your playbook, is every condition met, is the stop at the invalidation, is the size within the limit, is the daily limit intact, is no pause running, are you calm enough. Stop, size and limits can be verified from the ticket; the setup, the conditions and your state only you can answer.",
+        "Checklists come from aviation and surgery, where they catch routine steps skipped under pressure; the evidence is from those fields, not from trading. They fail when ticked without reading, so the list stays short and each answer is tied to a visible fact.",
+      ],
+      example:
+        "Six yeses and one 'no': buying 65 units at 50.00 with the stop at 48.00, the loss at the stop is 133.19 with costs, 1.3% of 10,000.00. The fix is size: at 48 units it's 98.36, within 1%. A missing stop, by contrast, can't be resized away: no trade.",
+      related: ["trading-plan", "position-sizing", "journaling"],
+      missions: ["M10"],
+      lessons: ["1.6.3"],
+    },
+    {
+      id: "mistake-vs-variance",
+      name: "Mistake versus variance",
+      category: "decision_making",
+      summary: "Separating losses caused by a broken process, which can be fixed, from valid trades that lost, which are the normal cost of trading.",
+      body: [
+        "Variance is a trade that followed every rule and still lost; a mistake is a break in the process, such as a missing stop or an oversized position. Rules change only for mistakes, and only through the plan's rule for changes.",
+        "A streak of losses is not a mistake by itself. At a 40% win rate, a run of six or more losses shows up in 87.3% of 100-trade sequences, assuming independent results. The journal, not the length of the run, tells the two buckets apart.",
+      ],
+      example:
+        "A gap through the stop for −1.4R on a trade sized at 1%: variance. A stop moved from 48.00 to 47.00 and a loss of −1.5R where the plan allowed −1R: a mistake, with an error cost of −0.5R.",
+      related: ["decision-quality", "journaling", "revenge-trading"],
+      missions: ["M07"],
+      lessons: ["1.6.6"],
+    },
+    {
+      id: "error-taxonomy",
+      name: "Error taxonomy",
+      category: "decision_making",
+      summary: "A fixed list of named process errors used to tag trades and to count what mistakes cost in R.",
+      body: [
+        "Naming mistakes the same way every time turns a vague feeling ('I traded badly') into counts: how often you moved a stop away, sized up after a loss or broke the playbook. MARKET//LAB uses names such as Entering without a stop, Risking more than planned, Moving the stop further away, Sizing up after a loss and Breaking your playbook.",
+        "Error cost is the loss beyond what the plan allowed. Added up over a week, it shows which rule, kept, would have saved the most.",
+      ],
+      example:
+        "Moving the stop further away: −2R where the plan allowed −1R, error cost −1R. Sizing up after a loss: −3R where −1R was allowed, −2R. Chasing outside the plan: −1R where the plan said no trade, −1R. Total error cost: −4R.",
+      related: ["journaling", "decision-quality", "mistake-vs-variance"],
+      missions: ["M07"],
+      lessons: ["1.6.6"],
+    },
+    {
+      id: "process-kpis",
+      name: "Process KPIs",
+      category: "decision_making",
+      summary: "Measures of rule-following, such as stop integrity and risk accuracy, that mean something even on small samples.",
+      body: [
+        "Stop integrity, risk accuracy, plan adherence, limit compliance and journal completeness are each the share of trades, or days, that followed a rule. They depend on your actions alone, so 20 or 30 trades already measure them well.",
+        "Profit over the same stretch is mostly noise: a system making +0.4R a trade still ends 20 trades with a net loss 12.6% of the time. Goals set on process KPIs can be met every time; goals set on profit invite oversizing.",
+      ],
+      example:
+        "20 trades: one stop moved away, two oversized, three outside the playbook. Stop integrity 19 ÷ 20 = 95.0%, risk accuracy 18 ÷ 20 = 90.0%, plan adherence 17 ÷ 20 = 85.0%.",
+      related: ["decision-quality", "journaling", "expectancy"],
+      missions: ["M10"],
+      lessons: ["1.6.7"],
+    },
+  ],
+};
