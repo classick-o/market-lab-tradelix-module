@@ -145,6 +145,7 @@ const RR_INVALID = "Put the stop below the entry and the target above it.";
 const L14: LessonScript = {
   unit: "1.6",
   courseId: "1.6.1",
+  bridge: "Unit 1.5 ended in 1.5.8 with two timeframes fixed in your plan. Unit 1.6 writes that plan. It gathers what you've built so far: the market types from 1.5.2, the stop from 1.4.3 and reward-to-risk from 1.4.5, set down before any trade.",
   hook: {
     prompt:
       "LABX is rising and has [[pullback|pulled back]]. You could buy at 49.00 with a [[stop-loss|stop]] at 48.00, under the pullback low. The previous high is 50.50. Would you buy?",
@@ -194,7 +195,7 @@ const L14: LessonScript = {
     {
       kind: "explain",
       title: "Make every condition checkable",
-      text: "Vague rules leave room for wishful thinking, or [[confirmation-bias|confirmation bias]]. 'The trend looks strong' can be argued either way; 'the last two swing lows are each higher than the one before' is simply true or false. If two people could look at the same chart and disagree about a condition, rewrite it until they couldn't.",
+      text: "Vague rules leave room for wishful thinking, or [[confirmation-bias|confirmation bias]]: noticing only what suits you. 'The trend looks strong' can be argued either way; 'the last two swing lows are each higher than the one before' is simply true or false. If two people could look at the same chart and disagree about a condition, rewrite it until they couldn't.",
     },
     {
       kind: "figure",
@@ -297,7 +298,7 @@ const L14: LessonScript = {
       kind: "order",
       title: "Before every trade",
       prompt:
-        "Declining a trade that fails the plan is not a missed opportunity; it is the plan working. In MARKET//LAB, **Decision Quality** judges whether a decision fitted the plan and the information you had, not what price did afterwards. A well-reasoned 'no trade' is a good decision too, worth a line in your [[journal]]. Put the routine in order.",
+        "Declining a trade that fails the plan is not a missed opportunity; it is the plan working. In MARKET//LAB, **Decision Quality** judges whether a decision fitted the plan and the information you had, not what price did afterwards. A well-reasoned 'no trade' is a good decision too, worth a line in your trade [[journal]]. Put the routine in order.",
       items: [
         "Name the setup you think you see.",
         "Check each condition against the chart, one at a time: yes or no.",
@@ -336,6 +337,7 @@ const L14: LessonScript = {
       "Check every condition, one at a time. All yes: trade. Any no: no trade.",
       "No trade is a decision. Decision Quality judges fit with the plan, not later prices.",
     ],
+    next: "Next, 1.6.2: your plan v1, one market and one setup, written as lines the app can check.",
   },
 };
 
@@ -344,6 +346,7 @@ const L14: LessonScript = {
 const L15: LessonScript = {
   unit: "2.13",
   courseId: "2.13.1",
+  bridge: "Unit 2.12 ended in 2.12.9: each trade is one draw, so no single forecast decides. Unit 2.13 builds your playbook on that. Instead of one prediction, you list the paths, including 2.8.4's breakout, 2.8.8's failed breakout and 2.10.9's news risk.",
   hook: {
     prompt: "LABX trades at 60.10, just under [[resistance]] at 60.50. The [[range|range floor]] is 59.00. What happens next?",
     control: {
@@ -550,6 +553,7 @@ const L15: LessonScript = {
       "Give each case an observable trigger and an action decided now, not in the moment.",
       "Judge the plan by coverage and execution. A planned stop-out beats an unplanned win.",
     ],
+    next: "Next, 2.13.2: building a playbook, turning each setup into a card with fixed, checkable fields.",
   },
 };
 
@@ -558,6 +562,7 @@ const L15: LessonScript = {
 const L17: LessonScript = {
   unit: "1.6",
   courseId: "1.6.5",
+  bridge: "In 1.6.4 you logged every trade and no-trade in your journal. Now you use it. As in 0.2.1 and 1.4.5, you judge each trade by the plan from 1.6.1, not by its result, and turn what you find into rules.",
   hook: {
     prompt:
       "Trade A followed the playbook, risked 1% and was stopped out for −1R. Trade B had no stop, sat through −180.00 vUSD and closed at +150.00. Which was the better decision?",
@@ -725,6 +730,7 @@ const L17: LessonScript = {
       "Replay only what you could see at the decision point, then compare with the plan.",
       "End every review with one rule to keep, add or change.",
     ],
+    next: "Next, 1.6.6: mistake or variance, telling a broken rule from a valid trade that simply lost.",
   },
 };
 

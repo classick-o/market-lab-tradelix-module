@@ -129,6 +129,7 @@ export const L10_CHART: ChartSpec = {
 const L08: LessonScript = {
   unit: "1.4",
   courseId: "1.4.1",
+  bridge: "Unit 1.3 ended in 1.3.8 with trailing stops. Unit 1.4 asks the question before any order: how much may this trade lose? In 1.3.2 the stop set where you get out; here you decide what that exit may cost.",
   hook: {
     prompt: "Your account falls 50%, from 10,000.00 to 5,000.00. What gain do you need to get back to 10,000.00?",
     control: { kind: "slider", min: 10, max: 200, step: 10, unit: "%", start: 10, answer: 100, tolerance: 0 },
@@ -194,9 +195,9 @@ const L08: LessonScript = {
         "Write down your limit as a percentage: 1% in missions, at most 2% in the Arena.",
         "Convert it to vUSD using the current account value.",
         "Find the [[invalidation]] price, where the idea is wrong. The stop goes there.",
-        "[[position-size|Size the position]] so a stop-out, costs included, fits the budget.",
+        "[[position-size|Size the position]], meaning how many units, so a stop-out, costs included, fits the budget.",
       ],
-      explain: "Right. Risk first, then the stop, then the size. If even a small position breaks the limit, there is no trade. The next lesson covers the stop; the one after, the size.",
+      explain: "Right. Risk first, then the stop, then the size. If even a small position breaks the limit, there is no trade. 1.4.3 covers the stop; 1.4.4, the size.",
       concept: "risk-per-trade",
     },
     {
@@ -263,12 +264,14 @@ const L08: LessonScript = {
       "Set it as a percentage of the current account: 1% of 9,500.00 is 95.00.",
       "Losses compound: −50% needs +100%. Small, fixed risk keeps a losing run recoverable.",
     ],
+    next: "Next, 1.4.2: R, which turns that planned loss into one unit for measuring every trade.",
   },
 };
 
 const L10: LessonScript = {
   unit: "1.4",
   courseId: "1.4.3",
+  bridge: "In 1.4.2 you measured every result in R, the loss at the initial stop. So where should that stop go? Here you place it from the chart, using the reason for the trade and the normal candle size from 1.2.5.",
   hook: {
     prompt: "You bought LABX at 50.00 because support at 48.40 held. A normal candle moves about 0.40. Tap where your stop belongs.",
     control: {
@@ -288,11 +291,11 @@ const L10: LessonScript = {
   learn: [
     {
       kind: "explain",
-      text: "You met the [[stop-loss]] order in Unit 1. Its job is not to prevent every loss. It gets you out when the reason for the trade no longer holds, at a cost you accepted before you entered. It is not a guaranteed price: once touched it becomes a [[market-order|market order]], and a [[gap]] through it fills at the open.",
+      text: "You met the [[stop-loss]] order in 1.3.2. Its job is not to prevent every loss. It gets you out when the reason for the trade no longer holds, at a cost you accepted before you entered. It is not a guaranteed price: once touched it becomes a [[market-order|market order]], and a [[gap]] through it fills at the open.",
     },
     {
       kind: "explain",
-      text: "Ask what price would have to do to prove the idea wrong. That is the [[invalidation]] point. If you bought because [[support]] held, the idea is wrong once price breaks clearly through it. The stop goes just beyond that point, with a small buffer for noise, not at a round number or at a loss that feels comfortable.",
+      text: "Ask what price would have to do to prove the idea wrong. That is the [[invalidation]] point. If you bought because the [[support]] floor held, the idea is wrong once price breaks clearly through it. The stop goes just beyond that point, with a small buffer for noise, not at a round number or at a loss that feels comfortable.",
     },
     {
       kind: "figure",
@@ -341,7 +344,7 @@ const L10: LessonScript = {
     },
     {
       kind: "explain",
-      text: "A stop placed by logic will sometimes be far from the entry. That's fine. Don't move the stop to suit the size you wanted; change the size to suit the stop. A wider stop means fewer [[unit|units]] for the same [[risk-per-trade|risk]] in vUSD. The next lesson shows how to calculate it. For now, watch what happens.",
+      text: "A stop placed by logic will sometimes be far from the entry. That's fine. Don't move the stop to suit the size you wanted; change the size to suit the stop. A wider stop means fewer [[unit|units]], or pieces of LABX, for the same [[risk-per-trade|risk]] in vUSD. The next lesson shows how to calculate it. For now, watch what happens.",
     },
     {
       kind: "predict",
@@ -412,12 +415,14 @@ const L10: LessonScript = {
       "A stop inside normal noise gets hit while the idea still holds. Go beyond the level.",
       "Keep the stop where it belongs and change the size: a wider stop means fewer units.",
     ],
+    next: "Next, 1.4.4: sizing a position from the stop, so a wider stop means fewer units, not more risk.",
   },
 };
 
 const L09: LessonScript = {
   unit: "1.4",
   courseId: "1.4.4",
+  bridge: "In 1.4.3 you put the stop where the idea fails, not where the loss feels small. In 1.4.1 you fixed the budget. Here the two give the size: how many units fit between entry and stop, with the costs from 1.1.1 included.",
   hook: {
     prompt: "Your account is 10,000.00 and you accept losing 1% on this trade. You buy LABX at 100.00 with the stop at 98.00. How many units do you buy?",
     control: { kind: "slider", min: 1, max: 200, step: 1, unit: "units", start: 1, answer: 50, tolerance: 0 },
@@ -489,7 +494,7 @@ const L09: LessonScript = {
     },
     {
       kind: "explain",
-      text: "Two more limits. A bigger budget buys more units for the same stop: the Arena allows 2%, 200.00, so a 4.00 stop gives 50 units before costs. And [[buying-power|buying power]] sets a ceiling: with no [[leverage]], [[notional-value|position value]] plus the entry fee can't exceed [[equity]]. At 100.00 you can hold at most 99 units, whatever the formula says.",
+      text: "Two more limits. A bigger budget buys more units for the same stop: the Arena allows 2%, 200.00, so a 4.00 stop gives 50 units before costs. And [[buying-power|buying power]] sets a ceiling: with no borrowing ([[leverage]]), [[notional-value|units × price]] plus the entry fee can't exceed [[equity]]. At 100.00 you can hold at most 99 units, whatever the formula says.",
     },
     {
       kind: "callout",
@@ -526,12 +531,14 @@ const L09: LessonScript = {
       "Add both commissions to the distance per unit: 100.00 ÷ 2.099 gives 47 units, not 50.",
       "A wider stop means fewer units, not more risk: the loss at the stop stays within budget.",
     ],
+    next: "Next, 1.4.5: reward-to-risk and expectancy, to judge whether a correctly sized trade is worth taking at all.",
   },
 };
 
 const L11: LessonScript = {
   unit: "1.4",
   courseId: "1.4.5",
+  bridge: "In 1.4.4 you sized positions so a stop-out costs a fixed budget: 1R, the unit from 1.4.2. Now you weigh the other side, the target, and use expected value from 0.2.2 to find what a method makes per trade on average.",
   hook: {
     prompt: "Two methods, 100 trades each. Losses are always −1R. Method A wins 70% of trades at +0.4R. Method B wins 40% at +2R. Which has the better average result?",
     control: {
@@ -685,12 +692,14 @@ const L11: LessonScript = {
       "Expectancy = win rate × average win − loss rate × average loss, measured in R.",
       "Judge a method over many trades, and each trade by the plan, never by one result.",
     ],
+    next: "Next, 1.4.6: costs in R, and why a tight stop raises the win rate you need to break even.",
   },
 };
 
 const L12: LessonScript = {
   unit: "1.4",
   courseId: "1.4.7",
+  bridge: "In 1.4.6 you counted costs in R. Risk, in 1.4.1 and 1.4.4, was the planned loss at the stop. Here you see the whole position behind it: what a gap like those in 1.3.7 acts on, and what leverage does to it.",
   hook: {
     prompt: "Your account is 10,000.00. With leverage you hold 40,000.00 of LABX. Price falls 5%. What share of your account is gone?",
     control: { kind: "slider", min: 0, max: 100, step: 5, unit: "%", start: 0, answer: 20, tolerance: 0 },
@@ -803,12 +812,14 @@ const L12: LessonScript = {
       "Leverage scales every move against the account: at 5×, a 5% fall costs 25%.",
       "Risk is the planned loss at the stop. Exposure is what a gap acts on.",
     ],
+    next: "Next, 1.4.8: drawdowns, how far an account falls from its peak in a normal losing run, and for how long.",
   },
 };
 
 const L16: LessonScript = {
   unit: "2.4",
   courseId: "2.4.7",
+  bridge: "In 2.4.6 you measured volatility with true range and ATR. Now you use it with the risk rules of unit 1.4: where the stop goes when candles grow, and what that does to your size.",
   hook: {
     prompt: "Both trades buy LABX at 50.00. Calm week: 200 units, stop 0.50 below. Volatile week: 50 units, stop 2.00 below. Which loses more if its stop is hit?",
     control: {
@@ -973,6 +984,7 @@ const L16: LessonScript = {
       "When volatility rises, put the stop beyond the wider noise and cut the size to match.",
       "Keep the risk budget fixed in every market. The units and the exposure change, not the risk.",
     ],
+    next: "Next, 2.4.8: Bollinger Bands, which wrap volatility around an average, and what a squeeze does and doesn't predict.",
   },
 };
 

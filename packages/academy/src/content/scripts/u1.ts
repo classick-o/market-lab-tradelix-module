@@ -145,6 +145,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
   L01: {
     unit: "1.2",
     courseId: "1.2.1",
+    bridge: "Unit 1.1 ended in 1.1.7 on the quote screen: the last price, the bid and ask, and the day's high and low. Unit 1.2 turns prices into charts. It starts with the candle, which packs one hour of trading into four prices.",
     hook: {
       prompt: "This [[candle]] is one hour of LABX trading. Tap the price where the hour ended.",
       control: {
@@ -359,6 +360,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
         "Close above open is bullish; close below open is bearish. The wicks don't decide the direction.",
         "A candle records one hour. It can't show which extreme came first or what comes next.",
       ],
+      next: "Next, 1.2.2: line, bar and candle charts, three ways to draw the same prices, and what each one leaves out.",
     },
   },
 
@@ -366,8 +368,9 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
   L02: {
     unit: "1.1",
     courseId: "1.1.1",
+    bridge: "Unit 0.2 ended in 0.2.6: skill shows as results after costs, over many trades. Unit 1.1 looks at prices and those costs. In 0.1.1 buyers and sellers met in an auction; here you meet the two prices they quote, the bid and the ask.",
     hook: {
-      prompt: "The chart shows LABX at 100.00. You buy 50 [[unit|units]] and sell them straight back. Price hasn't moved. What's your result?",
+      prompt: "The chart shows LABX at 100.00. You buy 50 [[unit|units]], single pieces of LABX, and sell them straight back. Price hasn't moved. What's your result?",
       control: {
         kind: "choice",
         choices: [
@@ -537,6 +540,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
         "A round trip costs the spread once plus commission twice: about 0.20 per unit at 100.00.",
         "Costs are paid up front, so every new position starts slightly behind, even if the mid hasn't moved.",
       ],
+      next: "Next, 1.1.2: long and short. With the round-trip cost known, see how buying first or selling first makes or loses money.",
     },
   },
 
@@ -544,6 +548,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
   L03: {
     unit: "1.3",
     courseId: "1.3.1",
+    bridge: "Unit 1.2 ended in 1.2.7 with what a chart can't tell you. Unit 1.3 moves from reading to acting: the orders that get you in and out. In 1.1.1 you bought at the ask; here you choose between filling now and waiting for your price.",
     hook: {
       prompt: "LABX is at 100.00 on the chart. You leave an order to buy at 99.00 or lower. How low must the chart price go before it [[fill|fills]]?",
       control: { kind: "slider", min: 98.8, max: 99.2, step: 0.05, start: 99.2, answer: 98.95, tolerance: 0 },
@@ -614,7 +619,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
         kind: "reveal",
         title: "Same idea, two orders",
         prompt:
-          "A market buy of 30 fills now at 100.05: [[notional-value|position value]] 30 × 100.05 = 3,001.50. A buy limit of 30 waits at 99.00. Reveal the next 12 hours. Then say what happened to the limit.",
+          "A market buy of 30 fills now at 100.05. Its [[notional-value|position value]], what the 30 units are worth, is 30 × 100.05 = 3,001.50. A buy limit of 30 waits at 99.00. Reveal the next 12 hours. Then say what happened to the limit.",
         chart: {
           candles: [...L03_HISTORY, ...L03_B6_FUTURE],
           visible: 10,
@@ -681,6 +686,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
         "A market buy fills at the ask, a market sell at the bid: you cross the spread.",
         "A buy limit fills only when the ask reaches it; a sell limit, when the bid does. Close isn't enough.",
       ],
+      next: "Next, 1.3.2: stop-loss and take-profit orders, the two exits you plan as soon as you're in.",
     },
   },
 
@@ -688,8 +694,9 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
   L04: {
     unit: "1.3",
     courseId: "1.3.2",
+    bridge: "In 1.3.1 you got in with market and limit orders. Now you plan the way out: a stop for when you're wrong, a target for when you're right. The normal candles and gaps from 1.2.5 show where a stop sits and how it fills.",
     hook: {
-      prompt: "You buy LABX at 100.00 because [[support]] near 98.00 has held three times. Drag the line to where you'd get out if you're wrong.",
+      prompt: "You buy LABX at 100.00 because [[support]] near 98.00, a floor where falls have stopped, has held three times. Drag the line to where you'd get out if you're wrong.",
       // A stop level dragged on the lesson chart; {yours} is its price. There is no single right answer.
       control: { kind: "slider", min: 95.0, max: 99.9, step: 0.01, start: 99.5 },
       figure: {
@@ -752,7 +759,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
               layers: [{ kind: "marker", index: 25, price: 97.95, label: "STOPPED 97.95", role: "down" }],
             },
             {
-              text: "At 97.70, beyond the zone, the stop is hit only if support breaks: the [[invalidation]] point.",
+              text: "At 97.70, beyond the zone, the stop is hit only if support breaks: the [[invalidation]] point, where the idea fails.",
               layers: [
                 { kind: "level", price: 97.7, role: "stop", label: "STOP 97.70" },
                 { kind: "bracket", from: 97.9, to: 97.7, label: "BUFFER 0.20", role: "concept" },
@@ -763,7 +770,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
       },
       {
         kind: "explain",
-        text: "A take-profit works like a limit order on the way out. For a long, it sells when the bid reaches your target, at that price or better. Put it where the plan says price could reasonably go, such as the next [[resistance]], not at a number picked to make the trade look attractive.",
+        text: "A take-profit works like a limit order on the way out. For a long, it sells when the bid reaches your target, at that price or better. Put it where the plan says price could reasonably go, such as the next [[resistance]], a ceiling where rises have stalled, not at a number picked to make the trade look attractive.",
       },
       {
         kind: "worked",
@@ -833,6 +840,7 @@ export const SCRIPTS_U1: Record<string, LessonScript> = {
         "A stop becomes a market order when touched. After a gap, it fills at the open, worse than planned.",
         "Set the take-profit where the plan says price can go, such as the next resistance. Measure both exits in R.",
       ],
+      next: "Next, 1.3.3: stop entries and stop-limit orders, where the same trigger gets you into a breakout instead of out of a trade.",
     },
   },
 };

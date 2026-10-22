@@ -123,6 +123,7 @@ export const L13_BIAS_CARDS: BiasCard[] = [
 const L13: LessonScript = {
   unit: "1.7",
   courseId: "1.7.2",
+  bridge: "In 1.7.1 you learned to name a feeling and let the plan decide. Here are three that pull hardest against it: chasing a move, chasing a loss and refusing to take one. Your plan from 1.6.1 and the stop rules of 1.4.3 are the defence.",
   hook: {
     prompt: "You were stopped out for −100.00 vUSD ten minutes ago. A new setup appears and looks good. What would you do next?",
     control: {
@@ -338,6 +339,7 @@ const L13: LessonScript = {
       "Rules written in advance decide for you: setups first, fixed risk, stops never widened.",
       "After a big move or a loss, pause for a set time before any decision.",
     ],
+    next: "Next, 1.7.3: the gambler's fallacy, the belief that a run of losses makes a win due.",
   },
 };
 
@@ -380,6 +382,7 @@ export const L18_STREAK_RULES: {
 const L18: LessonScript = {
   unit: "2.12",
   courseId: "2.12.8",
+  bridge: "In 2.12.7 you set guard-rails against tilt. A losing streak is where they get tested. With the drawdown tiers of 2.11.5 and the wide expectancy intervals of 2.11.7 in mind, you'll measure how common streaks are and fix your rules before one starts.",
   hook: {
     prompt: "A method wins 40% of its trades and makes +0.20R per trade on average. Over 100 trades, how likely is at least one run of five losses in a row?",
     control: { kind: "slider", min: 0, max: 100, step: 1, unit: "%", answer: 98 },
@@ -521,6 +524,7 @@ const L18: LessonScript = {
       "Fix risk, set a pause rule and a review trigger before the streak starts.",
       "Sort each loss: sound decision, bad outcome, or broken rule? Fix rules, not methods.",
     ],
+    next: "Next, 2.12.9: thinking in probabilities, why an edge shows over a series of trades, never in one.",
   },
 };
 

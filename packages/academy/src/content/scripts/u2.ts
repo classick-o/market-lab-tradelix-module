@@ -335,6 +335,7 @@ export const SCRIPTS_U2: Record<string, LessonScript> = {
   L05: {
     unit: "1.5",
     courseId: "1.5.2",
+    bridge: "In 1.5.1 you marked swing highs and lows with one fixed rule. Here those swings name the market: a trend, a range or noise. The candles you learned to read in 1.2.1 are the raw material; the swings give them a shape.",
     hook: {
       prompt: "Three green 1-hour candles in a row on LABX, each closing higher. What is the market doing?",
       figure: { kind: "chart", chart: { candles: L05_ZOOM.slice(21) }, steps: [{ text: "Closes: 99.40, 100.18 and 100.30." }] },
@@ -513,12 +514,14 @@ export const SCRIPTS_U2: Record<string, LessonScript> = {
         "A range keeps turning near the same floor and ceiling. New highs or lows don't last.",
         "Noise has no clear swings. If you can't name the market, staying out is valid.",
       ],
+      next: "Next, 1.5.3: pullbacks, the dips inside a trend, and how deep one can go while the trend still holds.",
     },
   },
 
   L06: {
     unit: "1.5",
     courseId: "1.5.4",
+    bridge: "In 1.5.3 you measured pullbacks inside a trend; in 1.5.2 a range kept turning near the same floor and ceiling. Here you mark those as support and resistance zones, and plan a breakout with a 1.3.2 stop where the break would fail.",
     hook: {
       prompt: "LABX has moved sideways for 30 hours. Tap the price where it keeps turning down.",
       control: {
@@ -676,12 +679,14 @@ export const SCRIPTS_U2: Record<string, LessonScript> = {
         "A breakout and a false breakout look the same at the break. Later closes tell them apart.",
         "Before buying a breakout, put the stop where it would have failed: back inside the range.",
       ],
+      next: "Next, 1.5.5: round numbers, where orders cluster, and why a stop belongs beyond the cluster.",
     },
   },
 
   L07: {
     unit: "2.3",
     courseId: "2.3.2",
+    bridge: "In 2.3.1 you defined a trend by its swing highs and lows, as in unit 1.5. A moving average describes it another way: one line through recent closes. Here you calculate one by hand and test what it can and can't tell you.",
     hook: {
       prompt: "LABX closes at 100.00, 101.00, 102.00, 103.00 and 104.00. The next candle closes at 110.00. Guess the average of the last five closes.",
       figure: { kind: "chart", chart: { candles: L07_HOOK }, steps: [{ text: "Closes: 100.00, 101.00, 102.00, 103.00, 104.00, then 110.00." }] },
@@ -823,6 +828,7 @@ export const SCRIPTS_U2: Record<string, LessonScript> = {
         "An average turns after price. Longer periods: smoother, more lag. Shorter: faster, noisier.",
         "Use a moving average to describe the trend, beside swings. It doesn't forecast turns.",
       ],
+      next: "Next, 2.3.3: EMA and WMA, averages that react faster than the SMA, and the whipsaws that speed brings.",
     },
   },
 };
