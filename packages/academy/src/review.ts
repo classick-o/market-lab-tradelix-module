@@ -184,7 +184,8 @@ export function varyQuestion(q: Question, rand: () => number): QuestionVariant |
       values[name] = Number((min + Math.floor(rand() * n) * step).toFixed(6));
     }
     if (!(spec.constraints ?? []).every((c) => evaluate(c, values) !== 0)) continue;
-    const answer = evaluate(spec.answer, values);
+    // Drop floating-point noise (99.24499999… → 99.245) so the answer is the one a person computes.
+    const answer = Number(evaluate(spec.answer, values).toFixed(9));
     if (!Number.isFinite(answer)) continue;
     const env = { ...values, answer };
     return { prompt: renderTemplate(spec.prompt, env), explanation: renderTemplate(spec.explanation, env), hint: spec.hint ? renderTemplate(spec.hint, env) : undefined, answer, values };
