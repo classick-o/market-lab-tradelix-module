@@ -114,6 +114,7 @@ const L3141: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.1",
+    bridge: "In 3.13.8 you graded strategies, several of which trade futures. 3.13.1 sketched LXF in one paragraph; here's the full contract. 2.14.6's margin is now settled in cash every day, 1.4.7's leverage comes built in, and 1.4.4's stop sizing meets whole contracts.",
     hook: {
       prompt: "LXF, the synthetic index future, is worth 50 vUSD per point and trades at 5,000.00. You buy 2 contracts. By the close, price is 4,962.50. How much leaves your account tonight?",
       control: {
@@ -258,6 +259,7 @@ const L3141: Lesson = {
         "Gains and losses settle in cash daily; below maintenance margin, you top up to initial.",
         "Size from the stop in whole contracts; when one is too big, use micros: 6 LXM.",
       ],
+      next: "Next, 3.14.2: futures expire, so you roll to the next contract, and continuous charts need adjusting.",
     },
   },
 };
@@ -282,6 +284,7 @@ const L3142: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.2",
+    bridge: "In 3.14.1 a contract settled every day. It also ends: here you roll it to the next expiry with one order. 3.11.3 asked for adjusted prices before any test; continuous futures charts need that too, or backtests trade gaps nobody had.",
     hook: {
       prompt: "On roll day, the LXF continuous chart jumps 30 points overnight, with no news. Did holders of the expiring contract just earn 30 points?",
       control: {
@@ -313,7 +316,7 @@ const L3142: Lesson = {
       {
         kind: "explain",
         title: "How a contract ends",
-        text: "At [[expiry]] a contract ends. Index futures settle in cash. Others end in [[physical-delivery]]: from the [[first-notice-day]], a long can be told to take the commodity, so the simulator forces you out before it. Trading moves to the next contract days before expiry; rolling when it moves keeps costs low.",
+        text: "At [[expiry]] a contract ends. Index futures settle in cash. Others end in [[physical-delivery]], the actual goods changing hands: from the [[first-notice-day]], a long can be told to take the commodity, so the simulator forces you out before it. Trading moves to the next contract days before expiry; rolling when it moves keeps costs low.",
       },
       {
         kind: "figure",
@@ -434,6 +437,7 @@ const L3142: Lesson = {
         "Roll with one calendar-spread order, then shift the stop by the spread: 4,960 becomes 4,990.",
         "Back-adjust continuous charts: add each roll gap to earlier prices, or backtests trade fake gaps.",
       ],
+      next: "Next, 3.14.3: why June traded 30 points above March. Contango, backwardation and the roll yield a rolled position earns or pays.",
     },
   },
 };
@@ -458,6 +462,7 @@ const L3143: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.3",
+    bridge: "In 3.14.2 June traded 30 points above March, and your stop moved up by that gap. Here is the whole curve: contango, backwardation, and the roll yield a rolled long pays or earns. 3.13.3 called roll yield a kind of carry; now you compute it.",
     hook: {
       prompt: "Spot crude stays at 70.00 all year. The one-month future always trades at 71.00, and you roll every month. After 12 months, your long position has…",
       control: {
@@ -602,6 +607,7 @@ const L3143: Lesson = {
         "Roll yield ≈ spot ÷ future − 1 per roll: 71.00 against 70.00 costs 1.41% a month.",
         "Rolled longs in contango, like many commodity ETFs and long VIX products, lose while spot is flat.",
       ],
+      next: "Next, 3.14.4: commodities, where supply shocks, scheduled reports and limit moves decide what a stop can do.",
     },
   },
 };
@@ -629,6 +635,7 @@ const L3144: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.4",
+    bridge: "In 3.14.3 the curve priced storage and scarcity. Now what moves commodity prices: supply shocks, 3.6.5's drivers, and scheduled reports judged by 2.10.1's surprise. Limit moves can lock a market past your stop, so you size 3.14.1's contracts for the gap.",
     hook: {
       prompt: "A synthetic grain future is locked limit-down for two days. Your stop sits 3% below entry; the daily limit is 5%. Where can your stop fill?",
       control: {
@@ -733,6 +740,7 @@ const L3144: Lesson = {
         "Locked limit days skip stops: 1R planned became 3.25R. Size for two limit days.",
         "Seasonal patterns are already in the curve; you earn only what it didn't expect.",
       ],
+      next: "Next, 3.14.5: crypto, a market that never closes, with much larger volatility and coins that sit on a venue.",
     },
   },
 };
@@ -760,6 +768,7 @@ const L3145: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.5",
+    bridge: "In 3.14.4 a locked market skipped stops. Crypto never closes: no weekend gap as in 2.9.8, but thin nights and weekends where stops slip. 2.4.6's ATR sizes the position, and 3.10.2's square-root rule annualises its much larger volatility. Then: where your coins sit.",
     hook: {
       prompt: "You risk 1% with a stop 2 ATR away. LXC, the synthetic coin, has a daily ATR of 4% of price; LABX's is 1.5%. Compared with a LABX trade, your LXC position value should be…",
       control: {
@@ -886,6 +895,7 @@ const L3145: Lesson = {
         "Size from volatility: same 1% risk, an LXC position about 2.6 times smaller than LABX.",
         "Coins on a venue are a claim on it: cap each venue; self-custody trades for key risk.",
       ],
+      next: "Next, 3.14.6: perpetual swaps, crypto's futures with no expiry, and the funding payments that keep them near spot.",
     },
   },
 };
@@ -910,6 +920,7 @@ const L3146: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.6",
+    bridge: "In 3.14.5 you sized LXC spot. Venues also list perpetuals: 3.14.1's futures with no expiry, so nothing forces them back to spot. Funding does that job. It also shows crowding, which 3.9.1 taught you to read as a condition, not a trigger.",
     hook: {
       prompt: "You hold a 100,000 vUSD long in the LXC perpetual. Funding for this 8-hour interval is +0.03%. Who pays whom, and how much?",
       control: {
@@ -1038,6 +1049,7 @@ const L3146: Lesson = {
         "0.01% per 8 hours is 10.95% a year on the position: 126.00 over 14 days at 3×.",
         "Persistently positive funding means crowded longs: a condition to respect, not a trigger.",
       ],
+      next: "Next, 3.14.7: leverage on a perpetual, where its liquidation price sits, and how forced selling cascades.",
     },
   },
 };
@@ -1065,6 +1077,7 @@ const L3147: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.7",
+    bridge: "In 3.14.6 funding cost a 5× long 4.5% of its margin in a month. Leverage has a sharper cost: liquidation, 2.14.6's margin close-out at a price you can compute. As in 1.4.4: stop first, size from it, then let leverage set only the margin.",
     hook: {
       prompt: "Long LXC at 30,000 with 10× isolated leverage. Maintenance margin is 0.5%. Roughly where are you liquidated?",
       control: {
@@ -1192,6 +1205,7 @@ const L3147: Lesson = {
         "Stop first, size from it; leverage sets margin. Keep liquidation twice the stop's distance: 15× here.",
         "Cascades feed on forced selling; insurance funds and auto-deleveraging can close even winners.",
       ],
+      next: "Next, 3.14.8: bonds and rates, where duration and DV01 turn a yield move into money.",
     },
   },
 };
@@ -1219,6 +1233,7 @@ const L3148: Lesson = {
   script: {
     unit: "3.14",
     courseId: "3.14.8",
+    bridge: "In 3.14.7 leverage turned small moves into large ones. Bonds have their own amplifier: duration. 3.6.1 showed prices fall when yields rise; here you measure how far, and turn a yield move into money with DV01, as 3.14.1's multiplier did for points.",
     hook: {
       prompt: "A synthetic 10-year note has a duration of 8.95. Yields rise one percentage point. Its price moves by about…",
       control: {
@@ -1350,6 +1365,7 @@ const L3148: Lesson = {
         "DV01 is money per basis point: 895.00 on 1,000,000 at duration 8.95; 25 bp costs 22,375.00.",
         "One rate surprise reaches FX carry, CFD funding, futures fair value, stock valuations and options.",
       ],
+      next: "Next: the 3.14 checkpoint closes Level 3. Level 4 opens with unit 4.1, Options and volatility: calls and puts, the right without the obligation.",
     },
   },
 };
@@ -2347,6 +2363,17 @@ const CONCEPTS: Concept[] = [
 
 /** Unit 3.14 · Instruments II: futures, commodities, crypto, bonds (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
 export const UNIT_3_14: UnitContent = {
+  intro: {
+    summary: "2.14 covered stocks, forex and CFDs, and 3.13's strategies leaned on futures, carry and funding. Here are those instruments, mechanics before strategy: futures that settle daily, expire and roll along a curve; commodities with reports and limit moves; crypto with 24/7 venues, funding and liquidation; bonds with duration and DV01. Level 3 ends here.",
+    outcomes: [
+      "Turn points into money with a multiplier, track daily margin, and size whole or micro contracts.",
+      "Roll a future with one calendar-spread order, and back-adjust its continuous chart.",
+      "Compute roll yield in contango and backwardation, and size commodity trades for limit moves.",
+      "Size crypto from its volatility, cap venue risk, and price funding and liquidation before you trade.",
+      "Turn a yield move into money with duration and DV01.",
+    ],
+    buildsOn: "Stop sizing and leverage (1.4.4, 1.4.7); weekends and gaps (2.9.8); news surprises (2.10.1); swap, CFDs and margin (2.14.4–2.14.6); rates and commodities in macro (3.6.1, 3.6.5); volatility over time (3.10.2); carry (3.13.3).",
+  },
   lessons: [L3141, L3142, L3143, L3144, L3145, L3146, L3147, L3148],
   questions: QUESTIONS,
   terms: TERMS,

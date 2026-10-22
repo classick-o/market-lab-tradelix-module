@@ -381,6 +381,7 @@ const L1: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.1",
+    bridge: "In 3.12.7 an equity-curve filter hurt trend following. Here is trend following itself, with its evidence. 2.4.1 said momentum's evidence covers months; here it's tested on 58 markets. 2.4.9's Donchian channels become Turtle breakouts, and 3.12.6's volatility targeting sizes them by N.",
     hook: {
       prompt: "A rule goes long any market whose last 12 months were up, and short if they were down, with positions sized to equal volatility. Tested on 58 futures markets, in how many was it profitable?",
       control: {
@@ -502,6 +503,7 @@ const L1: Lesson = {
         "Turtle unit = 1% of equity ÷ (N × value per point): 1,000 ÷ 125 = 8 contracts.",
         "The exact Turtle numbers got crowded; the momentum effect survived. Expect long flat stretches.",
       ],
+      next: "Next, 3.13.2: momentum across markets, ranking winners against losers, and the crashes that follow a panic.",
     },
   },
 };
@@ -527,6 +529,7 @@ const L2: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.2",
+    bridge: "In 3.13.1 each market was judged against its own past. Now assets are ranked against each other: buy the winners, short the losers. The short leg brings 2.14.2's costs, and 3.12.6's volatility scaling gets tested in a crash.",
     hook: {
       prompt: "March to May 2009, right after a deep fall. Past winners rose 8%. How much did past losers rise?",
       control: {
@@ -593,7 +596,7 @@ const L2: Lesson = {
             "Long winners, short losers: −21.5% in one month, the book's worst.",
           ],
         },
-        text: "After a fall, the losers are the high-[[beta]] assets: the ones that fell most with the market. When it snaps back, they jump most, and the short leg explodes.",
+        text: "After a fall, the losers are the high-[[beta]] assets, the ones that move more than the market: they fell most with it. When it snaps back, they jump most, and the short leg explodes.",
         concept: "momentum-crash",
       },
       {
@@ -653,6 +656,7 @@ const L2: Lesson = {
         "Crashes follow a panic, when beaten-down, high-beta losers rebound: losers +163% in 2009.",
         "Volatility scaling cuts exposure in wild markets: the seeded crash month fell from −21.5% to −9.1%.",
       ],
+      next: "Next, 3.13.3: carry, which pays you while prices sit still, and crashes across asset classes at the same time.",
     },
   },
 };
@@ -678,6 +682,7 @@ const L3: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.3",
+    bridge: "In 3.13.2 momentum crashed when losers rebounded. Carry crashes rarely, and everywhere at once. 2.14.4's swap is FX carry, 3.6.6 sized carry for the crash, and its shape is 3.10.1's negative skew. Roll yield and funding appear briefly here; 3.14 covers them.",
     hook: {
       prompt: "A position earns 4% a year in carry. A 10% adverse jump hits about once every five years. At 10× leverage, what's the chance of being wiped out within 10 years?",
       control: {
@@ -802,6 +807,7 @@ const L3: Lesson = {
         "Carry is grade A across asset classes, but its crashes arrive together, in global recessions.",
         "Choose leverage from the jump: at 3×, the 5th percentile was −25.4%; at 5×, −61.3%.",
       ],
+      next: "Next, 3.13.4: a calendar edge put through the full test: scan, confirm once on hold-out, count the false discoveries.",
     },
   },
 };
@@ -827,6 +833,7 @@ const L4: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.4",
+    bridge: "In 3.13.3 carry held up across asset classes: grade A. Seasonals are thinner: 3.9.6 gave only the turn of the month a B, and 3.10.6 showed many tests breed false hits. Here you scan, confirm once on hold-out (3.11.4), and count false discoveries.",
     hook: {
       prompt: "Ten synthetic markets: three carry a real turn-of-month drift, seven are pure noise. You test each at the 5% level. What's the chance at least one noise market passes?",
       control: {
@@ -915,6 +922,7 @@ const L4: Lesson = {
         "Scan in-sample, confirm once on hold-out: noise market B fell away; C, F and I stayed.",
         "Use a calendar edge as a tilt or a filter, and check the futures curve first.",
       ],
+      next: "Next, 3.13.5: pairs trading, where two prices must keep coming back together, and correlation alone isn't enough.",
     },
   },
 };
@@ -940,6 +948,7 @@ const L5: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.5",
+    bridge: "In 3.13.4 hold-out data filtered noise from real drifts. Pairs trading needs the same discipline: search many pairs and some will look tied by chance (3.10.6). It's 2.8.7's mean reversion on a spread, with a short leg paying 2.14.2's borrow fee.",
     hook: {
       prompt: "Two synthetic stocks have moved together for three years, with a correlation of 0.92. Their spread is now 2.2 standard deviations wide. Will it close?",
       control: {
@@ -1031,6 +1040,7 @@ const L5: Lesson = {
         "Enter at z = ±2, exit at 0, stop at ±3.5, time stop near two half-lives (ln 2 ÷ θ).",
         "A spread blowing out on news is likely a structural break: exit at the stop, don't add.",
       ],
+      next: "Next, 3.13.6: event-driven strategies, measured as the average abnormal return over many events, not one story.",
     },
   },
 };
@@ -1056,6 +1066,7 @@ const L6: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.6",
+    bridge: "In 3.13.5 a merger broke a pair. Now events become the strategy. 3.8.5 read one earnings gap and 3.8.8 graded post-earnings drift; here you average many events, test the result against zero as in 3.10.5, and write the stop rule first.",
     hook: {
       prompt: "The day after its earnings surprise, LABB rose 6%. The index rose 1%, and LABB's beta is 1.2. What was LABB's abnormal return?",
       control: {
@@ -1196,6 +1207,7 @@ const L6: Lesson = {
         "Average many events and judge the band: 40 events left the good-news drift unproven.",
         "Write the stop rule before trading: the seeded rule stopped the decayed drift after year 9.",
       ],
+      next: "Next, 3.13.7: why published edges shrink, why crowded trades crash together, and how to tell decay from a normal drawdown.",
     },
   },
 };
@@ -1221,6 +1233,7 @@ const L7: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.7",
+    bridge: "In 3.13.6 the PEAD drift decayed after publication. Here is why edges shrink, and how to tell decay from bad luck with tools you have: 3.10.3's regression to the mean, 3.11.7's Monte Carlo corridor, 3.11.10's kill switches and 2.8.1's regimes.",
     hook: {
       prompt: "97 published return predictors were re-tested after their papers came out. On average, their returns after publication were…",
       control: {
@@ -1331,6 +1344,7 @@ const L7: Lesson = {
         "Crowded strategies crash together: the same holders sell into the same few buyers.",
         "Judge a drawdown by its corridor, regime and R0 control before calling an edge broken.",
       ],
+      next: "Next, 3.13.8: a ten-point checklist for reading any strategy study, and the evidence grade it earns.",
     },
   },
 };
@@ -1356,6 +1370,7 @@ const L8: Lesson = {
   script: {
     unit: "3.13",
     courseId: "3.13.8",
+    bridge: "In 3.13.7 published predictors returned 58% less after publication. Now you read the studies themselves. A ten-point checklist reuses 3.11's tests: out-of-sample (3.11.4), costs (3.11.2), trial counts. It adds replication and mechanism, and ends in a grade you defend in two sentences.",
     hook: {
       prompt: "A 2024 working paper reports an opening-range strategy: over 1,600% net in eight years, Sharpe 2.81. An independent test on five index markets, after spreads and slippage, found…",
       control: {
@@ -1472,6 +1487,7 @@ const L8: Lesson = {
         "The opening range paper's gross edge replicated; after costs, nothing was distinguishable from zero.",
         "Grade from Mechanic to F and defend it in two sentences: what's shown, what's missing.",
       ],
+      next: "Next: the 3.13 checkpoint, then unit 3.14, Instruments II: the futures, commodities, crypto and bonds these strategies trade, starting with futures contracts.",
     },
   },
 };
@@ -2304,6 +2320,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_3_13: UnitContent = {
+  intro: {
+    summary: "Units 3.10 to 3.12 taught you to test, validate and size a system. Now the strategy families with published evidence go through that process: time-series and cross-sectional momentum, carry, seasonals, pairs and event studies, each with its mechanism, who pays you, its crash risk and its grade. Two closing lessons cover decay, crowding and reading any study critically.",
+    outcomes: [
+      "Size a Turtle unit from N, and explain why the exact rules faded while momentum survived.",
+      "Spot when momentum and carry crash, and choose leverage from the jump, not the average year.",
+      "Scan for seasonal or pairs edges, confirm once on hold-out, and count your false discoveries.",
+      "Measure an event effect by abnormal returns and their band, with the stop rule written first.",
+      "Tell decay from normal variance, and grade any strategy study from Mechanic to F.",
+    ],
+    buildsOn: "Trend tools and ATR (2.3, 2.4.6); strategies by regime (2.8); shorting and swap (2.14.2, 2.14.4); calendar effects and PEAD (3.9.6, 3.8.8); skew and many tests (3.10.1, 3.10.6); validation (3.11); volatility targeting (3.12.6).",
+  },
   lessons: [L1, L2, L3, L4, L5, L6, L7, L8],
   questions: QUESTIONS,
   terms: TERMS,
