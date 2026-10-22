@@ -1,7 +1,7 @@
 /**
  * A small, safe expression language for content: numbers, field names, + − × ÷, parentheses,
  * comparisons (< <= > >= == !=), && and ||, and the functions floor, ceil, round(x, digits),
- * min, max, abs, pct(x) (= x / 100) and commission(notional) (0.05% rounded up to the cent).
+ * min, max, abs, sqrt, pct(x) (= x / 100) and commission(notional) (0.05% rounded up to the cent).
  * Used by question generators (`vary`), never `eval`.
  */
 export type Env = Record<string, number>;
@@ -45,6 +45,7 @@ const FUNCS: Record<string, (...a: number[]) => number> = {
   floor: Math.floor,
   ceil: Math.ceil,
   abs: Math.abs,
+  sqrt: Math.sqrt,
   min: Math.min,
   max: Math.max,
   round: (x, d = 0) => Math.round(x * 10 ** d) / 10 ** d,

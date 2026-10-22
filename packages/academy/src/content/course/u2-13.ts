@@ -1693,7 +1693,7 @@ const CONCEPTS: Concept[] = [
       "A pullback card loses three in a row, every rule followed. The idea 'a stop at 1 ATR loses less to noise than 0.5 ATR' goes in the log, the bar is set at 40 trades in the simulator, and only if the test supports it does the card become a new version.",
     related: ["trading-plan", "sample-size", "mistake-vs-variance"],
     missions: [],
-    lessons: ["2.13.7"],
+    lessons: ["2.13.7", "3.11.10"],
   },
 ];
 

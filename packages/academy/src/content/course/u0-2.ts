@@ -1513,7 +1513,7 @@ const CONCEPTS: Concept[] = [
       "A dice bet pays 10.00 on a 6 and loses 10.00 on anything else. Ana takes it and wins 10.00. The bet loses five times in six, so the decision was poor: her win is dumb luck, not a good decision.",
     related: ["decision-quality", "counterfactual-thinking", "luck-vs-skill"],
     missions: ["M10"],
-    lessons: ["0.2.1"],
+    lessons: ["0.2.1", "3.11.3"],
   },
   {
     id: "expected-value",

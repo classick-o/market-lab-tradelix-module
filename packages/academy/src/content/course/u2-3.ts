@@ -2245,7 +2245,7 @@ const concepts: Concept[] = [
     example: "LABX makes swing lows at 99.50, 100.30 and 101.10 and swing highs at 101.10 and 102.20, then a lower high at 102.00. The uptrend still stands. Candle 29 falls to 100.97, below 101.10: only now does the peak-trough rule call it over, 1.23 below the 102.20 top.",
     related: ["trend", "trend-definitions", "timeframe"],
     missions: ["M02"],
-    lessons: ["2.3.1"],
+    lessons: ["2.3.1", "3.11.3"],
   },
   {
     id: "trend-definitions",
