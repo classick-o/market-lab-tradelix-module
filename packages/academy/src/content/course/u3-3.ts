@@ -355,6 +355,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.1",
+      bridge: "In 3.2.2 you read the book as a snapshot, and in 3.2.8 an auction matched it at one price. Now trades stream past: the tape breaks the volume of 2.5 into single prints, each with time, price, size and the side that crossed the spread.",
       hook: {
         prompt: "A 5,000-unit [[print]] appears at 100.00. Bullish or bearish?",
         control: {
@@ -472,6 +473,7 @@ const lessons: Lesson[] = [
           "Every trade has a buyer and a seller; the aggressor only says who crossed the spread.",
           "Side-guessing rules misclassify about 10–25% of trades; spot FX volume is usually a tick count.",
         ],
+        next: "Next, 3.3.2: the DOM ladder, where you watch the resting orders these prints trade against.",
       },
     },
   },
@@ -498,6 +500,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.2",
+      bridge: "In 3.3.1 you read trades after they printed. The DOM ladder shows the other side live: the depth of 3.2.2, price by price, as orders are added, pulled and filled. Here you name what large displayed size does, and what it can't promise.",
       hook: {
         prompt: "A 2,000-unit offer sits at 100.20, ten times the usual size. Price climbs toward it. What happens?",
         control: {
@@ -599,6 +602,7 @@ const lessons: Lesson[] = [
           "Pulling, stacking, reloading and absorption are visible; the intent behind them is not.",
           "Displayed size is free to cancel: don't trade against a wall just because it's there.",
         ],
+        next: "Next, 3.3.3: footprint charts, which sort one bar's prints by price and by the side that crossed.",
       },
     },
   },
@@ -625,6 +629,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.3",
+      bridge: "In 3.3.2 the ladder showed resting orders; in 3.3.1 the tape showed trades and their aggressor. A footprint sorts one bar's trades by price into bid and ask columns, a one-bar volume profile, so you see who traded where inside the candle.",
       hook: {
         prompt: "This one-minute LABX candle closed 0.05 higher. Did aggressive buyers dominate inside it?",
         control: {
@@ -795,6 +800,7 @@ const lessons: Lesson[] = [
           "A diagonal imbalance compares ask at one price with bid one tick lower; three in a row stack.",
           "Imbalances describe what happened, not what must happen next: grade D, and threshold-dependent.",
         ],
+        next: "Next, 3.3.4: bar deltas added up into a running total, cumulative delta, and the divergences traders read in it.",
       },
     },
   },
@@ -821,6 +827,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.4",
+      bridge: "In 3.3.3 you computed one bar's delta, ask minus bid. Here deltas add up into cumulative delta, a cousin of 2.5.2's OBV that signs each trade by its aggressor. Its divergences get the same grade D as the RSI divergences of 2.4.5.",
       hook: {
         prompt: "Price makes a higher high. Cumulative delta makes a lower high. Is a reversal coming?",
         control: {
@@ -965,6 +972,7 @@ const lessons: Lesson[] = [
           "A delta divergence needs price confirmation, and should survive a change of anchor.",
           "Price can rise on flat delta when sellers cancel offers; delta shows aggression, not the book.",
         ],
+        next: "Next, 3.3.5: absorption and exhaustion, where aggression meets passive size and either moves price or doesn't.",
       },
     },
   },
@@ -991,6 +999,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.5",
+      bridge: "In 3.3.4 delta measured aggression; in 3.3.2 the ladder showed passive size. Here you set them against each other: heavy aggression that moves price nowhere is absorption, and aggression fading at an extreme is the exhaustion of 2.6.7, seen in the flow.",
       hook: {
         prompt: "Sellers hit 99.50 with 1,800 units in six minutes. Price is still at 99.50. Who is winning?",
         control: {
@@ -1099,6 +1108,7 @@ const lessons: Lesson[] = [
           "Exhaustion: aggressive volume drying up at the extreme of a move.",
           "Each read dies at a price: the level breaks, or aggressive volume returns at a new extreme.",
         ],
+        next: "Next, 3.3.6: icebergs, the hidden size that can sit behind absorption, and how the tape reveals one.",
       },
     },
   },
@@ -1125,6 +1135,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.6",
+      bridge: "In 3.2.5 you met icebergs as an order type, native or synthetic. In 3.3.5 passive orders absorbed heavy selling at one price. Here you find the iceberg behind such a level: traded volume above the displayed size, and the same slice refilling.",
       hook: {
         prompt: "50 units show at 100.00. 600 trade there. 50 still show. What is the smallest the hidden part can have been?",
         control: {
@@ -1222,6 +1233,7 @@ const lessons: Lesson[] = [
           "Minimum hidden size = traded − displayed: a floor, not an estimate of what remains.",
           "Synthetic icebergs are new orders to the exchange; an iceberg shows size, not direction.",
         ],
+        next: "Next, 3.3.7: spoofing, displayed size meant never to trade, and why it's illegal.",
       },
     },
   },
@@ -1245,6 +1257,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.7",
+      bridge: "In 3.3.6 hidden size was bigger than it looked. Spoofing is the reverse: displayed size meant never to trade. In 3.3.2 one pulled wall proved nothing, and 3.2.2 called spoofing illegal. Here you learn the rule and the signature surveillance looks for.",
       hook: {
         prompt: "A program placed large sell orders 3–4 ticks above the best ask for over four hours, modified them more than 81,000 times and executed 81 lots. Legal?",
         control: {
@@ -1342,6 +1355,7 @@ const lessons: Lesson[] = [
           "Surveillance reads the whole signature: far from the touch, constant changes, huge cancel-to-fill, opposite-side trades.",
           "Genuine layering is legal; one pulled order proves nothing, because intent decides.",
         ],
+        next: "Next, 3.3.8: Market Profile, which steps back from single orders to read the whole session as one auction.",
       },
     },
   },
@@ -1368,6 +1382,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.3",
       courseId: "3.3.8",
+      bridge: "In 3.3.1 to 3.3.7 you read single trades and orders. Here the whole session is one auction, as in 3.2.8. Market Profile counts time at each price, where 2.5.4's volume profile counted units, and its initial balance is a one-hour opening range from 2.9.4.",
       hook: {
         prompt: "Does Market Profile count time at each price, or volume at each price?",
         control: {
@@ -1499,6 +1514,7 @@ const lessons: Lesson[] = [
           "POC, 70% value area and initial balance come from the letters; day types label the session's shape.",
           "The 80% rule and day types are grade D: test them against random bands and R0.",
         ],
+        next: "Next: the 3.3 checkpoint, then unit 3.4, Classical methods under the microscope, where every method goes on trial.",
       },
     },
   },
@@ -2402,4 +2418,20 @@ const concepts: Concept[] = [
   },
 ];
 
-export const UNIT_3_3: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_3_3: UnitContent = {
+  intro: {
+    summary: "Unit 3.2 showed the order book as a still picture; here it moves. You read the tape, the DOM ladder, footprints and cumulative delta, spot absorption, exhaustion and icebergs, learn why spoofing is illegal, and read the session as an auction. Each tool separates data from reading, so in 3.5 you can compare real flow with flow inferred from candles.",
+    outcomes: [
+      "Read time and sales and a DOM ladder, and classify each print by its aggressor.",
+      "Compute bar delta and cumulative delta, and read a footprint's POC and imbalances.",
+      "Recognise absorption, exhaustion and icebergs, and state what would prove each read wrong.",
+      "Tell legal layering from illegal spoofing by its full surveillance signature.",
+      "Build a TPO profile, find its value area and initial balance, and name the day type.",
+    ],
+    buildsOn: "The order book and hidden orders from 3.2.2 and 3.2.5; auctions from 3.2.8; volume, OBV and the volume profile from 2.5; exhaustion from 2.6.7; the opening range from 2.9.4.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};

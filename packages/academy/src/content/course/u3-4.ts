@@ -99,6 +99,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.1",
+      bridge: "In 3.3.8 you tested the 80% rule against random bands and R0. In 2.1.8 and 2.8.10, patterns and strategies faced a random walk. Now those checks become one protocol for this unit's methods: a testable claim, R0, a structured market, costs and a grade.",
       hook: {
         prompt: "In a course video, a method 'worked' on 9 of the last 10 charts shown. How much does that tell you about the method?",
         control: {
@@ -196,6 +197,7 @@ const lessons: Lesson[] = [
           "R0 shows what noise alone produces; the structured market shows whether the mechanism adds anything.",
           "Fix rules, parameters and sample size before any result, or the results pick them.",
         ],
+        next: "Next, 3.4.2: Fibonacci in depth, the first method on trial, with its anchors fixed before the test.",
       },
     },
   },
@@ -222,6 +224,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.2",
+      bridge: "In 2.5.8 you drew Fibonacci retracements and extensions and counted lines near one price. In 3.4.1 you built the trial. Here Fibonacci goes on it: three-point projections, clusters, the anchors you choose, and a pre-registered test on R0 and on a market with Fibonacci watchers.",
       hook: {
         prompt: "Price turned at 104.12. The chart has swing lows at 100.00 and 101.50 and swing highs at 108.00 and 110.00. Can you draw a Fibonacci grid with a level within 0.15 of 104.12?",
         control: {
@@ -351,6 +354,7 @@ const lessons: Lesson[] = [
           "Four anchor pairs put 68% of prices within 0.15 of a level. Hindsight always finds one.",
           "On R0, Fibonacci ratios matched control ratios; with watchers, they did only slightly better.",
         ],
+        next: "Next, 3.4.3: Elliott Wave's rules, a method that counts swings and uses these ratios as guidelines.",
       },
     },
   },
@@ -373,6 +377,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.3",
+      bridge: "In 3.4.2 Fibonacci ratios measured single swings. Elliott Wave counts a whole sequence of the swings from 1.5.1, five with the trend and three against, and keeps those ratios only as guidelines. Here you learn the three rules that can break a count.",
       hook: {
         prompt: "Wave 1: 100.00 to 104.00. Wave 3: 101.60 to 104.60. Wave 5: 104.20 to 108.20. Is this a valid Elliott impulse?",
         control: {
@@ -509,6 +514,7 @@ const lessons: Lesson[] = [
           "Three rules: wave 2 under 100%, wave 3 never shortest, wave 4 clear of wave 1.",
           "Ratios, alternation and equality are guidelines. The forecasts are graded D.",
         ],
+        next: "Next, 3.4.4: the alternate-count lab, where one path passes the rules in three ways with opposite forecasts.",
       },
     },
   },
@@ -535,6 +541,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.4",
+      bridge: "In 3.4.3 you checked a count against the three rules. Here one random-walk path passes them in three ways, with opposite forecasts. What survives is the count's invalidation level: it sets the stop, and the 1% budget from 1.4.1 sets the size.",
       hook: {
         prompt: "Three analysts count the same chart, each following the rules. How many different valid counts could there be?",
         control: {
@@ -654,6 +661,7 @@ const lessons: Lesson[] = [
           "Every outcome fits some count, so the forecasts can't be falsified: grade D.",
           "Use a count for its invalidation and the size it gives: 52 units, not more.",
         ],
+        next: "Next, 3.4.5: Wyckoff, which reads trading ranges and the volume inside them instead of counting waves.",
       },
     },
   },
@@ -680,6 +688,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.5",
+      bridge: "In 3.4.4 a wave count could fit any outcome. Wyckoff reads ranges instead, with the effort versus result you met in 3.3.5. His spring resembles the sweep of 3.1.3. Here you label events live and count how many springs broke down.",
       hook: {
         prompt: "Price dips below the range low of 95.00 to 94.40, then closes back at 95.30. Spring or breakdown?",
         control: {
@@ -807,6 +816,7 @@ const lessons: Lesson[] = [
           "The Composite Man is a study device, not evidence that someone runs the market.",
           "A dip becomes a 'spring' after the rally. On R0, 74% broke down first.",
         ],
+        next: "Next, 3.4.6: harmonic patterns, five-point shapes held to Fibonacci ratios, and the tolerance that decides how many you find.",
       },
     },
   },
@@ -833,6 +843,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.6",
+      bridge: "In 3.4.5 labels were easy to place after the fact. Harmonic patterns try to pin shapes down with ratios: five points, each leg held to a Fibonacci ratio from 3.4.2, and AB = CD is 2.2.7's measured move. The tolerance decides how many you find.",
       hook: {
         prompt: "A Gartley needs B at 0.618 of XA. Your B sits at 0.600. Is the pattern valid?",
         control: {
@@ -973,6 +984,7 @@ const lessons: Lesson[] = [
           "Loosening tolerance from ±1% to ±10% raised detections on noise from 29 to 1,026.",
           "At D, reversals matched random depths on R0 and R2: grade D.",
         ],
+        next: "Next, 3.4.7: Ichimoku as a complete trend system, tested after costs and across neighbouring settings.",
       },
     },
   },
@@ -999,6 +1011,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.7",
+      bridge: "In 3.4.6 harmonics did no better than random depths. Ichimoku belongs to trend following, the family of 2.8.2. In 2.3.8 you built its lines; here they become a complete rule set, tested by the 3.4.1 protocol after costs against its simplest part and neighbouring settings.",
       hook: {
         prompt: "Ichimoku's defaults are 9, 26 and 52. If the method is robust, how much should results change at 10, 30 and 60?",
         control: {
@@ -1164,6 +1177,7 @@ const lessons: Lesson[] = [
           "After costs, the full system tied the Kijun cross on trends and lost less elsewhere.",
           "Trust a plateau of neighbouring settings; a lone spike is usually luck.",
         ],
+        next: "Next, 3.4.8: Gann, cycles and esoteric methods, the hardest claims to test, through the same protocol.",
       },
     },
   },
@@ -1190,6 +1204,7 @@ const lessons: Lesson[] = [
     script: {
       unit: "3.4",
       courseId: "3.4.8",
+      bridge: "In 3.4.7 Ichimoku's defaults sat on a plateau, and the trend did the work. The last methods are the hardest to pin down: Gann's angles, market cycles and esoteric claims. Like 3.4.2's time zones, they lean on time; the 3.4.1 protocol still applies.",
       hook: {
         prompt: "A 45° line from a major low touches three later lows. Does it still touch them after you stretch the chart sideways?",
         control: {
@@ -1315,6 +1330,7 @@ const lessons: Lesson[] = [
           "Spectral analysis finds a 'dominant cycle' in pure noise, and it follows the window.",
           "Test esoteric claims with the protocol: it found a planted effect and rejected the lunar one.",
         ],
+        next: "Next: the 3.4 checkpoint, then unit 3.5, Smart money concepts, decoded, where Wyckoff's vocabulary returns under new names.",
       },
     },
   },
@@ -2168,4 +2184,20 @@ const concepts: Concept[] = [
 ];
 
 /** Unit 3.4 · Classical methods under the microscope (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_4: UnitContent = { lessons, questions, terms, concepts };
+export const UNIT_3_4: UnitContent = {
+  intro: {
+    summary: "Fibonacci, Elliott, Wyckoff, harmonics, Ichimoku and Gann are widely taught, so you need their vocabulary. They come late on purpose: you can now test claims instead of taking them on trust. This unit builds one trial protocol, then puts each method through it, keeping what each can defend, usually an invalidation level and a size.",
+    outcomes: [
+      "Turn a method's claim into a testable rule and pre-register the test before any result.",
+      "Compute Fibonacci projections and harmonic ratios, and show how anchors and tolerance multiply hits.",
+      "Check an Elliott count against its three rules and find valid alternate counts.",
+      "Label a Wyckoff range and write Ichimoku's full rules as one mechanical system.",
+      "Judge each method on R0 and on a structured market, after costs, and give it a grade.",
+    ],
+    buildsOn: "Random walks and sample size from 0.2; swings from 1.5.1; the random-walk test of 2.1; measured moves from 2.2.7; Ichimoku from 2.3.8; ATR and Donchian from 2.4; Fibonacci from 2.5.8; confluence from 2.8.9.",
+  },
+  lessons,
+  questions,
+  terms,
+  concepts,
+};
