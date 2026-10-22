@@ -631,6 +631,7 @@ const L271: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.1",
+    bridge: "In 2.6.8 you picked a timeframe to time entries. In 2.2.3 a double bottom existed only after a close above its peak. Here you compare three entries: before that close, after it, or on a retest, each with its own order from 1.3.",
     hook: {
       prompt: "Same double bottom, three ways in. Which entry has the best reward-to-risk?",
       control: {
@@ -803,6 +804,7 @@ const L271: Lesson = {
         "Limits risk a bad fill or no fill; stop and market orders risk slippage.",
         "Best R:R isn't best expectancy. Compare entries over many trades, after costs, counting the ones you missed.",
       ],
+      next: "Next, 2.7.2: adding to a position after entry, and which adds keep the total risk within your planned 1R.",
     },
   },
 };
@@ -828,6 +830,7 @@ const L272: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.2",
+    bridge: "In 2.7.1 you entered a setup once, with one stop. In 1.8.1 averaging down added risk after the first order. Here you add to a position in three ways and check each against one rule: every stop hit still loses no more than 1R.",
     hook: {
       prompt: "You're long 50 LABX at 50.00, stop 48.00: 1R is 100.00 before costs. Price dips to 49.00 and you buy 50 more, same stop. How much do you lose if the stop is hit?",
       control: {
@@ -984,6 +987,7 @@ const L272: Lesson = {
         "Pyramid only by lifting the stops: worst case = Σ units × (stop − entry), within 1R.",
         "Averaging down raises the loss at the same stop. A better average price is more risk, not less.",
       ],
+      next: "Next, 2.7.3: where the trade should end, with a target set by R-multiple, structure or ATR.",
     },
   },
 };
@@ -1009,6 +1013,7 @@ const L273: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.3",
+    bridge: "In 2.7.2 you kept total risk within 1R while adding. In 2.2.2 a pattern's target was scaled by the share of moves that reached it. Here you set targets three ways, by R, by structure and by ATR, and score each by expectancy.",
     hook: {
       prompt: "You move your target from 2R to 4R. Does expectancy go up or down?",
       control: {
@@ -1160,6 +1165,7 @@ const L273: Lesson = {
         "Expectancy of a target = share whose MFE reached it × k − the rest × 1R.",
         "The best target depends on the regime: measure it on enough of your own trades.",
       ],
+      next: "Next, 2.7.4: instead of a fixed target, a stop that follows price by a rule, the trailing stop.",
     },
   },
 };
@@ -1185,6 +1191,7 @@ const L274: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.4",
+    bridge: "In 2.7.3 a set target ended the trade. In 1.3.8 a trailing stop moved only toward price, and in 2.3.7 SAR and SuperTrend drew such lines. Here you build a chandelier stop from ATR, then compare four trails by giveback and holding time.",
     hook: {
       prompt: "Highest high since entry is 54.00, ATR is 0.80 and k = 3. Where is the chandelier stop?",
       control: {
@@ -1335,6 +1342,7 @@ const L274: Lesson = {
         "Tight trails give back less but exit sooner; wide ones hold trends and give back more.",
         "Pick the trail before entry. Never lower it, and never swap methods mid-trade.",
       ],
+      next: "Next, 2.7.5: one popular stop move, to the entry price after a gain, and whether it really helps.",
     },
   },
 };
@@ -1360,6 +1368,7 @@ const L275: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.5",
+    bridge: "In 2.7.4 the stop trailed price by a rule fixed before entry. Here you test one popular move, the stop to the entry price at +1R: count the winners it kills and the losers it saves, then compare expectancy, as in 1.4.5.",
     hook: {
       prompt: "Moving your stop to breakeven at +1R always improves your results. True or false?",
       control: {
@@ -1495,6 +1504,7 @@ const L275: Lesson = {
         "A breakeven rule kills winners that dip back and saves losers that peaked first. Count both.",
         "Compare expectancy with and without the rule on your own trades. A gap still jumps the stop.",
       ],
+      next: "Next, 2.7.6: closing a trade in parts, half at a target and the rest trailed, and what that does to R.",
     },
   },
 };
@@ -1520,6 +1530,7 @@ const L276: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.6",
+    bridge: "In 2.7.3 to 2.7.5 you set a target, trailed a stop and moved it to breakeven. Here you combine them: half off at +1R, the runner trailed, with the stop at breakeven, and work out the trade's blended R.",
     hook: {
       prompt: "You close half at +1R. The other half is stopped at breakeven. What is the trade's total in R?",
       control: {
@@ -1646,6 +1657,7 @@ const L276: Lesson = {
         "Partials raise the win rate and narrow the spread; the average can fall, as here: +0.05R vs +0.10R.",
         "Selling early caps the big winners a trend system needs. Decide partials before entry, by rule.",
       ],
+      next: "Next, 2.7.7: exits that aren't a stop or a target, a time stop for trades going nowhere, and a reason for every exit.",
     },
   },
 };
@@ -1680,6 +1692,7 @@ const L277: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.7",
+    bridge: "In 2.7.6 each part of the trade left at a target or a stop. Some trades reach neither. Here you write a time stop for trades going nowhere, tag every early exit with a reason from your plan, and never widen a stop.",
     hook: {
       prompt: "Six trades are going nowhere after 10 bars. Which costs less in total: holding all six to their stops or targets, or exiting all six now at about −0.2R each?",
       control: {
@@ -1809,6 +1822,7 @@ const L277: Lesson = {
         "Tag every early exit with a reason from the plan. An untagged exit is a deviation.",
         "Stops move only toward less risk. Widening one turns a sized loss into an unsized one.",
       ],
+      next: "Next, 2.7.8: measuring how far each trade went against you and for you, to test your stops and exits.",
     },
   },
 };
@@ -1834,6 +1848,7 @@ const L278: Lesson = {
   script: {
     unit: "2.7",
     courseId: "2.7.8",
+    bridge: "In 2.7.7 you tagged every exit in the journal from 1.6.4. In 2.7.3 MFE decided which target paid. Here you record both excursions, MAE and MFE, on your own trades, and use them to test a tighter stop and your exits.",
     hook: {
       prompt: "Your trade went 2.50R in your favour at best, and you closed it at +1.00R. What share of the best move did you keep?",
       control: { kind: "slider", min: 0, max: 100, step: 5, start: 50, unit: "%", answer: 40, tolerance: 0 },
@@ -1946,6 +1961,7 @@ const L278: Lesson = {
         "Test a tighter stop on the MAE scatter: count the winners cut, recompute expectancy, on enough trades.",
         "Giveback = MFE − result; efficiency = result ÷ MFE. Compare setups, never against 100%.",
       ],
+      next: "Next: the 2.7 checkpoint, then unit 2.8, Strategies by market regime, where every strategy needs the exits from this unit.",
     },
   },
 };
@@ -2740,4 +2756,20 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
-export const UNIT_2_7: UnitContent = { lessons: [L271, L272, L273, L274, L275, L276, L277, L278], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_2_7: UnitContent = {
+  intro: {
+    summary: "This unit covers everything between entry and exit: the entry, adding to a position, targets, trailing and breakeven stops, partial and time exits, and how far your own trades moved against you and for you. Each choice is a trade-off in R. It follows the setups of 2.1–2.6 and comes before 2.8, because every strategy needs an exit policy.",
+    outcomes: [
+      "Compare anticipation, confirmation and retest entries by expectancy, each with its own order and fill risk.",
+      "Add to a position only while the worst case, every stop hit, stays within 1R.",
+      "Set targets by R, structure or ATR, and trail stops by a rule fixed before entry.",
+      "Score breakeven stops, partial exits and time stops in R, and tag every early exit.",
+      "Measure MAE and MFE on your own trades to test your stops and exits.",
+    ],
+    buildsOn: "R, sizing and expectancy from 1.4; order types and trailing stops from 1.3; averaging down from 1.8.1; the journal from 1.6.4; confirmation from 2.2.3; and the ATR, SAR and channel lines of 2.4.6, 2.3.7 and 2.4.9.",
+  },
+  lessons: [L271, L272, L273, L274, L275, L276, L277, L278],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};

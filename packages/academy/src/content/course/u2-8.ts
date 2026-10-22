@@ -517,6 +517,7 @@ const L281: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.1",
+    bridge: "In 2.7 you learned to manage a trade, ending with MAE and MFE in 2.7.8. Now you choose which trades to take: label the regime, trend, range or unclear, from the swings of 1.5, then pick the strategy built for it, or no trade.",
     hook: {
       prompt: "The same moving-average rule ran on LABX for two months. Month A: 12 trades, +6.0R. Month B: 15 trades, −8.4R. Same rules, same trader. What changed?",
       control: {
@@ -683,6 +684,7 @@ const L281: Lesson = {
         "Each family has a home regime and a losing one: trend rules whipsaw in ranges, range rules die in trends.",
         "No clear regime, or a random walk: no trade. An uncertain label: smaller size, or skip.",
       ],
+      next: "Next, 2.8.2: the trend family in full, trend following, with its rules, its low win rate and where it loses.",
     },
   },
 };
@@ -708,6 +710,7 @@ const L282: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.2",
+    bridge: "In 2.8.1 you matched each strategy family to its regime. Here you write the full card for the trend family: a moving-average cross from 2.3.4 or a 20-candle high, a stop 2–3 ATR away, and a trailing exit from 2.7.4.",
     hook: {
       prompt: "A trend rule wins 7 of 20 trades. Winners average +3.2R, losers −1R. Costs are 0.10R per trade. Over the 20 trades, does it make money?",
       control: {
@@ -845,6 +848,7 @@ const L282: Lesson = {
         "At 35% wins, winners of 3.2R pay: +0.47R per trade before costs. The edge is in the size.",
         "It loses in ranges, to whipsaws, and at sharp reversals. Expect long losing runs.",
       ],
+      next: "Next, 2.8.3: joining a trend on a pullback instead, for a better reward-to-risk than chasing.",
     },
   },
 };
@@ -870,6 +874,7 @@ const L283: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.3",
+    bridge: "In 2.8.2 the trend rule bought the cross or a new 20-candle high, wherever price stood. Here you wait for a dip inside the trend, the pullback of 1.5.3, with a trend filter, a trigger and a stop under the pullback low.",
     hook: {
       prompt: "LABX is trending up. Stop 56.40 under the last swing low, target 61.00. Buy now at 58.40, or wait for a pullback to 57.20? Which gives the better reward-to-risk?",
       control: {
@@ -1005,6 +1010,7 @@ const L283: Lesson = {
         "Waiting for the pullback bought 4.75 : 1 instead of 1.3 : 1. Some pullbacks never come; let them go.",
         "A lower low under the last higher low, or a close under the 50: the pullback became a reversal.",
       ],
+      next: "Next, 2.8.4: a different regime, a range, and the breakout trade that buys a close beyond its edge.",
     },
   },
 };
@@ -1030,6 +1036,7 @@ const L284: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.4",
+    bridge: "In 2.8.3 you joined a trend under way. Here price leaves a range: you buy a close beyond a level tested twice, as in 1.5.4, with a stop back inside and the range's height as the target, then find the win rate it needs.",
     hook: {
       prompt: "LABX ranged between 97.00 and 100.00 for 30 candles, then closed at 100.15. Stop back inside at 99.20, target the measured move at 103.00. With costs of 0.20 per unit, what win rate does this trade need to break even?",
       control: {
@@ -1194,6 +1201,7 @@ const L284: Lesson = {
         "Costs lift break-even from 25.0% to 30.3% here: three wins in ten pay for seven losses.",
         "Breakouts fail most from untested levels, wicks, low volume and late entries after long moves.",
       ],
+      next: "Next, 2.8.5: a breakout from unusually small candles, bracketed both ways because the direction is unknown.",
     },
   },
 };
@@ -1219,6 +1227,7 @@ const L285: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.5",
+    bridge: "In 2.8.4 you bought a range breakout in one direction. In 2.6.3 you bracketed an inside bar with OCO stop entries. Here that becomes a strategy card, around an NR7 or the squeeze of 2.4.8, where tight stops make costs decide the result.",
     hook: {
       prompt: "LABX's last 7 candle ranges: 1.10, 0.95, 1.30, 1.20, 1.05, 1.15, 0.90. Will the next 5 candles be wider or narrower than the last one? And which way will price go?",
       control: {
@@ -1368,6 +1377,7 @@ const L285: Lesson = {
         "OCO bracket 0.05 beyond each end; size each side to 1%: 90 units at a 1.00 stop.",
         "A 1.00 stop pays 0.20R in costs; a 0.50 stop, 0.40R. Chop can stop both sides.",
       ],
+      next: "Next, 2.8.6: the opposite bet to a breakout, trading inside a confirmed range, between its edges.",
     },
   },
 };
@@ -1393,6 +1403,7 @@ const L286: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.6",
+    bridge: "In 2.8.4 and 2.8.5 you bet that price would break out. Here you bet a range holds: buy near support, sell near resistance, confirm it with flat averages and the ADX of 2.3.6, and stop trading it at the first close outside.",
     hook: {
       prompt: "Same 97.00–100.00 range. Buy at 97.30, stop 96.40, target 99.70. What is the reward-to-risk before costs, and after 0.20 per unit?",
       control: {
@@ -1521,6 +1532,7 @@ const L286: Lesson = {
         "Stop just outside the edge, target near the other. Costs lift break-even from 27.3% to 33.3%.",
         "The first close outside ends the range: no new range trades; switch to the breakout card.",
       ],
+      next: "Next, 2.8.7: mean reversion, fading stretched prices back to an average, and the rare large losses it hides.",
     },
   },
 };
@@ -1546,6 +1558,7 @@ const L287: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.7",
+    bridge: "In 2.8.6 you bought near support while the range held. Mean reversion bets that stretched prices snap back. Here you meet two rules, on the Bollinger Bands of 2.4.8 and the RSI of 2.4.2, and the rare big losses behind their high win rates.",
     hook: {
       prompt: "A mean-reversion rule won 15 of its last 20 trades at +0.5R each. Four losses were −1R; one gap loss was −5R. Did it make money?",
       control: {
@@ -1669,6 +1682,7 @@ const L287: Lesson = {
         "A 75% win rate lost 1.5R: small wins, rare big losses. Check the average loss.",
         "Keep a catastrophic stop on every reversion trade: oversold can get more oversold, and gaps jump stops.",
       ],
+      next: "Next, 2.8.8: the failed breakout, fading a spike beyond a range, and how it mirrors the breakout trade.",
     },
   },
 };
@@ -1694,6 +1708,7 @@ const L288: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.8",
+    bridge: "In 2.8.7 you faded stretched prices. In 2.6.6 a breakout failed on a close back inside, trapping its buyers. Here you trade that failure, Turtle Soup, as the mirror of the 2.8.4 breakout, and let the regime evidence choose between them.",
     hook: {
       prompt: "Same 97.00–100.00 range. Price spikes to 100.70, then closes at 99.80. Trader A bought the breakout at 100.15. Trader B sells the failure at 99.90. Can both rules be right over 100 trades?",
       control: {
@@ -1809,6 +1824,7 @@ const L288: Lesson = {
         "It mirrors the breakout: same level, opposite bet. On a random walk both lose their costs.",
         "Pick breakout, fade or pass from the chart's signs, never from the last trade's result.",
       ],
+      next: "Next, 2.8.9: adding filters to a setup, and telling independent evidence from one signal counted several times.",
     },
   },
 };
@@ -1834,6 +1850,7 @@ const L289: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.9",
+    bridge: "In 2.8.8 the signs on the chart chose breakout, fade or pass. Here you weigh such signs: in 2.4.3 three oscillators told one story, and in 2.5.8 confluence needed independent factors. You group indicators by input and see how filters shrink your sample.",
     hook: {
       prompt: "A setup shows five green lights: RSI, Stochastic, CCI, Williams %R and ROC all say 'oversold'. How many independent pieces of evidence is that?",
       control: {
@@ -1953,6 +1970,7 @@ const L289: Lesson = {
         "Group by input: closes, high–low range, volume, structure, time. Confluence takes different groups.",
         "Each filter cuts trades: 120 down to 18 widened the interval from ±0.30R to ±0.79R.",
       ],
+      next: "Next, 2.8.10: the last test of any strategy, its edge after costs, against holding and against a random walk.",
     },
   },
 };
@@ -1978,6 +1996,7 @@ const L2810: Lesson = {
   script: {
     unit: "2.8",
     courseId: "2.8.10",
+    bridge: "In 2.8.9 every filter shrank the sample you could judge. Here you judge a whole strategy: take costs off in R as in 1.4.6, compare the net result with holding, the benchmark of 0.1.4, and with a random walk, then count the trades needed.",
     hook: {
       prompt: "A backtest shows +0.12R per trade over 200 trades. The stop is 1.00 on LABX near 100.00, and round-trip costs are about 0.20 per unit. After costs, is the edge positive?",
       control: {
@@ -2122,6 +2141,7 @@ const L2810: Lesson = {
         "Compare the net result with simply holding and with the same rule on a random walk.",
         "The interval shrinks with √n: ±0.40R at 50 trades. Small edges need hundreds of trades.",
       ],
+      next: "Next: the 2.8 checkpoint, then unit 2.9, Sessions, time and intraday: when markets trade, and how the hour changes movement and costs.",
     },
   },
 };
@@ -2940,6 +2960,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_2_8: UnitContent = {
+  intro: {
+    summary: "This unit turns the tools of 2.1–2.7 into complete strategies, grouped by the regime each is built for: trend following, pullbacks, breakouts, range trading, mean reversion and failed breakouts. The core skill comes first: diagnose the regime, then choose a strategy or no trade. Every card carries an evidence grade, and every result is judged after costs.",
+    outcomes: [
+      "Label the regime as trend, range or unclear before choosing a strategy, and skip unclear charts.",
+      "Write each family's rule card: setup, entry, stop, exit and its evidence grade.",
+      "Name where each strategy fails: trend rules in ranges, range and reversion rules in trends.",
+      "Tell independent evidence from one signal counted several times, and watch filters shrink the sample.",
+      "Judge a strategy by its edge after costs, against holding and a random walk, over enough trades.",
+    ],
+    buildsOn: "Random walks and expected value from 0.2; R and expectancy from 1.4; structure and breakouts from 1.5; averages and ADX from 2.3; oscillators and ATR from 2.4; levels and volume from 2.5; traps from 2.6; exits from 2.7.",
+  },
   lessons: [L281, L282, L283, L284, L285, L286, L287, L288, L289, L2810],
   questions: QUESTIONS,
   terms: TERMS,
