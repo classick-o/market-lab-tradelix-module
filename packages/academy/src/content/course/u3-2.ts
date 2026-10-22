@@ -59,6 +59,7 @@ const L321: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.1",
+    bridge: "Unit 3.1 inferred resting orders from the chart, ending with 3.1.7's trapped traders. Now the book that holds them. 1.1.1 gave you bid, ask and spread; 2.14.5 made the CFD provider your counterparty. Here you sort how markets match orders, and who sells to you.",
     hook: {
       prompt: "You buy 1 lot of an FX pair on a retail platform. Who sold it to you?",
       control: {
@@ -201,6 +202,7 @@ const L321: Lesson = {
         "Spot FX and CFDs have no central book; their volume is tick volume at one broker.",
         "Counterparty: another trader on an exchange, the dealer in FX, the provider in a CFD.",
       ],
+      next: "Next, 3.2.2: reading the book itself, L1, L2 and L3, and what a market order pays to walk it.",
     },
   },
 };
@@ -226,6 +228,7 @@ const L322: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.2",
+    bridge: "In 3.2.1 orders met in a central book, against a dealer or through a broker. Now you read the book: L1, L2, L3 and depth. In 1.3.6 you averaged a fill that walked the book; here you see that depth, and how fast it vanishes.",
     hook: {
       prompt: "Your 500-unit market buy walked 3 ticks into the book. Before a release, liquidity providers pull 70% of the depth. How many ticks does the same order walk now?",
       control: {
@@ -389,6 +392,7 @@ const L322: Lesson = {
         "Average fill = total cost ÷ units; the order walks further when depth is thin.",
         "Displayed size can vanish before news; orders meant to be cancelled are illegal spoofing.",
       ],
+      next: "Next, 3.2.3: the market makers behind those quotes, and why they lose to better-informed traders.",
     },
   },
 };
@@ -414,6 +418,7 @@ const L323: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.3",
+    bridge: "In 3.2.2 depth vanished before a release. Here you see why from the other side: you quote both sides as a market maker. 2.10.3 showed spreads widening at news, and 1.3.1's limit order returns as a free option anyone can take.",
     hook: {
       prompt: "You quote 99.95 / 100.05 and earn half the spread, 0.05, on every fill. In one session you get 60 fills of 100 units. What is your session P&L?",
       control: {
@@ -549,6 +554,7 @@ const L323: Lesson = {
         "Quotes widen, skew or vanish before news and when inventory builds.",
         "Resting limits fill most surely when price keeps going through them: a free option.",
       ],
+      next: "Next, 3.2.4: queue priority, which decides whether your resting limit at a price fills at all.",
     },
   },
 };
@@ -574,6 +580,7 @@ const L324: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.4",
+    bridge: "In 3.2.3 a resting limit filled most surely when price kept going through it. Now, whether it fills at all. In 1.3.6 touching your price wasn't a fill: the queue ahead traded first. Here you count your place in 3.2.2's book, under FIFO and pro-rata.",
     hook: {
       prompt: "You bid 100 units at 100.25. 340 units sit ahead of you. 400 units trade at 100.25. How many do you get?",
       control: {
@@ -704,6 +711,7 @@ const L324: Lesson = {
         "Raising size, changing price or account sends you to the back of the queue.",
         "Pro-rata shares volume by size: 400 × 100 ÷ 900 gives 44 units.",
       ],
+      next: "Next, 3.2.5: hidden liquidity and order types that trade visibility for priority, price or fill certainty.",
     },
   },
 };
@@ -726,6 +734,7 @@ const L325: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.5",
+    bridge: "In 3.2.4 some changes sent your order to the back of the queue. Here are order types built around that: an iceberg loses priority at each refill, and a hidden order lets displayed ones fill first. Then maker-taker fees set what each fill costs.",
     hook: {
       prompt: "The book shows 50 units at 100.00. 600 units trade there, and 50 are still showing. How?",
       control: {
@@ -851,6 +860,7 @@ const L325: Lesson = {
         "Native icebergs refill at the exchange; synthetic ones resend from your platform. Both lose priority.",
         "Maker-taker, passive in and aggressive out on 1,000 units: +2.00 − 3.00 = −1.00.",
       ],
+      next: "Next, 3.2.6: who fills you at a retail broker, its business model and last look.",
     },
   },
 };
@@ -873,6 +883,7 @@ const L326: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.6",
+    bridge: "In 3.2.5 you chose how your order shows in a book. Many retail orders never reach one. 3.2.1 named your counterparty in FX and CFD accounts; 2.14.8 covered leverage caps and protection. Here you read your broker's model and its reject report.",
     hook: {
       prompt: "Your broker is the counterparty to your trades. Does that mean it hunts your stops?",
       control: {
@@ -1003,6 +1014,7 @@ const L326: Lesson = {
         "A B-book gains when you lose; leverage caps and loss limits manage that conflict.",
         "Slippage that only goes against you, or one-sided rejects, is a red flag.",
       ],
+      next: "Next, 3.2.7: where US stock orders go, the NBBO, payment for order flow and best execution.",
     },
   },
 };
@@ -1025,6 +1037,7 @@ const L327: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.7",
+    bridge: "In 3.2.6 a broker model decided who filled you. Now US stocks, which trade on the many venues of 3.2.1. Here you build the best bid and offer across them, follow a zero-commission order to the firm that pays for it, and compare execution.",
     hook: {
       prompt: "Your broker charges zero commission. Is your trade free?",
       control: {
@@ -1144,6 +1157,7 @@ const L327: Lesson = {
         "Zero commission moves the cost into routing and PFOF; best execution is a duty, not a guarantee.",
         "Compare brokers net: price improvement minus commission, with fill rate and speed beside it.",
       ],
+      next: "Next, 3.2.8: opening and closing auctions, where every order trades at one price.",
     },
   },
 };
@@ -1166,6 +1180,7 @@ const L328: Lesson = {
   script: {
     unit: "3.2",
     courseId: "3.2.8",
+    bridge: "In 3.2.7 orders traded continuously against the best quotes. At the open and close, exchanges pause that and run an auction on a book like 3.2.2's. 2.9.1 gave you the market hours; here you compute the one price where the most volume trades.",
     hook: {
       prompt: "In a call auction everyone trades at one price. Which one?",
       control: {
@@ -1301,6 +1316,7 @@ const L328: Lesson = {
         "Offset an imbalance with a limit at the indicative price or better; don't add to it.",
         "Index funds trade the close; halted markets reopen by auction, and stops fill at that price.",
       ],
+      next: "Next: the 3.2 checkpoint, then unit 3.3, Order flow, which reads the same book in motion, starting with the tape.",
     },
   },
 };
@@ -2412,4 +2428,20 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
-export const UNIT_3_2: UnitContent = { lessons: [L321, L322, L323, L324, L325, L326, L327, L328], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_3_2: UnitContent = {
+  intro: {
+    summary: "Unit 3.1 inferred resting orders from the chart; here the book becomes visible. You see how venues match orders, read L1 to L3 depth, quote as a market maker, find your place in the queue, pick order types, and follow who fills you at a broker, through US routing and in auctions. All of it is mechanics, not prediction.",
+    outcomes: [
+      "Classify a market as order-driven, quote-driven, brokered or hybrid, and name your counterparty.",
+      "Read L1 and L2 depth, and compute the average fill of an order that walks the book.",
+      "Split a market maker's P&L into spread captured, adverse selection and inventory.",
+      "Predict queue fills under FIFO and pro-rata, and choose order types by what each gives up.",
+      "Read broker models, execution reports and auction messages, and compute an uncross price.",
+    ],
+    buildsOn: "Bid, ask and spread (1.1.1); fills, queues and walking the book (1.3.6); market hours (2.9.1); spreads at news (2.10.3); forex, CFDs and retail rules (2.14.3, 2.14.5, 2.14.8); resting orders and the x-ray (3.1.1).",
+  },
+  lessons: [L321, L322, L323, L324, L325, L326, L327, L328],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};

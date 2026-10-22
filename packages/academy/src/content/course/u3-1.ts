@@ -193,6 +193,7 @@ const L311: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.1",
+    bridge: "Level 2 closed with 2.14.8, the rules around your account. Level 3 looks under the chart. In 1.3.2 a touched stop became a market order; in 1.5.4 and 2.5.7 you marked levels and zones. Here the x-ray shows the orders resting there.",
     hook: {
       prompt: "LABX has ranged between 99.20 and 101.00 since candle 9. Where are most sell stops resting right now? Tap one of the five spots.",
       control: {
@@ -323,6 +324,7 @@ const L311: Lesson = {
         "Pools plausibly sit beyond range edges, swing extremes, prior-day highs and lows, and round numbers.",
         "Liquidity being there doesn't pull price there. 'Price is drawn to liquidity' is grade D.",
       ],
+      next: "Next, 3.1.2: Osler's bank data, the evidence for where stops and take-profits actually cluster.",
     },
   },
 };
@@ -350,6 +352,7 @@ const L312: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.2",
+    bridge: "In 3.1.1 the x-ray showed stop pools just beyond the range edges and under 100.00. Here is the evidence: Osler's bank orders, first seen in 1.5.5. Then 1.4.3 and 1.4.4 return: your stop goes outside the crowd, and the size shrinks to fit.",
     hook: {
       prompt: "A bank holds thousands of stop-loss buy orders near a round number, here LABX 100.00. Where do most of them sit?",
       control: {
@@ -483,6 +486,7 @@ const L312: Lesson = {
         "Take-profit clusters tend to stall price; triggered stop clusters tend to speed it up.",
         "Put your stop beyond the crowded band, then resize so the loss, costs included, fits the budget.",
       ],
+      next: "Next, 3.1.3: what happens when a stop cluster triggers, and how to tell a sweep from a breakout.",
     },
   },
 };
@@ -510,6 +514,7 @@ const L313: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.3",
+    bridge: "In 3.1.2 stop clusters sat just past round numbers. Here they trigger, and their fills walk a thin book into the next stops. 1.5.4 and 2.6.6 said wait for the close; 2.8.8 faded new highs. Now a written rule names sweeps and breakouts.",
     hook: {
       prompt: "LABX trades at 101.08, 0.08 above yesterday's high of 101.00. Candle 24 hasn't closed yet. Breakout or sweep, and how sure are you?",
       figure: {
@@ -650,6 +655,7 @@ const L313: Lesson = {
         "Sweep: back inside within one bar. Breakout: close beyond with follow-through. Decide only after the close.",
         "Write the invalidation and the size before acting. 'They hunted my stop' is a guess about intent.",
       ],
+      next: "Next, 3.1.4: equal highs, equal lows and the reference levels everyone plots, where stops plausibly gather.",
     },
   },
 };
@@ -677,6 +683,7 @@ const L314: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.4",
+    bridge: "In 3.1.3 you judged a break of yesterday's high. Here you define such levels by rule: equal highs within a tolerance in ATR (2.4.6), the double tops of 2.2.3, session highs and lows from 2.9. Then you test them against random levels.",
     hook: {
       prompt: "Two swing highs on LABX: 101.48 and 101.52. Equal highs or not?",
       figure: {
@@ -815,6 +822,7 @@ const L314: Lesson = {
         "Reference levels: prior-day and prior-week highs and lows, session highs and lows, the open, round numbers.",
         "Compare with random levels at the same distance. On R0, equal highs broke about as often.",
       ],
+      next: "Next, 3.1.5: imbalances, gaps and voids, and whether 'gaps fill' beats the random-walk base rate.",
     },
   },
 };
@@ -842,6 +850,7 @@ const L315: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.5",
+    bridge: "In 3.1.4 equal highs broke about as often as random levels on a random walk. Here the same test meets gaps: 2.5.6 named four kinds, and fast moves like 3.1.3's cascade leave three-candle gaps. Does 'gaps fill' beat 0.2.5's random walk?",
     hook: {
       prompt: "In a pure random walk, how often is a three-candle gap revisited within 20 candles?",
       control: {
@@ -966,6 +975,7 @@ const L315: Lesson = {
         "A three-candle gap: candle 1's high below candle 3's low, or the reverse. Measure it in ATR.",
         "On a random walk, gaps are revisited 83.4% of the time, random levels 83.5%. Mostly base rate.",
       ],
+      next: "Next, 3.1.6: supply and demand zones graded by written rules, locked before the session and tested against random zones.",
     },
   },
 };
@@ -995,6 +1005,7 @@ const L316: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.6",
+    bridge: "In 3.1.5 gaps were revisited about as often as random levels. Now the zones of 2.5.7: you grade them with written criteria, lock them before the session, and test the grades against random zones, as you tested 3.1.4's equal highs.",
     hook: {
       prompt: "Firms published support and resistance levels with 'strength' ratings. Did the strong levels hold more often than the weak ones?",
       control: {
@@ -1118,6 +1129,7 @@ const L316: Lesson = {
         "Test grades against random zones of the same width. Wide zones 'react' more just by being wide.",
         "Zones drawn after the session look better: hindsight inflated success here from 40% to 86%.",
       ],
+      next: "Next, 3.1.7: the traders caught in a failed breakout, where they exit, and why broken levels sometimes flip.",
     },
   },
 };
@@ -1145,6 +1157,7 @@ const L317: Lesson = {
   script: {
     unit: "3.1",
     courseId: "3.1.7",
+    bridge: "In 3.1.6 graded zones faced random ones. Here the x-ray returns to a failed breakout, like 2.6.6's traps and 3.1.3's sweeps: the trapped traders' size, average price and exits. 1.5.6's role reversal gets a mechanism, and 1.7.2's loss aversion becomes order flow.",
     hook: {
       prompt: "LABX broke above 101.00, then failed. Buyers who entered at 101.05–101.15 watched price fall to 100.40. Now it's back at 100.92 and rising. What do many of them do near break-even?",
       figure: {
@@ -1286,6 +1299,7 @@ const L317: Lesson = {
         "Trapped traders exit at their stops, speeding the move, and at break-even, which can stall a retest.",
         "Role reversal through break-even exits is plausible but mixed: grade C. Compare retests with random levels.",
       ],
+      next: "Next: the 3.1 checkpoint, then unit 3.2, Market microstructure, where the order book behind the x-ray becomes visible.",
     },
   },
 };
@@ -1987,4 +2001,20 @@ const CONCEPTS: Concept[] = [
 ];
 
 /** Unit 3.1 · Liquidity and stops (docs/learn/course). Lessons, their check questions, and the terms and concepts they introduce. */
-export const UNIT_3_1: UnitContent = { lessons: [L311, L312, L313, L314, L315, L316, L317], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_3_1: UnitContent = {
+  intro: {
+    summary: "Level 2 ended with 2.14's instruments and rules; Level 3 looks under the chart. Chart 'liquidity' becomes what it is: resting limits, take-profits and stops. You see where they plausibly cluster, how triggered stops cascade, and how to call a sweep or a breakout after the close. Gaps, zones and trapped traders face random levels.",
+    outcomes: [
+      "Name the resting orders behind chart liquidity, and mark where they plausibly cluster before the reveal.",
+      "Place your stop outside the crowded band past a round number, then resize so the loss fits.",
+      "Classify a break as a sweep or a breakout only after the close, with invalidation and size written first.",
+      "Define equal highs, gaps and zones by written rules, and test them against random levels.",
+      "Read trapped traders' size, average price and exits after a failed breakout.",
+    ],
+    buildsOn: "Stops becoming market orders (1.3.2); stops and sizing (1.4.3, 1.4.4); levels, round numbers and failed breakouts (1.5.4–1.5.6); volume profile, gaps and zones (2.5.4–2.5.7); traps (2.6.6); failed breakouts (2.8.8); the random walk (0.2.5).",
+  },
+  lessons: [L311, L312, L313, L314, L315, L316, L317],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};
