@@ -166,6 +166,7 @@ const L_4_1_1: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.1",
+    bridge: "Level 3 closed with 3.14.8, where rate surprises reached futures and options. Level 4 starts with options. In 3.8.7 IV crush sank a call after earnings; in 1.4.1 you fixed your loss before entry. Here a premium buys a right and caps the buyer's loss.",
     hook: {
       prompt: "You pay 2.86 for a 30-day LABX call with strike 100. At expiry LABX is at 102.00. Did you make money?",
       control: {
@@ -272,6 +273,7 @@ const L_4_1_1: Lesson = {
         "Calls are in the money with the strike below the price, puts above. Only they have intrinsic value.",
         "Premium = intrinsic + extrinsic: the put 105 at 6.08 is 5.00 + 1.08.",
       ],
+      next: "Next, 4.1.2: the four building blocks, long and short calls and puts, each with its breakeven and worst case.",
     },
   },
 };
@@ -299,6 +301,7 @@ const L_4_1_2: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.2",
+    bridge: "In 4.1.1 you bought the right and split its premium into intrinsic and extrinsic value. Now the writer's side: collect the premium, carry the obligation. Long and short calls and puts are four building blocks, each with a breakeven and worst case.",
     hook: {
       prompt: "The 100-strike LABX call and put cost 2.86 a unit; a contract is 10 units. Which positions can lose more than 900 vUSD on one contract?",
       control: {
@@ -416,6 +419,7 @@ const L_4_1_2: Lesson = {
         "Breakeven: long call = strike + premium, 102.86; long put = strike − premium, 97.14.",
         "Exercise uses the right; assignment enforces the obligation. American any day, European only at expiry.",
       ],
+      next: "Next, 4.1.3: put-call parity, which ties these four blocks to LABX and cash, so any one can be built from the others.",
     },
   },
 };
@@ -443,6 +447,7 @@ const L_4_1_3: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.3",
+    bridge: "In 4.1.2 you drew the four payoffs one at a time. Here they combine: a long call plus a short put copies owning LABX. Put-call parity prices that link, and the spread and commission from 1.1.4 decide whether a small gap is worth trading.",
     hook: {
       prompt: "The 100-strike LABX call and put both expire in 30 days. LABX is at 100.00 and rates are zero. The call costs 2.86. What should the put cost?",
       control: {
@@ -562,6 +567,7 @@ const L_4_1_3: Lesson = {
         "Long call plus short put copies owning LABX; a covered call copies a cash-secured put.",
         "A 0.36 parity gap left 0.11 after costs, and a loss with wide spreads.",
       ],
+      next: "Next, 4.1.4: what sets an option's price, and why volatility is the one input you have to guess.",
     },
   },
 };
@@ -589,6 +595,7 @@ const L_4_1_4: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.4",
+    bridge: "In 4.1.3 parity priced the put from the call, not the call itself. Black–Scholes does, from five inputs. Four are known; the fifth is volatility, measured in 2.4.6 and scaled by √time in 3.10.2. The fat tails of 3.10.1 show where the model breaks.",
     hook: {
       prompt: "The 30-day, 100-strike LABX call costs 2.86 with LABX at 100.00. Which pair of changes would make it more expensive?",
       control: {
@@ -717,6 +724,7 @@ const L_4_1_4: Lesson = {
         "At the money, price ≈ 0.4 × S × σ × √T: 2.87 against the model's 2.86.",
         "The model assumes no jumps and constant volatility; real markets gap and skew.",
       ],
+      next: "Next, 4.1.5: delta and gamma, how much the option moves when LABX does, and how fast that changes.",
     },
   },
 };
@@ -744,6 +752,7 @@ const L_4_1_5: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.5",
+    bridge: "In 4.1.4 you priced the call at one LABX price. Now LABX moves. Delta says how much the call follows it: exposure, as in 1.4.7, counted in LABX units; gamma says how fast that exposure changes as the price moves.",
     hook: {
       prompt: "LABX rises 1.00, from 100.00 to 101.00. Roughly how much does the 30-day 100-strike call, now at 2.86, gain?",
       control: {
@@ -873,6 +882,7 @@ const L_4_1_5: Lesson = {
         "Hedge = contracts × 10 × delta: 10 calls at 0.514 need 51 LABX short.",
         "Gamma peaks at the money near expiry: 0.30 with one day left, 0.056 with 30.",
       ],
+      next: "Next, 4.1.6: theta and vega, what time and implied volatility do to the same call while you wait.",
     },
   },
 };
@@ -900,6 +910,7 @@ const L_4_1_6: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.6",
+    bridge: "In 4.1.5 you hedged the delta of 10 calls with 51 LABX short. The hedge still pays rent: theta charges every day, and vega reprices the call when implied volatility moves. Realised volatility, measured in 2.4.6, decides whether gamma earns that rent back.",
     hook: {
       prompt: "You own the 30-day 100-call at 2.86. Tomorrow LABX rises 2.00, but implied volatility drops 3 points. What happens to the call?",
       control: {
@@ -1008,6 +1019,7 @@ const L_4_1_6: Lesson = {
         "A day's P&L ≈ delta + gamma + theta + vega terms: 1.03 + 0.11 − 0.05 − 0.34.",
         "A hedged long option breaks even at the implied daily move, 1.31: realised must beat implied.",
       ],
+      next: "Next, 4.1.7: implied volatility itself, how it varies by strike and expiry, and the move a straddle prices.",
     },
   },
 };
@@ -1031,6 +1043,7 @@ const L_4_1_7: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.7",
+    bridge: "In 4.1.6 implied volatility moved the call through vega. Here you back it out of the price and map it across strikes and expiries. In 3.8.7 a straddle gave an implied move and 3.9.3 read the VIX; both are built on it.",
     hook: {
       prompt: "LABX reports tomorrow. With LABX at 100.00, the 7-day at-the-money straddle costs 6.62. What move is the market pricing in, in %?",
       control: {
@@ -1147,7 +1160,7 @@ const L_4_1_7: Lesson = {
           { id: "d180", label: "180 days, 23.6%", index: 10, price: 23.6, feedback: "Over 180 days one event barely shows: 23.6%." },
         ],
         answer: "d14",
-        correct: "Right. The 14-day expiry is the first after the event: 37.7%. Later expiries hold the same event, diluted over more days. That bump is [[event-volatility|event volatility]].",
+        correct: "Right. The 14-day expiry is the first after the event: 37.7%. Later expiries hold the same event, diluted over more days. That bump, the extra implied volatility a scheduled event adds, is [[event-volatility|event volatility]].",
         concept: "volatility-surface",
       },
       {
@@ -1181,6 +1194,7 @@ const L_4_1_7: Lesson = {
         "Skew: downside puts carry higher IV. Term structure rises when calm and inverts in crises.",
         "Implied move ≈ straddle ÷ price: 6.62 on 100.00 prices about ±6.6%.",
       ],
+      next: "Next, 4.1.8: the first structures, LABX plus options: covered calls, protective puts and collars.",
     },
   },
 };
@@ -1208,6 +1222,7 @@ const L_4_1_8: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.8",
+    bridge: "In 4.1.7 you read prices; now you use them. In 1.3.7 a gap carried a stop past its level; a put fixes the exit price in advance. LABX plus 4.1.2's blocks, linked by 4.1.3's parity, gives three structures, each with a home regime from 2.8.1.",
     hook: {
       prompt: "You hold LABX bought at 100.00. Overnight it gaps to 88.00. Your stop was at 95.00; a 95-strike put would have cost 0.97. Which protected you better?",
       control: {
@@ -1336,6 +1351,7 @@ const L_4_1_8: Lesson = {
         "Through a gap to 88.00 the put held the loss at 5.97; the stop lost about 12.00.",
         "Covered calls suit ranges, puts suit gaps and events, and stock alone wins a strong rally.",
       ],
+      next: "Next, 4.1.9: vertical spreads, two options of one type that cap both the loss and the gain.",
     },
   },
 };
@@ -1363,6 +1379,7 @@ const L_4_1_9: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.9",
+    bridge: "In 4.1.8 an option sat on top of LABX. A vertical spread pairs two calls or two puts, capping both loss and gain. In 1.4.5 expectancy needed the size of wins and losses, not just the rate; here a high win rate faces that test.",
     hook: {
       prompt: "A credit spread wins about 4 times out of 5 at expiry. Is it a good trade?",
       control: {
@@ -1487,6 +1504,7 @@ const L_4_1_9: Lesson = {
         "Winning 79% of the time, with 0.76 wins and 4.24 losses, averages about zero.",
         "Size from the maximum loss: 100.00 ÷ 17.80 gives 5 bull call contracts.",
       ],
+      next: "Next, 4.1.10: straddles and strangles, which buy movement in either direction, and the event trap.",
     },
   },
 };
@@ -1514,6 +1532,7 @@ const L_4_1_10: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.10",
+    bridge: "In 4.1.9 every spread needed a direction. A straddle needs only a big move, either way. In 3.7.6 a pending-order straddle got whipsawed; in 3.8.7 IV crush hit a call. Here theta, vega and the implied move of 4.1.6 and 4.1.7 price the options version.",
     hook: {
       prompt: "LABX reports tomorrow. You expect a big move, direction unknown, and buy the 7-day straddle for 6.62. The day after, LABX is up 4%. Do you profit?",
       control: {
@@ -1626,6 +1645,7 @@ const L_4_1_10: Lesson = {
         "After the IV crush, a 4% move left the straddle at −2.27: right on movement, still a loss.",
         "Buy movement only when your expected move beats the implied move; otherwise, no trade.",
       ],
+      next: "Next, 4.1.11: the seller's side, getting paid for the volatility risk premium, and the crash risk that comes with it.",
     },
   },
 };
@@ -1653,6 +1673,7 @@ const L_4_1_11: Lesson = {
   script: {
     unit: "4.1",
     courseId: "4.1.11",
+    bridge: "In 4.1.10 the straddle buyer lost when the move fell short of the implied one. Here you take the seller's side. In 3.10.1 option selling showed rare, big losses, and 3.12.5 defined ruin; 4.1.9's capped spreads and a stress test now decide the size.",
     hook: {
       prompt: "A strategy made money in 22 of the last 24 months, with tiny losses. What is the most likely hidden risk?",
       control: {
@@ -1789,6 +1810,7 @@ const L_4_1_11: Lesson = {
         "A short straddle's loss is open-ended; an iron condor caps it at 3.48 a unit.",
         "Size short volatility from a stress loss: one straddle lost 192.80 in a −25% gap.",
       ],
+      next: "Next: the 4.1 checkpoint, then unit 4.2, Execution and market impact, where your own orders move the price.",
     },
   },
 };
@@ -3194,6 +3216,17 @@ const CONCEPTS: Concept[] = [
 ];
 
 export const UNIT_4_1: UnitContent = {
+  intro: {
+    summary: "Level 3 ended with 3.14's futures, crypto and bonds, where one rate surprise reached options too. Level 4 opens with options as risk contracts, not lottery tickets: payoffs and parity, what sets the price, the Greeks and implied volatility, then structures, each with its maximum loss, maximum gain, breakeven and the regime where it fits.",
+    outcomes: [
+      "Compute an option's breakeven, maximum loss and maximum gain at expiry before you place the order.",
+      "Price a missing option with put-call parity, build a synthetic position, and check the gap after costs.",
+      "Estimate a day's option P&L from delta, gamma, theta and vega, and hedge the delta in LABX.",
+      "Read implied volatility, skew and the implied move, and buy movement only when your expected move beats it.",
+      "Choose a defined-risk structure for the regime, or no trade, and size it from its maximum or stress loss.",
+    ],
+    buildsOn: "Risk, R and leverage (1.4.1, 1.4.7); ATR and volatility (2.4.6); regimes (2.8.1); event straddles (3.7.6); implied move and IV crush (3.8.7); the VIX (3.9.3); fat tails and √time (3.10.1, 3.10.2); risk of ruin (3.12.5); futures expiry (3.14.2).",
+  },
   lessons: [L_4_1_1, L_4_1_2, L_4_1_3, L_4_1_4, L_4_1_5, L_4_1_6, L_4_1_7, L_4_1_8, L_4_1_9, L_4_1_10, L_4_1_11],
   questions: QUESTIONS,
   terms: TERMS,

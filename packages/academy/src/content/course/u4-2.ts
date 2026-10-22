@@ -180,6 +180,7 @@ const L421: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.1",
+    bridge: "In 4.1.11 you sized short volatility from a stress loss. Now you price the trading itself. In 1.3.7 slippage needed a reference price; in 3.2.2 a big order walked the book. Here every cost, even units never filled, counts from your decision price.",
     hook: {
       prompt: "You decided to buy 50,000 LABX at 100.00. You filled 40,000 at an average of 100.18 and the price closed at 101.00 before you got the rest. What cost you most?",
       control: {
@@ -338,6 +339,7 @@ const L421: Lesson = {
         "Split it into delay, half spread, impact, commission and the opportunity cost of unfilled units.",
         "Divide the total by the intended trade's value: 19,203.60 on 5,000,000.00 is 38.4 bps.",
       ],
+      next: "Next, 4.2.2: market impact, the biggest cost of a large order, and the square-root law that estimates it.",
     },
   },
 };
@@ -363,6 +365,7 @@ const L422: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.2",
+    bridge: "In 4.2.1 impact was one slice of the shortfall, measured afterwards. Here you estimate it first. In 3.2.2 a big order walked a thin book; even spread over a day, buying moves the price, growing with the square root of your share of volume.",
     hook: {
       prompt: "Buying 50,000 LABX costs about 32 bps in market impact. You quadruple the order to 200,000. How many times larger is the impact per unit?",
       control: {
@@ -514,6 +517,7 @@ const L422: Lesson = {
         "Square-root law: impact ≈ σ × √(Q ÷ V). With σ 2%, 1% of volume costs 20 bps.",
         "Twice the size costs √2 more per unit, so about 2.8 times more in total.",
       ],
+      next: "Next, 4.2.3: execution algorithms, which slice a large order to cut impact, at the price of timing risk.",
     },
   },
 };
@@ -536,6 +540,7 @@ const L423: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.3",
+    bridge: "In 4.2.2 a bigger order cost more per unit, so you slice it. The algorithms use tools you know: VWAP, the execution benchmark from 2.5.3, and the U-shaped volume curve from 2.9.3. Each trades impact against the timing risk behind 4.2.1's unfilled units.",
     hook: {
       prompt: "You must buy 50,000 LABX today; the market trades 2,000,000. Which plan pays the most market impact?",
       control: {
@@ -690,6 +695,7 @@ const L423: Lesson = {
         "Faster means more impact; slower means more timing risk. No plan wins on both.",
         "Choose by benchmark, urgency and liquidity, and cap the price so an algorithm can't chase.",
       ],
+      next: "Next, 4.2.4: latency and HFT, the fast traders on the other side while your orders rest in the book.",
     },
   },
 };
@@ -715,6 +721,7 @@ const L424: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.4",
+    bridge: "In 4.2.3 algorithms left child orders resting for hours. In 3.2.3 a resting limit was a free option for other traders, and on 3.3.2's DOM displayed size vanished with one cancel. Here speed decides who uses that option when news lands.",
     hook: {
       prompt: "Your limit buy rests at 100.00. News moves fair value to 99.80. Your platform needs 150 ms to cancel; a fast trader reacts in under a millisecond. What happens?",
       control: {
@@ -828,6 +835,7 @@ const L424: Lesson = {
         "SEC traits of HFT: fast programs, co-location, short holds, many cancels, flat at day's end.",
         "You can't win the race: cancel or expire resting orders before scheduled news.",
       ],
+      next: "Next, 4.2.5: halts, limit up–limit down and circuit breakers, when trading itself stops and order rules change.",
     },
   },
 };
@@ -853,6 +861,7 @@ const L425: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.5",
+    bridge: "In 4.2.4 speed decided who got filled. In a crash, trading stops. In 1.3.3 a triggered stop filled at market past a gap, 3.2.8 said halted markets reopen by auction, and 3.7.8 showed tail events. Here are the halt rules and where stops fill.",
     hook: {
       prompt: "LABX is halted at 90.00 after a fast drop. Your stop-loss sits at 89.50. It reopens at 84.00. Where does your stop fill?",
       control: {
@@ -993,6 +1002,7 @@ const L425: Lesson = {
         "After a halt, a stop triggers at the reopening auction price, however far from its level.",
         "A sell limit caps your exit price in the auction, but you may not get filled.",
       ],
+      next: "Next, 4.2.6: fixes, expiries and crowded clocks, scheduled moments when volume surges for mechanical reasons.",
     },
   },
 };
@@ -1018,6 +1028,7 @@ const L426: Lesson = {
   script: {
     unit: "4.2",
     courseId: "4.2.6",
+    bridge: "In 4.2.5 stress forced an auction. Other crowds are scheduled: the sessions of 2.9.1, the closing auction of 3.2.8, the futures expiries of 3.14.2. Here those clocks meet 4.1.5's gamma, which can pin prices near big strikes at expiry.",
     hook: {
       prompt: "At 16:00 London, LABC (FX) volume jumps five-fold for five minutes, then fades. What is it?",
       control: {
@@ -1130,6 +1141,7 @@ const L426: Lesson = {
         "Near expiry, prices can pin to strikes with big open interest; test it against a noise band.",
         "A clock-driven volume spike is flow that had to trade, not a signal of direction.",
       ],
+      next: "Next: the 4.2 checkpoint, then unit 4.3, Professional validation, which asks whether your best backtest was luck.",
     },
   },
 };
@@ -1875,4 +1887,20 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
-export const UNIT_4_2: UnitContent = { lessons: [L421, L422, L423, L424, L425, L426], questions: QUESTIONS, terms: TERMS, concepts: CONCEPTS };
+export const UNIT_4_2: UnitContent = {
+  intro: {
+    summary: "In 1.1 and 1.3 cost meant spread, commission and slippage; in 3.2 you read the book that fills you. Now you are the liquidity being consumed. You measure execution from the decision price, estimate impact with the square-root law, choose an algorithm, and see how halts, auctions, fixes and expiries change the order rules.",
+    outcomes: [
+      "Split an execution's cost into delay, spread, impact, commission and unfilled units, in basis points.",
+      "Estimate market impact from order size, daily volume and volatility with the square-root law.",
+      "Choose TWAP, VWAP, POV or IS by urgency, benchmark and liquidity, with a price cap.",
+      "Pull resting orders before scheduled news, when faster traders fill stale quotes first.",
+      "Predict where a stop fills after a halt, and tell clock-driven volume at fixes and expiries from a signal.",
+    ],
+    buildsOn: "Costs (1.1.4) and slippage (1.3.7); VWAP (2.5.3); the intraday U (2.9.3); the book, market makers, queues and auctions (3.2.2–3.2.8); the DOM and spoofing (3.3.2, 3.3.7); tail events (3.7.8); futures expiry (3.14.2); gamma (4.1.5).",
+  },
+  lessons: [L421, L422, L423, L424, L425, L426],
+  questions: QUESTIONS,
+  terms: TERMS,
+  concepts: CONCEPTS,
+};
