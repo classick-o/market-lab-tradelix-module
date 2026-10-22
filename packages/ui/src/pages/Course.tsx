@@ -22,6 +22,7 @@ import {
   type CourseUnit,
   type MasteryLevel,
 } from "@market-lab/academy";
+import { SubNav } from "../components/Page";
 import { Dialog, Icon, cx } from "../components/ui";
 import { formatDayKey } from "../format";
 import { useProgress } from "../progress";
@@ -199,6 +200,8 @@ export function CoursePage({ unitId }: { unitId?: string }) {
           </div>
         </div>
       </header>
+
+      <SubNav module="learn" />
 
       <section className="ml-course-today" aria-label="Today">
         <Link to={due.length ? "/learn/practice/review" : "/learn/practice"} className="ml-stat-card ml-course-today-card">
