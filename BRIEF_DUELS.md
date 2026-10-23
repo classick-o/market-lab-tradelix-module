@@ -1,7 +1,7 @@
 # MARKET//LAB · Duels: brief și analiză
 
 **Data:** 23 octombrie 2026
-**Stadiu:** analiza inițială. Deciziile luate pe 23.10.2026 și planul fazei D1 sunt în [PLAN_DUELS.md](PLAN_DUELS.md): boții sunt declarați, iar tranzacțiile botului se văd pe grafic și într-un panou „Tu vs bot” (spre deosebire de §1.4 de mai jos).
+**Stadiu:** analiza inițială. Deciziile luate pe 23.10.2026 și planul fazei D1 sunt în [PLAN_DUELS.md](PLAN_DUELS.md): boții sunt declarați, tranzacțiile botului se văd pe grafic și într-un panou „Tu vs bot” (spre deosebire de §1.4 de mai jos), iar duelul e o piață continuă, nu pe runde (spre deosebire de §1.2).
 **Ce acoperă:** cum ar arăta duelurile 1v1 în Trading Arena, cum ar prinde la utilizatori, duelurile împotriva boților, cum poate un bot să țină utilizatorul în simulator și ce presupune dezvoltarea.
 
 ---
