@@ -1,4 +1,4 @@
-import type { CandleData, ChartLayer, ChartSpec, Concept, GlossaryTerm, Lesson, Question, TaskData, UnitContent } from "../../types";
+import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, TaskSpec, UnitContent } from "../../types";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -12,37 +12,6 @@ interface Book {
   buyers: number[];
   sellers: number[];
 }
-
-function willing(book: Book, price: number) {
-  const buyers = book.buyers.filter((x) => x >= price - 1e-9).length;
-  const sellers = book.sellers.filter((x) => x <= price + 1e-9).length;
-  return { buyers, sellers, units: Math.min(buyers, sellers) };
-}
-
-const many = (n: number, one: string, more: string) => `${n} ${n === 1 ? one : more}`;
-
-/** Slider feedback for every price on the grid, counted from the book (no hand-typed counts). */
-function auctionFeedback(book: Book, from: number, to: number, step: number, best: number) {
-  const n = Math.round((to - from) / step);
-  return Array.from({ length: n + 1 }, (_, i) => {
-    const p = round2(from + i * step);
-    const w = willing(book, p);
-    const head = `At ${p2(p)}, ${many(w.buyers, "buyer", "buyers")} will pay that much and ${many(w.sellers, "seller", "sellers")} will accept it: ${many(w.units, "unit trades", "units trade")}.`;
-    const tail = Math.abs(p - best) < 1e-9 ? " No other price clears more." : w.buyers > w.sellers ? " Sellers are the short side here: try a higher price." : w.buyers < w.sellers ? " Buyers are the short side here: try a lower price." : "";
-    return { from: p, to: p, text: head + tail };
-  });
-}
-
-/** Book charts: buyers in the left column, sellers in the right, the last trade as a dash in the middle. */
-const buyMarks = (prices: number[]): ChartLayer[] => prices.map((p) => ({ kind: "marker", index: 0, price: p, label: `BUY ${p2(p)}`, role: "up" }));
-const sellMarks = (prices: number[]): ChartLayer[] => prices.map((p) => ({ kind: "marker", index: 2, price: p, label: `SELL ${p2(p)}`, role: "down" }));
-const bookChart = (layers: ChartLayer[], describe: string): ChartSpec => ({
-  candles: [flat(100), flat(100), flat(100)],
-  layers,
-  range: [99.6, 100.4],
-  height: 320,
-  describe,
-});
 
 /** Card-sort on the bias-spotter widget: a wrong pick explains that option, then the card's clue. */
 interface SortCard {
@@ -76,9 +45,25 @@ const BOOK_A_LEFT: Book = { buyers: [99.95, 99.8], sellers: [100.05, 100.25] };
 /** Try: 50.20 clears 3 units; 50.10 and 50.30 clear 2. */
 const BOOK_TRY: Book = { buyers: [50.4, 50.3, 50.2, 50.1], sellers: [50.0, 50.1, 50.2, 50.5] };
 
-const BOOK_A_DESCRIBE =
-  "An order book. Left column, buyers paying at most 100.30, 100.20, 100.00, 99.95 and 99.80. Right column, sellers accepting at least 99.70, 99.85, 100.00, 100.05 and 100.25. A dash in the middle marks the last trade, 100.00.";
-const BOOK_LEFT_DESCRIBE = "After the auction: buyers left at 99.95 and 99.80, sellers left at 100.05 and 100.25. A dash in the middle marks the last trade, 100.00.";
+/** The auction-book task: drag one price for everyone and find where the most units trade. */
+function clearTask(book: Book, start: number, best: number, goal: string): TaskSpec {
+  return {
+    widget: "auction-book",
+    goal,
+    data: { auction: { ...book, step: 0.05, mode: "clear" } },
+    start: { price: start },
+    success: { field: "atBest", eq: true },
+    feedback: [
+      { when: { field: "short", eq: "sellers" }, text: "At {price:2}, {buyers} buyers would pay but only {sellers} sellers accept, so {units} trade. A higher price brings in more sellers." },
+      { when: { field: "short", eq: "buyers" }, text: "At {price:2}, {sellers} sellers would accept but only {buyers} buyers pay, so {units} trade. A lower price brings in more buyers." },
+      { when: { field: "short", eq: "none" }, text: "Both sides match at {units}, but another price trades more. Keep looking." },
+    ],
+    correct: "Right: at {price:2}, {buyers} buyers and {sellers} sellers agree, so {units} units trade, more than at any other price. That price becomes the last trade.",
+    hints: ["Units traded is the smaller of the two counts.", "A higher price brings in sellers and loses buyers. Look for where the two counts meet.", `Compare the bars around ${p2(best)}.`],
+    showMe: { price: best },
+    concept: "market-as-auction",
+  };
+}
 
 // ─── 0.1.2 data ─────────────────────────────────────────────────────────────
 
@@ -350,42 +335,26 @@ const L011: Lesson = {
         concept: "market-as-auction",
       },
       {
-        kind: "predict",
+        kind: "task",
         title: "Run the auction",
-        prompt: "Everyone trades at one price. Slide it: where do the most units change hands?",
-        control: { kind: "slider", min: 99.7, max: 100.3, step: 0.05, start: 99.7, answer: 100.0, tolerance: 0, feedback: auctionFeedback(BOOK_A, 99.7, 100.3, 0.05, 100.0) },
-        figure: {
-          kind: "chart",
-          chart: bookChart([...buyMarks(BOOK_A.buyers), ...sellMarks(BOOK_A.sellers)], BOOK_A_DESCRIBE),
-          steps: [{ text: "At 100.00, three buyers and three sellers agree: 3 units trade.", layers: [{ kind: "level", price: 100.0, role: "concept", chip: true }] }],
-        },
-        reveal: "At each price, count the buyers who would pay it and the sellers who would accept it. Units traded is the smaller count. At 100.00 both counts are 3; at 99.95 or 100.05 only 2 units can trade. That price becomes the last trade.",
-        concept: "market-as-auction",
+        task: clearTask(BOOK_A, 99.7, 100.0, "Everyone trades at one price. Drag the price line up and down and find the price where the most units change hands."),
       },
       {
-        kind: "figure",
+        kind: "task",
         title: "What's left after the auction",
-        text: "The spread you'll pay on every LABX trade is this gap: the space between the best buyer and the best seller still waiting.",
-        figure: {
-          kind: "chart",
-          chart: bookChart([...buyMarks(BOOK_A_LEFT.buyers), ...sellMarks(BOOK_A_LEFT.sellers)], BOOK_LEFT_DESCRIBE),
-          steps: [
-            { text: "Three units traded at 100.00. Still waiting: buyers at 99.95 and 99.80, sellers at 100.05 and 100.25." },
-            {
-              text: "The best [[bid]], 99.95, is the highest buyer left. The best [[ask]], 100.05, is the lowest seller.",
-              layers: [
-                { kind: "level", price: 99.95, role: "neutral" },
-                { kind: "level", price: 100.05, role: "neutral" },
-              ],
-            },
-            {
-              text: "The gap, 0.10, is the [[spread]]. Its middle, 100.00, is the mid that LABX charts draw.",
-              layers: [
-                { kind: "bracket", from: 99.95, to: 100.05, index: 1, label: "SPREAD 0.10" },
-                { kind: "level", price: 100.0, role: "neutral" },
-              ],
-            },
+        task: {
+          widget: "auction-book",
+          goal: "Three units trade at 100.00 and leave the book. Tap the best bid, the highest buyer still waiting, and the best ask, the lowest seller.",
+          data: { auction: { ...BOOK_A, step: 0.05, mode: "spread", cleared: 100.0 } },
+          success: { all: [{ field: "bidRight", eq: true }, { field: "askRight", eq: true }] },
+          feedback: [
+            { when: { field: "bidRight", eq: false }, text: "{bidPick:2} isn't the best bid. The best [[bid]] is the highest price a buyer still waiting will pay." },
+            { when: { field: "askRight", eq: false }, text: "{askPick:2} isn't the best ask. The best [[ask]] is the lowest price a seller still waiting will accept." },
           ],
+          correct: "Right: the best [[bid]] is {bestBid:2} and the best [[ask]] {bestAsk:2}. The gap, {spread:2}, is the [[spread]] you pay on every LABX trade; its middle, {mid:2}, is the mid that LABX charts draw.",
+          hints: ["A seller wants the buyer who pays most: that's the highest buyer left.", "A buyer wants the seller who asks least: that's the lowest seller left."],
+          showMe: { bidPick: 99.95, askPick: 100.05 },
+          concept: "market-as-auction",
         },
       },
       {
@@ -402,36 +371,26 @@ const L011: Lesson = {
           ],
           answer: "ask",
         },
-        figure: {
-          kind: "chart",
-          chart: bookChart(
-            [...buyMarks(BOOK_A_LEFT.buyers), ...sellMarks(BOOK_A_LEFT.sellers), { kind: "marker", index: 0, price: 100.2, label: "NEW BUY 100.20 ×2", role: "accent" }],
-            "The book after the auction, plus a new buyer for 2 units at up to 100.20. Sellers wait at 100.05 and 100.25.",
-          ),
-          steps: [
-            { text: "One unit trades at 100.05, the best ask. The last price rises to 100.05.", layers: [{ kind: "marker", index: 1, price: 100.05, label: "LAST 100.05", role: "accent" }] },
-            {
-              text: "The next seller wants 100.25, above the limit. The second unit waits as a bid at 100.20.",
-              layers: [
-                { kind: "level", price: 100.2, role: "neutral" },
-                { kind: "level", price: 100.25, role: "neutral" },
-              ],
-            },
-          ],
-        },
-        reveal: "The eager buyer took the seller's price, so the last price rose from 100.00 to 100.05. The unfilled unit now waits as the best bid, 100.20, against the best ask, 100.25.",
+        reveal: "A trade needs a seller's price, so the eager buyer pays the best ask. Send the order next and watch both units.",
         concept: "market-as-auction",
+      },
+      {
+        kind: "task",
+        title: "Send the eager buyer",
+        task: {
+          widget: "auction-book",
+          goal: "Send the new order, 2 units at up to 100.20, into the book and watch where each unit goes.",
+          data: { auction: { ...BOOK_A_LEFT, step: 0.05, mode: "incoming", cleared: 100.0, incoming: { units: 2, limit: 100.2 } } },
+          success: { field: "sent", eq: true },
+          correct: "One unit took the best ask, so the last price rose to {lastPrice:2}. The next seller wants {bestAsk:2}, above the 100.20 limit, so the second unit waits as the new best bid, {bestBid:2}.",
+          hints: ["The order takes sellers' prices, cheapest first, while they stay within its limit."],
+          showMe: { sent: true },
+          concept: "market-as-auction",
+        },
       },
       { kind: "callout", tone: "key", text: "Price moves when one side is in more of a hurry than the other. Nobody sets it; orders do." },
-      {
-        kind: "predict",
-        title: "Your turn: a new book",
-        prompt: "One unit per order. Buyers pay at most 50.40, 50.30, 50.20 and 50.10. Sellers accept at least 50.00, 50.10, 50.20 and 50.50. Set the price where the most units change hands.",
-        control: { kind: "slider", min: 50.0, max: 50.5, step: 0.05, start: 50.0, answer: 50.2, tolerance: 0, feedback: auctionFeedback(BOOK_TRY, 50.0, 50.5, 0.05, 50.2) },
-        reveal: "50.20: three buyers will pay it and three sellers will accept it, so 3 units trade. At 50.10 or 50.30 only 2 can. Count both sides, take the smaller.",
-        concept: "market-as-auction",
-      },
     ],
+    task: clearTask(BOOK_TRY, 50.0, 50.2, "A new book, one unit per order. Find the price where the most units change hands."),
     check: ["q-0.1.1-1", "q-0.1.1-2", "q-0.1.1-3"],
     recap: {
       takeaways: [

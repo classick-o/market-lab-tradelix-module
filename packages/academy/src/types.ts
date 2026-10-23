@@ -240,6 +240,24 @@ export interface TaskData {
   cards?: { id: string; text: string; answer: string; correct: string; rationales?: Record<string, string> }[];
   /** bias-spotter: the answer buttons, in order. */
   options?: { id: string; label: string }[];
+  /** auction-book: the book (one unit per order) and what the learner does with it. */
+  auction?: AuctionSpec;
+}
+
+export interface AuctionSpec {
+  /** Limit prices, one unit each: buyers pay at most theirs, sellers accept at least theirs. */
+  buyers: number[];
+  sellers: number[];
+  /** Price step of the ladder. */
+  step: number;
+  /**
+   * "clear": set one price for everyone and find where the most units trade;
+   * "spread": the book trades at `cleared`, then the learner taps the best bid and the best ask left;
+   * "incoming": the learner sends `incoming` into the book and watches it fill.
+   */
+  mode: "clear" | "spread" | "incoming";
+  cleared?: number;
+  incoming?: { units: number; limit: number };
 }
 
 /** One field a learner sets in a plan-fields beat (their own rules): a choice between values, or a stepper. */

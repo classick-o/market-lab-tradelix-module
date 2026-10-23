@@ -98,7 +98,12 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
     setHints((h) => h + 1);
     return true;
   };
-  const commitsItself = task.widget === "order-fill" || task.widget === "bias-spotter" || (task.widget === "level-drawer" && !!task.data?.breakout);
+  const commitsItself =
+    task.widget === "order-fill" ||
+    task.widget === "bias-spotter" ||
+    (task.widget === "level-drawer" && !!task.data?.breakout) ||
+    // Tapping the best bid and ask, or sending the order, is the answer.
+    (task.widget === "auction-book" && task.data?.auction?.mode !== "clear");
   useKeys({ h: hint, H: hint, Enter: () => (commitsItself ? false : check()) });
 
   return (

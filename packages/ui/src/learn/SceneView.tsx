@@ -134,11 +134,15 @@ export function SceneView({ b, onDone }: { b: SceneBeat; onDone: () => void }) {
     const h = handle.current;
     if (!h || stop !== null) return;
     const r = e.currentTarget.getBoundingClientRect();
-    const f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const raw = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    // The last sliver of the track is the end, so the end is easy to hit.
+    const f = raw > 0.98 ? 1 : raw;
     h.timeline.pause();
     setPlaying(false);
     h.timeline.seek(f * h.timeline.duration(), true);
     setEnded(f >= 1);
+    // Scrubbing to the end counts as watching it: seeking doesn't fire onComplete.
+    if (f >= 1) doneRef.current();
   };
 
   const answer = (i: number, v: string) => {

@@ -13,5 +13,6 @@ export * from "./success";
 export * from "./widgets";
 export * from "./expr";
 export * from "./widget-math";
+export * from "./auction";
 export * from "./lesson-scripts";
 export * from "./course";

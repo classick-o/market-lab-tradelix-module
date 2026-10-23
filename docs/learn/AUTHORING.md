@@ -69,6 +69,9 @@ script: {
 | `fields` | regulile și notițele proprii ale utilizatorului | `fields: PlanField[]` (`choice`, `stepper` sau `text` cu `placeholder` și `required`), `valid?`, `correct?`, `feedback?` |
 | `task` | un widget în mijlocul lecției | `task` |
 | `callout` | ideea-cheie sau un avertisment | `tone: key/warning/info`, `text` |
+| `scene` | o animație cu capitole, care se poate derula și care se oprește pe întrebări | `scene` (id din `SceneId`), `chapters[{title, caption ≤ 35 cuvinte}]`, `stops?[{prompt, choices, answer}]`, `text?` |
+
+**Animațiile (`scene`)** se desenează în `packages/ui/src/scenes/` (un timeline GSAP care poate fi derulat, în stilul HyperFrames). Conținutul dă doar textul. O animație nouă înseamnă cod nou acolo, deci se cere, nu se inventează. Prima: `auction-intro` (0.1.1).
 
 **Figuri** (`FigureSpec`): `chart` (`ChartSpec` + `steps[{text, layers?, visible?}]`), `formula` (`boxes[{text, answer?, unit?}]`, `operators`, `steps?`), `bars` (`bars[{label,value,role?}]`, `unit?`, `steps?`), `flow` (noduri `{id,text,kind?,yes?,no?,next?,correct?,explain?}`, `start`, `interactive?`).
 
@@ -95,6 +98,7 @@ Contractele sunt în `packages/academy/src/widgets.ts` (câmpurile pe care le po
 | `expectancy` | expectancy și seriile de pierderi | — |
 | `exposure` | expunere și levier | — |
 | `bias-spotter` | carduri: numești biasul | `cards`, `options` |
+| `auction-book` | o carte de ordine vie: `clear` (tragi prețul unic, histograma unităților se construiește din încercări), `spread` (perechile tranzacționează, apoi atingi best bid și best ask), `incoming` (trimiți un ordin și îl vezi executat) | `auction` (`buyers`, `sellers`, `step`, `mode`, `cleared?`, `incoming?`) |
 
 `TaskSpec`: `widget`, `goal` (≤ 40 de cuvinte), `start`, `locked?`, `hidden?`, `success` (condiție: `{all:[…]}`, `{any:[…]}`, `{not:…}`, `{field, eq|ne|gt|gte|lt|lte, tol?}`), `feedback?` (`[{when, text}]`, primul care se potrivește), `correct`, `incorrect?`, `hints` (1–3), `showMe`, `concept?`. Testul verifică pe cifrele reale ale widget-ului că `start` nu rezolvă task-ul și că `showMe` îl rezolvă.
 

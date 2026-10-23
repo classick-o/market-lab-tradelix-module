@@ -4,6 +4,7 @@
  * Money and prices go through integer cents with the simulator's own rules (packages/engine).
  */
 import { commission, riskAmount } from "@market-lab/engine";
+import { auctionAt, auctionBest, bestAsk, bestBid, bookAfter, fillBuy } from "./auction";
 import type { CandleData, TaskData } from "./types";
 
 export type WidgetState = Record<string, number | string | boolean>;
@@ -31,6 +32,7 @@ export const WIDGET_DEFAULTS: Record<string, WidgetState> = {
   expectancy: { winRate: 45, avgWin: 2, avgLoss: 1, runLength: 5 },
   exposure: { account: 10000, leverage: 1, position: 10000, move: 5 },
   "bias-spotter": {},
+  "auction-book": { price: 0, bidPick: 0, askPick: 0, sent: false },
 };
 
 // ─── Order fills (the engine's rules for a long or short entry) ───────────
@@ -338,6 +340,30 @@ export function computeWidget(widget: string, s: WidgetState, data: TaskData = {
     }
     case "bias-spotter":
       return { solved: num(s, "solved"), firstTry: num(s, "firstTry") };
+    case "auction-book": {
+      const a = data.auction;
+      if (!a) return {};
+      if (a.mode === "clear") {
+        const price = round(num(s, "price"), 2);
+        const at = auctionAt(a, price);
+        const best = auctionBest(a, a.step).units;
+        const short = at.buyers < at.sellers ? "buyers" : at.sellers < at.buyers ? "sellers" : "none";
+        return { price, ...at, best, atBest: best > 0 && at.units === best, short };
+      }
+      if (a.mode === "spread") {
+        const left = bookAfter(a, a.cleared ?? auctionBest(a, a.step).price);
+        const bid = bestBid(left);
+        const ask = bestAsk(left);
+        const bidPick = round(num(s, "bidPick"), 2);
+        const askPick = round(num(s, "askPick"), 2);
+        return { bestBid: bid, bestAsk: ask, spread: round(ask - bid, 2), mid: round((ask + bid) / 2, 3), bidRight: bidPick === bid, askRight: askPick === ask, picked: bidPick > 0 && askPick > 0 };
+      }
+      const order = a.incoming ?? { units: 1, limit: bestAsk(a) };
+      const sent = !!s.sent;
+      const r = fillBuy(a, order.units, order.limit);
+      const after = sent ? r.book : a;
+      return { sent, filled: sent ? r.fills.length : 0, lastPrice: sent && r.fills.length ? r.fills[r.fills.length - 1] : 0, rest: sent ? r.rest : 0, bestBid: bestBid(after), bestAsk: bestAsk(after) };
+    }
     default:
       return {};
   }

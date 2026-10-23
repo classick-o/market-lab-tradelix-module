@@ -1,0 +1,371 @@
+/* The auction-book widget (learn/AuctionBook.tsx): the same ladder, orders and colours as the scenes. */
+
+.ab {
+  --ab-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ab-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: radial-gradient(ellipse at 55% 40%, var(--ml-accent-soft), transparent 70%), var(--ml-surface);
+  font-family: var(--ml-font);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  touch-action: none;
+}
+.ab--clear .ab-svg {
+  cursor: ns-resize;
+}
+.ab-svg:focus-visible {
+  outline: 2px solid var(--ml-focus);
+  outline-offset: 2px;
+}
+
+/* Ladder */
+.ab-axis {
+  stroke: var(--ml-border-strong);
+  stroke-width: 1.5;
+}
+.ab-plabel rect {
+  fill: var(--ml-surface);
+}
+.ab-plabel text {
+  fill: var(--ml-text-3);
+  transition: fill var(--ml-d-micro) var(--ml-ease);
+}
+.ab-plabel.is-hot text {
+  fill: var(--ml-text);
+  font-weight: 600;
+}
+.ab-head {
+  fill: var(--ml-text-2);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.ab-head--buy {
+  fill: var(--ml-pos);
+}
+.ab-head--sell {
+  fill: var(--ml-neg);
+}
+.ab-head-sub {
+  fill: var(--ml-text-3);
+}
+
+/* Orders */
+.ab-chip {
+  transition:
+    transform 0.55s var(--ab-ease),
+    opacity 0.35s var(--ml-ease);
+}
+.ab-chip .ab-box {
+  stroke-width: 1;
+  transition:
+    fill 0.25s var(--ml-ease),
+    stroke 0.25s var(--ml-ease);
+}
+.ab-chip text {
+  fill: var(--ml-text);
+  font-weight: 500;
+}
+.ab-lead {
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.ab-chip--buy .ab-box {
+  fill: color-mix(in srgb, var(--ml-pos) 11%, var(--ml-surface));
+  stroke: color-mix(in srgb, var(--ml-pos) 55%, transparent);
+}
+.ab-chip--buy .ab-lead {
+  fill: var(--ml-pos);
+}
+.ab-chip--sell .ab-box {
+  fill: color-mix(in srgb, var(--ml-neg) 11%, var(--ml-surface));
+  stroke: color-mix(in srgb, var(--ml-neg) 55%, transparent);
+}
+.ab-chip--sell .ab-lead {
+  fill: var(--ml-neg);
+}
+.ab-halo {
+  fill: none;
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.25s var(--ml-ease);
+}
+/* Would trade, and has a partner on the other side */
+.ab-chip--buy.is-matched .ab-box {
+  fill: color-mix(in srgb, var(--ml-pos) 26%, var(--ml-surface));
+  stroke: var(--ml-pos);
+}
+.ab-chip--sell.is-matched .ab-box {
+  fill: color-mix(in srgb, var(--ml-neg) 26%, var(--ml-surface));
+  stroke: var(--ml-neg);
+}
+/* Would trade at this price, but the other side has run out */
+.ab-chip.is-waiting .ab-box {
+  stroke-dasharray: 4 3;
+}
+.ab-chip.is-waiting {
+  opacity: 0.75;
+}
+.ab-chip.is-out,
+.ab-chip.is-quiet {
+  opacity: 0.28;
+}
+/* Traded orders slide to the axis first, then go */
+.ab-chip.is-trading {
+  opacity: 0;
+  transition:
+    transform 0.55s var(--ab-ease),
+    opacity 0.35s 0.5s var(--ml-ease);
+}
+.ab-chip.is-gone {
+  opacity: 0;
+}
+.ab-chip.is-pickable {
+  cursor: pointer;
+}
+.ab-chip.is-pickable:hover .ab-halo,
+.ab-chip.is-pickable:focus-visible .ab-halo {
+  opacity: 0.45;
+}
+.ab-chip:focus {
+  outline: none;
+}
+.ab-chip.is-picked .ab-halo,
+.ab-chip.is-best .ab-halo,
+.ab-chip.is-hit .ab-halo {
+  opacity: 1;
+}
+.ab-chip.is-blocked .ab-halo {
+  stroke: var(--ml-neg);
+  opacity: 1;
+}
+.ab-incoming.is-ready .ab-halo {
+  animation: ab-ready 1.6s var(--ml-ease) infinite;
+}
+@keyframes ab-ready {
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* The price line (clear) */
+.ab-pline {
+  transition: transform 0.14s var(--ab-ease);
+  pointer-events: none;
+}
+.ab-pline line {
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.ab-pline rect {
+  fill: var(--ml-accent);
+}
+.ab-pline text {
+  fill: var(--ml-accent-ink);
+  font-weight: 700;
+}
+.ab-pline.is-solved line {
+  stroke-dasharray: none;
+}
+
+/* What each tried price traded */
+.ab-hist rect {
+  fill: var(--ml-border-strong);
+  transition: width 0.4s var(--ab-ease);
+}
+.ab-hist text {
+  fill: var(--ml-text-3);
+}
+.ab-hist.is-now rect {
+  fill: var(--ml-accent);
+}
+.ab-hist.is-now text {
+  fill: var(--ml-text);
+  font-weight: 600;
+}
+
+/* Trade prints, the cleared price, the spread */
+.ab-print {
+  opacity: 0;
+  transition: opacity 0.4s var(--ml-ease);
+}
+.ab-print.is-on {
+  opacity: 1;
+}
+.ab-print rect {
+  fill: var(--ml-surface-2);
+  stroke: var(--ml-accent-line);
+}
+.ab-print text {
+  fill: var(--ml-text);
+  font-weight: 600;
+}
+.ab-print.is-new rect {
+  animation: ab-flash 0.9s var(--ml-ease) both;
+}
+@keyframes ab-flash {
+  from {
+    fill: var(--ml-accent);
+  }
+}
+.ab-cleared {
+  stroke: var(--ml-accent);
+  stroke-width: 1.5;
+}
+.ab-spread rect {
+  fill: var(--ml-accent-soft);
+  stroke: var(--ml-accent-line);
+  animation: ab-in 0.5s var(--ab-ease) both;
+}
+.ab-spread text {
+  fill: var(--ml-accent-fg);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  animation: ab-in 0.5s 0.15s var(--ab-ease) both;
+}
+.ab-spread text.is-hidden {
+  display: none;
+}
+.ab-block circle {
+  fill: var(--ml-surface);
+  stroke: var(--ml-neg);
+  stroke-width: 1.5;
+}
+.ab-block path {
+  stroke: var(--ml-neg);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.ab-block {
+  animation: ab-in 0.35s var(--ab-ease) both;
+}
+.ab-burst circle {
+  fill: none;
+  stroke: var(--ml-accent);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ab-burst 0.7s var(--ml-ease) both;
+}
+.ab-burst text {
+  fill: var(--ml-accent-fg);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  animation: ab-rise 1.1s var(--ml-ease) both;
+}
+@keyframes ab-burst {
+  from {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes ab-rise {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+@keyframes ab-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The numbers under the book */
+.ab-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.ab-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-surface);
+}
+.ab-stat > span:first-child {
+  font-size: 12px;
+  color: var(--ml-text-2);
+}
+.ab-stat b,
+.ab-roll {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ml-text);
+}
+.ab-stat--buy b,
+.ab-stat--buy .ab-roll {
+  color: var(--ml-pos);
+}
+.ab-stat--sell b,
+.ab-stat--sell .ab-roll {
+  color: var(--ml-neg);
+}
+.ab-stat--units {
+  border-color: var(--ml-accent-line);
+}
+.ab-stat--units b,
+.ab-stat--units .ab-roll {
+  color: var(--ml-accent-fg);
+}
+.ab-stat.is-lit {
+  border-color: var(--ml-accent-line);
+  background: var(--ml-accent-soft);
+}
+.ab-roll {
+  display: inline-block;
+  animation: ab-pop 0.3s var(--ab-ease);
+}
+@keyframes ab-pop {
+  from {
+    transform: translateY(-4px);
+    opacity: 0.4;
+  }
+}
+.ab.is-narrow .ab-stat b,
+.ab.is-narrow .ab-roll {
+  font-size: 16px;
+}
+.ab.is-narrow .ab-stat > span:first-child {
+  font-size: 11px;
+}
+.ab-send {
+  display: flex;
+  justify-content: center;
+}
+
+.ml-reduced-motion .ab *,
+.ml-reduced-motion .ab-svg * {
+  transition: none !important;
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

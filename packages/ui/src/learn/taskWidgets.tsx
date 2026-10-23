@@ -10,6 +10,7 @@ import { Icon, cx } from "../components/ui";
 import { Bars, DraggableLevel, LearnChart } from "../kit";
 import { useKeys } from "./context";
 import { Feedback } from "./parts";
+import { AuctionBook } from "./AuctionBook";
 
 export interface TaskWidgetProps {
   task: TaskSpec;
@@ -807,4 +808,5 @@ export const TASK_WIDGETS: Record<string, ComponentType<TaskWidgetProps>> = {
   expectancy: Expectancy,
   exposure: Exposure,
   "bias-spotter": BiasSpotter,
+  "auction-book": AuctionBook,
 };
