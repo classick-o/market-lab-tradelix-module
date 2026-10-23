@@ -21,6 +21,7 @@ npm run dev        # http://localhost:5180
 | `npm run build` | Build de producție în `apps/standalone/dist` (paginile se încarcă pe bucăți, la cerere) |
 | `npm run content:generate` | Regenerează datele sintetice ale misiunilor (`packages/missions/data/scenarios.json`) |
 | `npm run content:inspect [M06]` | Joacă toate alternativele fiecărei misiuni și afișează scorul și rezultatul simulat |
+| `npm run bots:calibrate [seeds]` | Joacă fiecare bot de duel pe toate scenariile: scorul mediu, R, tranzacțiile și greșelile lui |
 
 ## Demo pe GitHub Pages (temporar)
 
@@ -43,7 +44,7 @@ Pe desktop: un **sidebar** persistent, care se poate colapsa. Are 6 destinații 
 |---|---|
 | Dashboard | – |
 | Missions | All Missions · Daily Challenges · Weekly Challenges · Assessments |
-| Trading Arena | Simulator · Scenarios · Virtual Portfolio · Risk Calculator |
+| Trading Arena | Simulator · Scenarios · Duels · Virtual Portfolio · Risk Calculator |
 | Trade Journal | Session History · Decision Journal · Trade Replay · Alternative Decisions · Performance Analytics |
 | Learn | Learning Paths · Lessons · Concept Library · Glossary · Knowledge Checks |
 | Achievements | Skill Profile · Levels & XP · Achievements · Learning Streaks · Milestones |
@@ -86,6 +87,10 @@ Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentr
     - ordine market și limit, stop și target;
     - jurnal opțional la confirmarea ordinului: motivul, planul de ieșire, starea;
     - istoricul ordinelor și sumarul sesiunii.
+  - **Duels:** 1v1 contra a 8 boți declarați, pe aceeași piață, în 8 runde de câte 10 lumânări:
+    - tranzacțiile botului se văd pe grafic și în panoul „You vs bot”, iar fiecare decizie a lui vine cu motivul ei;
+    - câștigă procesul: 70% decision quality, 30% rezultat în R;
+    - rating Elo, daily duel, Mirror (botul care joacă greșeala ta cea mai frecventă). Detalii în [PLAN_DUELS.md](PLAN_DUELS.md).
   - **Virtual Portfolio:** echitate, capital disponibil, expunere, risc deschis, curba echității, poziții închise.
   - **Risk Calculator:** calculul transparent al mărimii poziției, gratuit pe orice plan.
 - **Trade Journal:**
@@ -126,7 +131,7 @@ packages/
   scenario-gen/  generator de piețe sintetice: regimurile și cele 9 scenarii Arena
   evaluation/    evaluatori, Decision Quality Score și Risk Discipline Score (nu văd P&L-ul)
   learning/      profil de competențe, recomandări, reguli XP
-  missions/      misiunile, runtime-ul, scenariile Arena, alternativele what-if
+  missions/      misiunile, runtime-ul, scenariile Arena, alternativele what-if, duelurile și boții
   academy/       lecții, întrebări, concepte, glosar, trasee, realizări, streak-uri, provocări
   ui/            modulul React <MarketLab />: sidebar, router propriu, pagini, stiluri izolate
 apps/

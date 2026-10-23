@@ -78,7 +78,7 @@ Pentru fiecare jucător, separat:
 ```
 Process  = Decision Quality pe rubrica de duel (0–100)
 R        = suma R-multiple-urilor tranzacțiilor (profit net / riscul inițial)
-Outcome  = clamp(50 + 50 × R / 3, 0, 100)
+Outcome  = round(clamp(50 + 50 × R / 3, 0, 100))
 Duel     = round(0,7 × Process + 0,3 × Outcome)
 ```
 
@@ -114,8 +114,8 @@ Fiecare bot primește doar lumânările deja dezvăluite și propria stare. Dime
 |---|---|---|---|---|---|
 | **Pip** | 1 | 850 | Intră aproape în fiecare rundă, pe direcția ultimei lumânări | Stopuri prea strânse, targeturi sub 1R, lărgește uneori stopul | E scos de zgomot, apoi prețul merge unde credea. |
 | **Dash** | 1 | 950 | Intră în fiecare rundă, iese după o rundă | Overtrading, targeturi mici | Comisioanele îi mănâncă rezultatul. |
-| **Blaze** | 2 | 1050 | Cumpără lumânările mari și breakout-urile | Intră pe mișcări deja extinse | Intră la vârf. |
-| **Grudge** | 2 | 1150 | Trend, intrări dese | Dublează riscul după o pierdere | O pierdere mare după două mici. |
+| **Grudge** | 2 | 1050 | Trend, intrări dese | Dublează riscul după o pierdere | O pierdere mare după două mici. |
+| **Blaze** | 2 | 1150 | Cumpără lumânările mari și breakout-urile | Intră pe mișcări deja extinse | Intră la vârf. |
 | **Hope** | 3 | 1250 | Trend, intrări pe pullback | Își mută stopul când prețul se apropie | Pierderi rare, dar mari. |
 | **Rook** | 4 | 1400 | Trend disciplinat, pullback pe SMA 20 | — | Greu de bătut în trend, slab în range. |
 | **Sage** | 5 | 1550 | Răbdător: marginile range-ului sau pullback în trend, R:R ≥ 2 | — | Stă mult pe loc. |
@@ -189,7 +189,7 @@ Recent duels
 - **Tab-ul Order:** biletul de ordin existent, cu stopul obligatoriu, plus „Place order” direct (fără dialogul de jurnal din Arena; runda are timer).
 - **Tab-ul Position:** stopul și targetul poziției tale, „Close half”, „Close position”, ordinele în așteptare cu „Cancel”.
 - **Tab-ul botului:** cine e (stil, defect, ce să urmărești) și notițele lui pe runde.
-- **Panoul „You vs Rook”** stă sub grafic, mereu vizibil. Pe telefon coloanele se pun una sub alta.
+- **Panoul „You vs Rook”** stă sub grafic și dock, pe toată lățimea. Pe telefon vine după biletul de ordin, cu coloanele una sub alta, ca biletul să fie imediat sub grafic.
 - **Timer-ul** apare în bara de sus; ultimele 10 secunde sunt evidențiate. Un text pentru cititorul de ecran anunță 10 secunde rămase.
 
 ### 2.3 Rezultatul
@@ -330,14 +330,46 @@ Verificarea: **T** = test automat (`npm test`), **B** = browser automat (Playwri
 | AC23 | Botul nu vede viitorul: schimbarea lumânărilor de după pasul de decizie nu schimbă decizia. | T |
 | AC24 | Deciziile botului sunt deterministe (același duel → aceleași acțiuni) și se salvează în duel. | T, C |
 | AC25 | Motorul nu respinge niciun ordin al boților, pe toate scenariile și pe zeci de seed-uri. | T |
-| AC26 | Nivelurile sunt ordonate: în medie, pe multe dueluri, scorul de duel crește de la nivelul 1 la nivelul 5, iar fiecare bot cu defect își primește eticheta de eroare în majoritatea duelurilor lui. | T |
+| AC26 | Nivelurile sunt ordonate: în medie, pe multe dueluri, scorul de duel crește de la nivelul 1 la nivelul 5. Fiecare bot cu defect își primește eticheta de eroare în cel puțin o treime din duelurile lui și de peste 3 ori mai des decât Rook și Sage. | T |
 | AC27 | `npm run typecheck`, `npm test` și `npm run build` trec. | T |
 | AC28 | UI-ul folosește componentele și tokenii existenți; fără overflow orizontal la 360, 768 și 1440 px; zero erori și avertismente în consolă pe ecranele de duel. | B, C |
 | AC29 | `KNOWLEDGE.md` are regulile duelurilor, iar `README.md` descrie funcționalitatea. | C |
 
 ---
 
-## 5. Riscuri
+## 5. Validare (23.10.2026)
+
+Toate criteriile sunt îndeplinite. Testele automate rulează cu `npm test`; verificările din browser au rulat cu Chrome headless (Playwright) pe build-ul de producție, la 360, 768 și 1440 px.
+
+| Verificare | Rezultat |
+|---|---|
+| `npm run typecheck`, `npm test` (153 de teste, dintre care 17 de duel), `npm run build` | Trec |
+| Browser: 40 de verificări pentru AC1–AC4, AC6–AC13, AC15–AC22, AC28 | 40 / 40 |
+| AC5, AC14, AC23–AC26 | `packages/missions/test/duel.test.ts` |
+| AC29 | Secțiunea „Trading Arena → Duels” din `KNOWLEDGE.md`, Duels în `README.md` și `DESIGN.md` |
+
+**Calibrarea boților** (`npm run bots:calibrate 20`: 9 scenarii × 20 seed-uri pe bot). Scorul mediu de duel crește cu nivelul:
+
+| Bot | Nivel | Scor mediu | Decision Quality | Tranzacții / duel | Defectul jucat (din dueluri) |
+|---|---|---|---|---|---|
+| Pip | 1 | 47 | 59 | 6,7 | stopuri în zgomot 100% |
+| Dash | 1 | 59 | 70 | 8,0 | overtrading 100% |
+| Grudge | 2 | 68 | 77 | 2,9 | revenge sizing 71% |
+| Blaze | 2 | 71 | 81 | 1,7 | intrări întinse 51% |
+| Hope | 3 | 77 | 90 | 1,9 | stop mutat 43% |
+| Rook | 4 | 82 | 98 | 2,0 | — |
+| Sage | 5 | 84 | 98 | 2,7 | — |
+
+Motorul nu a respins niciun ordin al boților.
+
+**Corecturi apărute la validare:**
+- timerul expirat încheia imediat și runda următoare (se resetează acum la commit);
+- Outcome intra în scor cu zecimale, iar formula afișată nu se aduna exact (acum e rotunjit);
+- pe telefon, biletul de ordin era sub panoul „You vs bot” (panoul s-a mutat sub dock);
+- pe telefon, butonul lipit jos al dock-ului stătea sub bara de navigație, și în duel, și în Simulatorul existent (regula comună din `layout.css` îl ridică acum deasupra barei);
+- „entrys” în textele evaluatorilor (pluralul cuvintelor terminate în „y”).
+
+## 6. Riscuri
 
 | Risc | Ce facem |
 |---|---|

@@ -27,6 +27,7 @@ Toți tokenii sunt în [`packages/ui/src/styles/tokens.css`](packages/ui/src/sty
 | Secundar | `--ml-accent-2` #B19AF4 (alias vechi `--ml-blue`): tonurile ilustrațiilor, stări „în curs”. |
 | Rezultate | `--ml-pos` #90B8A5, `--ml-neg` #D77662 (+ `-soft`), doar pentru câștiguri și pierderi simulate. |
 | Grafic | `--ml-candle-up` #86B7A4, `--ml-candle-down` #D77662, `--ml-grid`, `--ml-volume-*`, `--ml-indicator-1/2` |
+| Duel | `--ml-rival` #D6B47A (+ `-soft`, `-line`): botul din duel, pe grafic, în panoul „You vs bot” și pe avatar. Distinct de accent, de violet (SMA 50) și de verde/roșu. |
 | Tipografie | Inter (400–700); body 13px, h3 14px, h1 26–29px (550, −0.8px); etichete uppercase de 11px cu spațiere 0.45px; cifre tabulare (`.num`). |
 | Raze | 4px butoane și inputuri, 6px câmpuri de căutare, 9px carduri, 3px tag-uri. |
 | Layout | Sidebar 236px (209px sub 1190px), rail de 72px (sub 960px); bara de sus 65px (57px pe telefon); bara de jos pe mobil 64px; gutter 29px (37px peste 1550px); conținut maxim 1580px. |
@@ -58,6 +59,7 @@ styles/screens/art.css     lumânări sintetice, ilustrații, lumânările de di
 styles/screens/dashboard.css
 styles/screens/missions.css
 styles/screens/learn.css
+styles/screens/duels.css   lobby-ul, runda și rezultatul duelurilor
 ```
 
 Toate clasele au prefixul `ml-`, deci CSS-ul poate fi copiat ca atare într-o altă aplicație (vezi „Portarea în Angular” din README).

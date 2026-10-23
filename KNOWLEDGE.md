@@ -89,6 +89,7 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 ### Streak
 
 - Până la **2 zile ratate pe săptămână** (luni–duminică) nu rup streak-ul; nu se adună la lungimea lui. Pauzele se pot dezactiva din setări.
+- Un duel terminat contează ca activitate, ca o sesiune Arena.
 - În cod: `streakInfo(days, today, pausesPerWeek)` din `packages/academy/src/progress.ts`; `settings.streakPauses`.
 
 ## Missions
@@ -96,6 +97,28 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 - Secțiunile sunt: All Missions, Daily Challenges, Weekly Challenges și Assessments. `/missions` deschide All Missions.
 - Misiunea recomandată, cu motivul ei, apare sus pe All Missions și pe Dashboard.
   - În cod: `NAV` din `packages/ui/src/nav.ts`, `recommend()` din `packages/learning`.
+
+## Trading Arena
+
+### Duels
+
+Duelurile sunt 1v1 contra unor boți, pe aceeași piață simulată. Planul și criteriile de acceptanță sunt în [PLAN_DUELS.md](PLAN_DUELS.md).
+
+- **Boții sunt declarați.** Fiecare apare cu eticheta „Bot” peste tot unde e afișat: lobby, bara duelului, legenda și etichetele graficului, panoul, rezultatul. Un bot nu e prezentat niciodată ca om.
+- **Formatul:** 8 runde a câte 10 lumânări, pe același regim și același seed pentru amândoi. În fiecare rundă utilizatorul își pune ordinele, apasă „Ready” (sau expiră timerul), apoi runda rulează pentru amândoi; „Skip” o termină imediat, iar cu reduced motion apare direct.
+- **Timerul de decizie** se alege înainte de duel: 30 s, 60 s sau oprit. La ieșirea din duel se oprește și repornește de la plin la revenire.
+- **Botul decide abia după „Ready”,** doar din lumânările deja vizibile. Ce a făcut în rundele anterioare se vede tot timpul: pe grafic (markeri și linii în culoarea botului, `--ml-rival`, etichetate cu numele lui) și în panoul „You vs {bot}” (poziția deschisă, ordinele, tranzacțiile închise, P&L și R). Fiecare decizie a botului vine cu motivul ei, în tab-ul botului și în rezultat.
+- **Regulile:** stop obligatoriu și risc de cel mult 1% pe ordin, impuse de motor. Stopul unei poziții nu se poate scoate în duel.
+- **Scorul:** Duel = round(0,7 × Decision Quality + 0,3 × Outcome), unde Outcome = 50 + 50 × R / 3, între 0 și 100, rotunjit. R e suma R-multiple-urilor, deci mărimea poziției nu ajută. Cine nu are nicio tranzacție pierde; fără tranzacții de ambele părți, e egal. La scor egal decid Risk Discipline, apoi R.
+- **Rezultatul** arată separat, pentru amândoi, Decision Quality, Risk Discipline, R, P&L-ul simulat și scorul de duel, plus un mesaj explicit când profitul și procesul spun lucruri diferite.
+- **Ratingul** pornește de la 1000 și se actualizează Elo (K = 32) după fiecare duel cu rating. Boții au rating fix.
+- **XP:** 30 pentru un duel terminat, pentru primele 3 dueluri ale zilei. Victoria nu dă XP în plus; resign nu dă XP.
+- **Un singur duel activ.** Se reia din lobby la runda curentă, cu ordinele deja plasate. „Resign” cere confirmare și contează ca înfrângere.
+- **Daily duel:** același bot, scenariu și seed pentru toți în aceeași zi, o dată pe zi, fără rating.
+- **Mirror** joacă greșeala cea mai frecventă a utilizatorului (din ultimele rezultate) dintre cele pe care un bot le poate juca. Fără una, cardul e dezactivat și explică de ce.
+- **Lobby-ul** marchează botul recomandat (neînvins, cu ratingul cel mai apropiat), rivalul (botul care a câștigat ultimele două dueluri contra ta) și boții bătuți (cel puțin 2 victorii).
+- Duelurile contra boților nu consumă sesiunile Arena ale planului Free; scenariile Pro rămân Pro. Duelurile terminate apar în Recent activity și contează pentru streak; în Trade Journal nu apar încă.
+- În cod: `packages/missions/src/duel.ts` (scorul, verdictul, Elo, daily, Mirror) și `bots.ts` (personajele), `playDuelRound` și `resignDuel` din `packages/ui/src/store.ts`, `packages/ui/src/pages/Duels.tsx`, `components/DuelParts.tsx`. Calibrarea boților: `npm run bots:calibrate`.
 
 ## Dashboard
 
@@ -119,6 +142,7 @@ Cardul nu are rând de etichetă deasupra titlului (de tipul „Arena session ·
 - Intră în listă:
   - misiunile terminate;
   - sesiunile Arena terminate;
+  - duelurile terminate;
   - lecțiile terminate;
   - verificările de cunoștințe și assessment-urile;
   - provocarea zilnică.
