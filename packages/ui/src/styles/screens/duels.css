@@ -1,0 +1,388 @@
+/* ── Duels: lobby, the duel stage, the result ───────────────────────── */
+
+/* The bot: its initial in the rival colour, and the "Bot" label next to every name. */
+.ml-bot-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: var(--ml-r-full);
+  border: 1px solid var(--ml-rival-line);
+  background: var(--ml-rival-soft);
+  color: var(--ml-rival);
+  font-weight: 600;
+  line-height: 1;
+}
+.ml-tag.ml-bot-tag {
+  height: 18px;
+  padding: 0 5px;
+  border-color: var(--ml-rival-line);
+  color: var(--ml-rival);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* Chart legend: a filled triangle for you, a rival-coloured one for the bot. */
+.ml-duel-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ml-s4);
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-xs);
+}
+.ml-duel-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ml-duel-key::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid var(--ml-text);
+}
+.ml-duel-key--rival::before {
+  border-bottom-color: var(--ml-rival);
+}
+.ml-duel .ml-chart-tools {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ml-s3);
+}
+
+/* ── Lobby ── */
+
+.ml-rating-big {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.ml-duel-rival {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s2);
+  margin-top: var(--ml-s3);
+  color: var(--ml-text-2);
+}
+.ml-duel-top .ml-card {
+  height: 100%;
+}
+.ml-duel-active {
+  border-color: var(--ml-accent-line);
+}
+.ml-duel-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ml-s4);
+}
+.ml-duel-settings .ml-chips {
+  flex: 1 1 420px;
+}
+
+.ml-bots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--ml-s4);
+}
+.ml-bot-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s3);
+  padding: var(--ml-s5);
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+}
+.ml-bot-card.is-recommended {
+  border-color: var(--ml-accent-line);
+}
+.ml-bot-card.is-disabled {
+  background: var(--ml-bg-2);
+}
+.ml-bot-card > .ml-btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+.ml-bot-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s3);
+}
+.ml-bot-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ml-bot-card-title h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s2);
+  font-size: 15px;
+}
+.ml-duel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ml-duel-chips:empty {
+  display: none;
+}
+.ml-status.ml-duel-chip--rival {
+  color: var(--ml-rival);
+  border-color: var(--ml-rival-line);
+  background: var(--ml-rival-soft);
+}
+.ml-bot-facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s2);
+  margin: 0;
+}
+.ml-bot-facts dt {
+  color: var(--ml-text-3);
+  font-size: var(--ml-fs-xs);
+}
+.ml-bot-facts dd {
+  margin: 0;
+}
+
+/* ── The duel ── */
+
+.ml-duel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ml-s2);
+}
+.ml-roundbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ml-s3) var(--ml-s4);
+}
+.ml-rounds {
+  display: flex;
+  gap: 4px;
+  flex: 1 1 240px;
+  max-width: 420px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-rounds-seg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ml-border);
+}
+.ml-rounds-seg.is-done {
+  background: var(--ml-text-3);
+}
+.ml-rounds-seg.is-now {
+  background: var(--ml-accent);
+}
+.ml-roundbar-label {
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-sm);
+}
+.ml-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-sm);
+  font-weight: 600;
+}
+.ml-timer.is-low {
+  color: var(--ml-warn);
+  border-color: color-mix(in srgb, var(--ml-warn) 50%, transparent);
+}
+
+.ml-bot-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ml-s3);
+  padding: var(--ml-s3) var(--ml-s4);
+  border: 1px solid var(--ml-rival-line);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-rival-soft);
+}
+
+/* You vs the bot: two account columns side by side. */
+.ml-vs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ml-s4);
+}
+.ml-vs-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s4);
+  min-width: 0;
+  padding: var(--ml-s4);
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  background: var(--ml-surface);
+}
+.ml-vs-col.is-rival {
+  border-color: var(--ml-rival-line);
+}
+.ml-vs-head {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ml-vs-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ml-s2);
+}
+.ml-vs-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ml-s2) var(--ml-s3);
+  margin: 0;
+}
+.ml-vs-stats dt,
+.ml-vs-pos dt {
+  color: var(--ml-text-3);
+  font-size: var(--ml-fs-xs);
+}
+.ml-vs-stats dd,
+.ml-vs-pos dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ml-vs-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s2);
+}
+.ml-vs-label {
+  color: var(--ml-text-3);
+  font-size: var(--ml-fs-xs);
+  font-weight: 500;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+.ml-vs-pos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ml-s2) var(--ml-s5);
+  margin: 0;
+}
+.ml-vs-orders {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-sm);
+}
+.ml-vs-col .ml-table {
+  font-size: var(--ml-fs-sm);
+}
+
+.ml-bot-brief {
+  display: flex;
+  align-items: center;
+  gap: var(--ml-s3);
+}
+.ml-bot-brief b {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ml-s2);
+}
+.ml-duel-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ml-duel-notes li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: var(--ml-s3);
+  border-left: 2px solid var(--ml-rival-line);
+}
+.ml-duel-notes-round {
+  color: var(--ml-text-3);
+  font-size: var(--ml-fs-xs);
+}
+
+/* ── Result ── */
+
+.ml-duel-scoreboard {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: var(--ml-s6);
+  align-items: start;
+}
+.ml-duel-score {
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-r-lg);
+  overflow: hidden;
+}
+.ml-duel-score th[scope="row"] {
+  color: var(--ml-text-2);
+  font-weight: 400;
+  text-align: left;
+}
+.ml-duel-score thead th.is-winner {
+  color: var(--ml-accent-fg);
+}
+.ml-duel-score tr.is-strong th,
+.ml-duel-score tr.is-strong td {
+  color: var(--ml-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.ml-duel-score td,
+.ml-duel-score th {
+  padding: 9px var(--ml-s3);
+  border-bottom: 1px solid var(--ml-border);
+}
+.ml-duel-score tbody tr:last-child td,
+.ml-duel-score tbody tr:last-child th {
+  border-bottom: 0;
+}
+.ml-duel-result .ml-verdict {
+  margin-top: 0;
+}
+.ml-duel-meta {
+  color: var(--ml-text-2);
+}
+
+@media (max-width: 1023px) {
+  .ml-duel-scoreboard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .ml-vs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-vs-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ml-bots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ml-rounds {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

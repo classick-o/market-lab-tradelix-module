@@ -1385,6 +1385,10 @@
     z-index: 5;
     border-radius: 0 0 var(--ml-r-lg) var(--ml-r-lg);
   }
+  /* Phones with the bottom bar: the sticky action sits above the bar, not under it. */
+  .ml-app.is-mobile:not(.is-focus) .ml-dock-foot {
+    bottom: calc(var(--ml-bottomnav-h) + env(safe-area-inset-bottom, 0px));
+  }
   .ml-hero-grid,
   .ml-principle {
     grid-template-columns: minmax(0, 1fr);

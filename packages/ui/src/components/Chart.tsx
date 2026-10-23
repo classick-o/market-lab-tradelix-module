@@ -9,12 +9,16 @@ export interface ChartLine {
   label: string;
   kind: LineKind;
   draft?: boolean;
+  /** The opponent's line in a duel (drawn in the rival colour). */
+  rival?: boolean;
 }
 
 export interface ChartMarker {
   step: number;
   price: number;
   kind: "buy" | "sell" | "exit-stop" | "exit-target" | "exit";
+  /** The opponent's fill in a duel: rival colour, drawn a little further from the candle. */
+  rival?: boolean;
 }
 
 export interface ChartProps {
@@ -380,13 +384,13 @@ export function Chart(props: ChartProps) {
             )}
 
             {lines.map((l) => (
-              <g key={`${l.kind}${l.label}${l.price}`} className={cx("ml-pline", `ml-pline--${l.kind}`, l.draft && "is-draft")}>
+              <g key={`${l.kind}${l.label}${l.price}`} className={cx("ml-pline", `ml-pline--${l.kind}`, l.draft && "is-draft", l.rival && "is-rival")}>
                 <line x1={PAD.left} x2={plotRight} y1={y(l.price)} y2={y(l.price)} />
                 <text x={plotRight - 8} y={y(l.price) - 6} textAnchor="end" className="ml-pline-label">
                   {l.label}
                 </text>
-                <rect x={plotRight + 4} y={y(l.price) - 10} width={PAD.right - 6} height={20} rx={5} className={cx("ml-ptag", LINE_LABEL_TAG[l.kind])} />
-                <text x={plotRight + 10} y={y(l.price) + 4} className={cx("ml-ptag-text", LINE_LABEL_TAG[l.kind])}>
+                <rect x={plotRight + 4} y={y(l.price) - 10} width={PAD.right - 6} height={20} rx={5} className={cx("ml-ptag", LINE_LABEL_TAG[l.kind], l.rival && "is-rival")} />
+                <text x={plotRight + 10} y={y(l.price) + 4} className={cx("ml-ptag-text", LINE_LABEL_TAG[l.kind], l.rival && "is-rival")}>
                   {formatPrice(l.price)}
                 </text>
               </g>
@@ -397,9 +401,12 @@ export function Chart(props: ChartProps) {
               .map((m, idx) => {
                 const cx0 = x(m.step);
                 const cy = y(m.price);
-                if (m.kind === "buy") return <path key={idx} d={`M${cx0},${cy + 4} l-5.5,9 h11 z`} className="ml-marker ml-marker--buy" />;
-                if (m.kind === "sell") return <path key={idx} d={`M${cx0},${cy - 4} l-5.5,-9 h11 z`} className="ml-marker ml-marker--sell" />;
-                return <circle key={idx} cx={cx0} cy={cy} r={4.5} className={cx("ml-marker", `ml-marker--${m.kind}`)} />;
+                // The opponent's entry triangles sit one marker further out, so both stay visible on the same candle.
+                const off = m.rival ? 11 : 0;
+                const rival = m.rival && "is-rival";
+                if (m.kind === "buy") return <path key={idx} d={`M${cx0},${cy + 4 + off} l-5.5,9 h11 z`} className={cx("ml-marker ml-marker--buy", rival)} />;
+                if (m.kind === "sell") return <path key={idx} d={`M${cx0},${cy - 4 - off} l-5.5,-9 h11 z`} className={cx("ml-marker ml-marker--sell", rival)} />;
+                return <circle key={idx} cx={cx0} cy={cy} r={m.rival ? 5.5 : 4.5} className={cx("ml-marker", `ml-marker--${m.kind}`, rival)} />;
               })}
 
             {lastC && (

@@ -46,6 +46,7 @@ export const NAV: NavItem[] = [
     children: [
       { id: "simulator", label: "Simulator", to: "/arena/simulator", icon: "chart" },
       { id: "scenarios", label: "Scenarios", to: "/arena/scenarios", icon: "layers" },
+      { id: "duels", label: "Duels", to: "/arena/duels", icon: "bolt" },
       { id: "portfolio", label: "Virtual Portfolio", to: "/arena/portfolio", icon: "wallet" },
       { id: "calculator", label: "Risk Calculator", to: "/arena/risk-calculator", icon: "calculator" },
     ],

@@ -75,6 +75,10 @@
   --ml-line-muted: #4f5257;
   --ml-indicator-1: var(--ml-accent);
   --ml-indicator-2: var(--ml-accent-2);
+  /* The opponent in a duel: distinct from the accent, the indicators and the outcome colours. */
+  --ml-rival: #d6b47a;
+  --ml-rival-soft: rgba(214, 180, 122, 0.1);
+  --ml-rival-line: rgba(214, 180, 122, 0.4);
 
   /* ── Typography ───────────────────────────────────────────────── */
   --ml-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;

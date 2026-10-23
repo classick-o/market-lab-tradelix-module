@@ -20,6 +20,8 @@ export interface ProgressSnapshot {
   replays: { at: number }[];
   /** Finished daily reviews (spaced repetition). */
   reviews?: { at: number }[];
+  /** Finished duels against a bot. */
+  duels?: { at: number }[];
   /** θ after each update, oldest first. */
   skillHistory: { skill: SkillId; theta: number; at: number }[];
   skills: Record<SkillId, { theta: number }>;
@@ -27,7 +29,7 @@ export interface ProgressSnapshot {
   level: number;
 }
 
-/** Timestamps of meaningful learning activity: completed missions, sessions, lessons, checks, challenges and reflections. */
+/** Timestamps of meaningful learning activity: completed missions, sessions, duels, lessons, checks, challenges and reflections. */
 export function activityTimes(s: ProgressSnapshot): number[] {
   return [
     ...s.missions.map((m) => m.at),
@@ -37,6 +39,7 @@ export function activityTimes(s: ProgressSnapshot): number[] {
     ...s.dailies.map((d) => d.at),
     ...s.reflections.map((r) => r.at),
     ...(s.reviews ?? []).map((r) => r.at),
+    ...(s.duels ?? []).map((d) => d.at),
   ];
 }
 

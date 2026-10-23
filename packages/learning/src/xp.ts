@@ -14,7 +14,12 @@ export const XP_RULES = {
   /** First pass of a knowledge check / topic assessment. */
   checkPass: 40,
   assessmentPass: 60,
+  /** A finished duel, whatever the result (winning earns nothing extra). */
+  duel: 30,
 } as const;
+
+/** Duels that earn XP each day; later ones still count for the rating and the streak. */
+export const DUEL_XP_PER_DAY = 3;
 
 /** Repeating the same mission on the same day earns 100%, 50%, 25%, then nothing. */
 export function missionXp(difficulty: number, attemptsToday: number): number {

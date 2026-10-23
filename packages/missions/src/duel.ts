@@ -112,8 +112,9 @@ export interface DuelSide {
   winners: number;
 }
 
+/** Whole points, so the formula shown in the result adds up exactly. */
 export function outcomeScore(r: number): number {
-  return Math.max(0, Math.min(100, 50 + (50 * r) / DUEL_R_CAP));
+  return Math.round(Math.max(0, Math.min(100, 50 + (50 * r) / DUEL_R_CAP)));
 }
 
 export function duelScore(process: number, outcome: number): number {

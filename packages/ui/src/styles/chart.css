@@ -352,3 +352,33 @@ text.ml-ptag--level {
   stroke: var(--ml-indicator-2);
   stroke-dasharray: 5 3;
 }
+
+/* Duels: the opponent's lines and fills, in the rival colour. */
+.ml-pline.is-rival line {
+  stroke: var(--ml-rival);
+  stroke-opacity: 0.85;
+}
+.ml-pline.is-rival .ml-pline-label {
+  fill: var(--ml-rival);
+}
+rect.ml-ptag.is-rival {
+  fill: var(--ml-bg);
+  stroke: var(--ml-rival-line);
+}
+text.ml-ptag-text.is-rival {
+  fill: var(--ml-rival);
+}
+.ml-marker.is-rival {
+  stroke: var(--ml-rival);
+  stroke-width: 1.5;
+}
+.ml-marker--buy.is-rival,
+.ml-marker--exit-target.is-rival {
+  fill: var(--ml-rival);
+  stroke: var(--ml-bg);
+}
+.ml-marker--sell.is-rival,
+.ml-marker--exit-stop.is-rival,
+.ml-marker--exit.is-rival {
+  fill: var(--ml-bg);
+}

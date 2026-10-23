@@ -46,6 +46,8 @@ const Replay = page(() => import("./pages/Replay"), "ReplayPage");
 const Simulator = page(() => import("./pages/Arena"), "SimulatorPage");
 const Scenarios = page(() => import("./pages/Arena"), "ScenariosPage");
 const ArenaSession = page(() => import("./pages/Arena"), "ArenaSessionPage");
+const Duels = page(() => import("./pages/Duels"), "DuelsPage");
+const Duel = page(() => import("./pages/Duels"), "DuelPage");
 const Portfolio = page(() => import("./pages/Portfolio"), "PortfolioPage");
 const RiskCalculator = page(() => import("./pages/RiskCalculator"), "RiskCalculatorPage");
 const Sessions = page(() => import("./pages/Journal"), "SessionHistoryPage");
@@ -91,6 +93,8 @@ const ROUTES: [string, (p: Record<string, string>) => ReactNode][] = [
   ["/arena/portfolio", () => <Portfolio />],
   ["/arena/risk-calculator", () => <RiskCalculator />],
   ["/arena/session/:id", (p) => <ArenaSession sessionId={p.id} />],
+  ["/arena/duels", () => <Duels />],
+  ["/arena/duels/:id", (p) => <Duel key={p.id} duelId={p.id} />],
   ["/journal/sessions", () => <Sessions />],
   ["/journal/decisions", () => <Decisions />],
   ["/journal/replay", () => <ReplayIndex />],
@@ -141,7 +145,7 @@ function legacyRedirect(p: string): string | null {
   if ((m = matchPath("/replay/:id", p))) return `/journal/replay/${m.id}`;
   if ((m = matchPath("/learn/paths/:id", p))) return `/learn/tracks/${m.id}`;
   if ((m = matchPath("/learn/concepts/:id", p))) return `/learn/library/concepts/${m.id}`;
-  if ((m = matchPath("/arena/:id", p)) && !["simulator", "scenarios", "portfolio", "risk-calculator", "session"].includes(m.id)) return `/arena/session/${m.id}`;
+  if ((m = matchPath("/arena/:id", p)) && !["simulator", "scenarios", "duels", "portfolio", "risk-calculator", "session"].includes(m.id)) return `/arena/session/${m.id}`;
   return null;
 }
 

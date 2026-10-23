@@ -74,6 +74,9 @@ export function buildSnapshot(lab: LabData, now = Date.now()): ProgressSnapshot 
     reflections: Object.values(lab.reflections).map((r) => ({ at: r.at })),
     replays: lab.xp.filter((x) => x.reason === "replay").map((x) => ({ at: x.at })),
     reviews: lab.xp.filter((x) => x.reason === "review").map((x) => ({ at: x.at })),
+    duels: Object.values(lab.duels)
+      .filter((d) => d.status === "completed")
+      .map((d) => ({ at: d.completedAt ?? d.updatedAt })),
     skillHistory,
     skills: lab.skills,
     xp,
@@ -109,7 +112,7 @@ export type ProgressState = ReturnType<typeof useProgress>;
 
 export interface ActivityItem {
   id: string;
-  kind: "mission" | "arena" | "lesson" | "check" | "daily";
+  kind: "mission" | "arena" | "duel" | "lesson" | "check" | "daily";
   at: number;
   icon: string;
   title: string;
@@ -122,8 +125,8 @@ export interface ActivityItem {
   to: string;
 }
 
-/** Recent learning activity across missions, sessions, lessons, checks and challenges, newest first. */
-export function activityFeed(lab: LabData, limit = 8, lookup: { mission: (id: string) => string; lesson: (id: string) => string; check: (id: string) => string; scenario: (id: string) => string }): ActivityItem[] {
+/** Recent learning activity across missions, sessions, duels, lessons, checks and challenges, newest first. */
+export function activityFeed(lab: LabData, limit = 8, lookup: { mission: (id: string) => string; lesson: (id: string) => string; check: (id: string) => string; scenario: (id: string) => string; bot: (id: string) => string }): ActivityItem[] {
   const xpFor = (ref: string, at?: number) => lab.xp.filter((x) => x.ref === ref && (at === undefined || Math.abs(x.at - at) < 60_000)).reduce((s, x) => s + x.amount, 0);
   const items: ActivityItem[] = [];
   for (const r of Object.values(lab.results)) {
@@ -132,6 +135,11 @@ export function activityFeed(lab: LabData, limit = 8, lookup: { mission: (id: st
       items.push({ id: r.sessionId, kind: "mission", at: r.completedAt, icon: "target", title: lookup.mission(r.missionId), meta: "Mission completed", score: r.dqs, xp: xpFor(r.sessionId), to: `/debrief/${r.sessionId}` });
     else
       items.push({ id: r.sessionId, kind: "arena", at: r.completedAt, icon: "chart", title: lookup.scenario(s?.kind === "arena" ? s.regime : ""), meta: "Arena session", score: r.dqs, xp: xpFor(r.sessionId), to: `/arena/session/${r.sessionId}` });
+  }
+  for (const d of Object.values(lab.duels)) {
+    if (d.status !== "completed" || !d.result) continue;
+    const outcome = d.result.winner === "you" ? "won" : d.result.winner === "bot" ? "lost" : "drawn";
+    items.push({ id: d.id, kind: "duel", at: d.completedAt ?? d.updatedAt, icon: "bolt", title: `Duel vs ${lookup.bot(d.botId)}`, meta: `Duel ${outcome}`, score: d.result.you.process, xp: d.result.xp, to: `/arena/duels/${d.id}` });
   }
   for (const [id, v] of Object.entries(lab.lessons))
     if (v.completedAt) items.push({ id, kind: "lesson", at: v.completedAt, icon: "book", title: lookup.lesson(id), meta: "Lesson completed", score: null, xp: xpFor(id), to: `/learn/lessons/${id}` });

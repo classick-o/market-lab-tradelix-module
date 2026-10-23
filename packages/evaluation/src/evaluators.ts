@@ -18,7 +18,8 @@ function mean(xs: number[]): number {
 const pct = (x: number) => `${x.toFixed(2)}%`;
 
 function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? "" : "s"}`;
+  if (n === 1) return `${n} ${word}`;
+  return `${n} ${word.endsWith("y") ? `${word.slice(0, -1)}ies` : `${word}s`}`;
 }
 
 function describeRisk(e: EntryView): string {

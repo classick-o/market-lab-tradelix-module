@@ -3,12 +3,12 @@ import type { ChartHighlight, Frame } from "@market-lab/missions";
 import type { ChartLine, ChartMarker, LineKind } from "./Chart";
 import type { TicketValue } from "./OrderTicket";
 
-export function markersFrom(events: readonly EngineEvent[], upTo: number): ChartMarker[] {
+export function markersFrom(events: readonly EngineEvent[], upTo: number, rival?: boolean): ChartMarker[] {
   const out: ChartMarker[] = [];
   for (const e of events) {
     if (e.type !== "order_filled" || e.step > upTo) continue;
-    if (e.reason === "market" || e.reason === "limit") out.push({ step: e.step, price: e.price, kind: e.side === "buy" ? "buy" : "sell" });
-    else out.push({ step: e.step, price: e.price, kind: e.reason === "stop" ? "exit-stop" : e.reason === "target" ? "exit-target" : "exit" });
+    if (e.reason === "market" || e.reason === "limit") out.push({ step: e.step, price: e.price, kind: e.side === "buy" ? "buy" : "sell", rival });
+    else out.push({ step: e.step, price: e.price, kind: e.reason === "stop" ? "exit-stop" : e.reason === "target" ? "exit-target" : "exit", rival });
   }
   return out;
 }
@@ -33,6 +33,11 @@ export function linesFromFrame(frame: Frame | undefined): ChartLine[] {
 export function linesFromState(state: SimState): ChartLine[] {
   const p = state.position;
   return linesFrom(p ? { side: p.side, qty: p.qty, avgEntry: Math.round(p.costBasis / p.qty), stopLoss: p.stopLoss, takeProfit: p.takeProfit } : null, state.orders);
+}
+
+/** The opponent's position and orders in a duel, labelled with its name. */
+export function rivalLinesFromState(state: SimState, name: string): ChartLine[] {
+  return linesFromState(state).map((l) => ({ ...l, label: `${name} · ${l.label}`, rival: true }));
 }
 
 const TONE_KIND: Record<string, LineKind> = { neutral: "level", warn: "level-strong", good: "target", bad: "stop" };

@@ -11,7 +11,7 @@ import {
   type AchievementCategory,
 } from "@market-lab/academy";
 import type { SkillId } from "@market-lab/evaluation";
-import { LEVEL_LABEL, SKILLS, SKILL_BY_ID, XP_RULES, confidenceOf, levelOf, thetaProgress } from "@market-lab/learning";
+import { DUEL_XP_PER_DAY, LEVEL_LABEL, SKILLS, SKILL_BY_ID, XP_RULES, confidenceOf, levelOf, thetaProgress } from "@market-lab/learning";
 import { MISSIONS } from "@market-lab/missions";
 import { Heatmap, LineChart } from "../components/MiniCharts";
 import { Card, FilterChips, PageHead, StatTile, SubNav } from "../components/Page";
@@ -220,6 +220,7 @@ export function SkillProfilePage() {
 const XP_REASON: Record<string, string> = {
   mission: "Mission completed",
   arena: "Arena session (30+ candles)",
+  duel: "Duel completed",
   reflection: "Reflection written",
   replay: "Replay reviewed",
   placement: "Initial assessment",
@@ -306,6 +307,10 @@ export function LevelsPage() {
                 <dd className="num">
                   {XP_RULES.arenaSession} / {XP_RULES.reflection} / {XP_RULES.replay}
                 </dd>
+              </div>
+              <div>
+                <dt>Duel finished (first {DUEL_XP_PER_DAY} each day, win or lose)</dt>
+                <dd className="num">{XP_RULES.duel}</dd>
               </div>
             </dl>
             <p className="ml-fine">Repeating the same mission on the same day earns less each time. Levels need {xpForLevel(1)} XP for level 2, then 50 more per level.</p>

@@ -17,6 +17,7 @@ import type { LogEntry } from "@market-lab/engine";
 import { riskDisciplineScore, type SkillId } from "@market-lab/evaluation";
 import {
   applyEvidence,
+  DUEL_XP_PER_DAY,
   initialSkills,
   missionXp,
   XP_RULES,
@@ -26,11 +27,28 @@ import {
   type SkillState,
 } from "@market-lab/learning";
 import {
+  DUEL_ROUNDS,
+  DUEL_START_RATING,
   PLACEMENT,
   arenaContext,
+  botRound,
+  closeDuelLog,
+  duelContext,
+  duelVerdict,
+  eloUpdate,
   evaluateArena,
+  evaluateDuelSide,
   evaluateMission,
+  getBot,
   getMission,
+  mostFrequentFlaw,
+  roundStep,
+  type BotFlaw,
+  type BotId,
+  type BotNote,
+  type DuelReason,
+  type DuelSide,
+  type DuelWinner,
   type LoggedAnswer,
 } from "@market-lab/missions";
 import type { ArenaRegime } from "@market-lab/scenario-gen";
@@ -62,6 +80,59 @@ export interface ArenaSession {
 }
 
 export type Session = MissionSession | ArenaSession;
+
+/** One player's result in a finished duel, kept so the history doesn't need to replay it. */
+export interface DuelSideSummary {
+  process: number | null;
+  rds: number | null;
+  r: number;
+  net: number;
+  score: number | null;
+  trades: number;
+  errorTags: string[];
+}
+
+export interface DuelResultSummary {
+  winner: DuelWinner;
+  reason: DuelReason | "resigned";
+  you: DuelSideSummary;
+  bot: DuelSideSummary;
+  /** Daily duels don't change the rating. */
+  rated: boolean;
+  ratingBefore: number;
+  ratingAfter: number;
+  xp: number;
+}
+
+/** A duel against a declared bot (PLAN_DUELS.md): same market, eight rounds of ten candles. */
+export interface DuelSession {
+  id: string;
+  botId: BotId;
+  /** The habit Mirror plays, fixed when the duel starts. */
+  mirrorFlaw?: BotFlaw | null;
+  regime: ArenaRegime;
+  seed: number;
+  /** Seconds to decide each round; 0 turns the timer off. */
+  timer: 0 | 30 | 60;
+  /** Day key of a daily duel (unrated). */
+  daily?: string;
+  /** Rounds played (0–8). */
+  round: number;
+  /** The player's actions. */
+  log: LogEntry[];
+  /** The bot's actions, saved so a finished duel never changes when bots are tuned. */
+  botLog: LogEntry[];
+  botNotes: BotNote[];
+  status: "active" | "completed" | "resigned";
+  createdAt: number;
+  updatedAt: number;
+  completedAt?: number;
+  result?: DuelResultSummary;
+}
+
+function sideSummary(side: DuelSide): DuelSideSummary {
+  return { process: side.process, rds: side.rds, r: side.r, net: side.net, score: side.score, trades: side.trades, errorTags: side.dqs.errorTags };
+}
 
 export interface SkillDelta {
   skill: SkillId;
@@ -184,6 +255,8 @@ export interface LabData {
   skills: Record<SkillId, SkillState>;
   sessions: Record<string, Session>;
   results: Record<string, StoredResult>;
+  duels: Record<string, DuelSession>;
+  duelRating: number;
   reflections: Record<string, { optionId?: string; text: string; at: number }>;
   notes: Record<string, { text: string; at: number }>;
   decisionNotes: Record<string, DecisionNote>;
@@ -252,6 +325,8 @@ function fresh(): LabData {
     skills: initialSkills("unsure"),
     sessions: {},
     results: {},
+    duels: {},
+    duelRating: DUEL_START_RATING,
     reflections: {},
     notes: {},
     decisionNotes: {},
@@ -649,6 +724,120 @@ export class LabStore {
         },
         xp: xp > 0 ? [...d.xp, this.xpEntry(xp, "arena", sessionId, at)] : d.xp,
       };
+    });
+  }
+
+  // ─── Duels ───────────────────────────────────────────────────────────────
+
+  activeDuel(): DuelSession | null {
+    return Object.values(this.data.duels).find((d) => d.status === "active") ?? null;
+  }
+
+  /** The habit Mirror plays: the most frequent one in the latest results (missions, Arena, duels). */
+  duelHabit(): BotFlaw | null {
+    const results = Object.values(this.data.results)
+      .sort((a, b) => b.completedAt - a.completedAt)
+      .slice(0, 20)
+      .map((r) => r.errorTags);
+    const duels = Object.values(this.data.duels)
+      .filter((d) => d.result)
+      .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      .slice(0, 20)
+      .map((d) => d.result!.you.errorTags);
+    return mostFrequentFlaw([...results, ...duels]);
+  }
+
+  /** Starts a duel, unless one is already active (then that one is returned). */
+  startDuel(botId: BotId, regime: ArenaRegime, opts: { timer: 0 | 30 | 60; daily?: string; seed?: number }): string {
+    const active = this.activeDuel();
+    if (active) return active.id;
+    const now = Date.now();
+    const duel: DuelSession = {
+      id: uid(),
+      botId,
+      ...(botId === "mirror" ? { mirrorFlaw: this.duelHabit() } : {}),
+      regime,
+      seed: opts.seed ?? Math.floor(Math.random() * 2 ** 31),
+      timer: opts.timer,
+      ...(opts.daily ? { daily: opts.daily } : {}),
+      round: 0,
+      log: [],
+      botLog: [],
+      botNotes: [],
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.update((d) => ({ ...d, duels: { ...d.duels, [duel.id]: duel } }));
+    return duel.id;
+  }
+
+  /** Saves the player's orders during a decision, so a duel left mid-round resumes with them. */
+  saveDuelLog(id: string, log: LogEntry[]): void {
+    this.update((d) => {
+      const s = d.duels[id];
+      if (!s || s.status !== "active") return d;
+      return { ...d, duels: { ...d.duels, [id]: { ...s, log, updatedAt: Date.now() } } };
+    });
+  }
+
+  /**
+   * Ends the player's decision for the current round: the bot decides now (it never sees the
+   * player's orders), then the round counts as played. After the last round the duel is scored.
+   */
+  playDuelRound(id: string, log: LogEntry[]): void {
+    const s = this.data.duels[id];
+    if (!s || s.status !== "active" || s.round >= DUEL_ROUNDS) return;
+    const { ctx } = duelContext(s.regime, s.seed);
+    const { entries, note } = botRound(ctx, getBot(s.botId, s.mirrorFlaw), s.botLog, s.round, s.seed);
+    const at = Date.now();
+    const next: DuelSession = { ...s, log, botLog: [...s.botLog, ...entries], botNotes: [...s.botNotes, note], round: s.round + 1, updatedAt: at };
+    if (next.round < DUEL_ROUNDS) {
+      this.update((d) => ({ ...d, duels: { ...d.duels, [id]: next } }));
+      return;
+    }
+    const you = evaluateDuelSide(ctx, closeDuelLog(next.log));
+    const bot = evaluateDuelSide(ctx, closeDuelLog(next.botLog));
+    const verdict = duelVerdict(you, bot);
+    this.update((d) => {
+      const rated = !next.daily;
+      const before = d.duelRating;
+      const after = rated ? eloUpdate(before, getBot(next.botId).rating, verdict.winner === "you" ? 1 : verdict.winner === "draw" ? 0.5 : 0) : before;
+      const today = startOfDay(at);
+      const paidToday = Object.values(d.duels).filter((x) => (x.result?.xp ?? 0) > 0 && (x.completedAt ?? 0) >= today).length;
+      const xp = paidToday < DUEL_XP_PER_DAY ? XP_RULES.duel : 0;
+      const result: DuelResultSummary = { ...verdict, you: sideSummary(you), bot: sideSummary(bot), rated, ratingBefore: before, ratingAfter: after, xp };
+      return {
+        ...d,
+        duelRating: after,
+        duels: { ...d.duels, [id]: { ...next, status: "completed", completedAt: at, result } },
+        xp: xp > 0 ? [...d.xp, this.xpEntry(xp, "duel", id, at)] : d.xp,
+      };
+    });
+  }
+
+  /** Gives up an active duel: a loss (rated, unless it's the daily duel), no XP. */
+  resignDuel(id: string, log: LogEntry[]): void {
+    const s = this.data.duels[id];
+    if (!s || s.status !== "active") return;
+    const { ctx } = duelContext(s.regime, s.seed);
+    const closeNow = (l: LogEntry[]): LogEntry[] => [...l, { kind: "advance", to: roundStep(s.round) }, { kind: "finish" }];
+    const at = Date.now();
+    this.update((d) => {
+      const rated = !s.daily;
+      const before = d.duelRating;
+      const after = rated ? eloUpdate(before, getBot(s.botId).rating, 0) : before;
+      const result: DuelResultSummary = {
+        winner: "bot",
+        reason: "resigned",
+        you: sideSummary(evaluateDuelSide(ctx, closeNow(log))),
+        bot: sideSummary(evaluateDuelSide(ctx, closeNow(s.botLog))),
+        rated,
+        ratingBefore: before,
+        ratingAfter: after,
+        xp: 0,
+      };
+      return { ...d, duelRating: after, duels: { ...d.duels, [id]: { ...s, log, status: "resigned", completedAt: at, updatedAt: at, result } } };
     });
   }
 

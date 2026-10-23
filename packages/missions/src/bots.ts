@@ -93,7 +93,7 @@ export const BOTS: BotPersona[] = [
     style: "churn",
     flaws: ["overtrading"],
     watch: "Spread and commission on every round trip. Count how much of Dash's result goes to costs.",
-    params: { riskPct: 1, stopAtr: 1, targetR: 0.9, takeChance: 0.95, quickExit: true },
+    params: { riskPct: 1, stopAtr: 1, targetR: 0.9, takeChance: 1, quickExit: true },
   },
   {
     id: "grudge",
