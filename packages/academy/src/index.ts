@@ -14,5 +14,6 @@ export * from "./widgets";
 export * from "./expr";
 export * from "./widget-math";
 export * from "./auction";
+export * from "./benchmark";
 export * from "./lesson-scripts";
 export * from "./course";

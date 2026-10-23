@@ -5,6 +5,7 @@
  */
 import { commission, riskAmount } from "@market-lab/engine";
 import { auctionAt, auctionBest, bestAsk, bestBid, bookAfter, fillBuy } from "./auction";
+import { parseSwitches, raceResult, raceSeries, versusGhost } from "./benchmark";
 import type { CandleData, TaskData } from "./types";
 
 export type WidgetState = Record<string, number | string | boolean>;
@@ -33,6 +34,7 @@ export const WIDGET_DEFAULTS: Record<string, WidgetState> = {
   exposure: { account: 10000, leverage: 1, position: 10000, move: 5 },
   "bias-spotter": {},
   "auction-book": { price: 0, bidPick: 0, askPick: 0, sent: false },
+  "benchmark-ghost": { trips: 0, log: "", done: false },
 };
 
 // ─── Order fills (the engine's rules for a long or short entry) ───────────
@@ -363,6 +365,22 @@ export function computeWidget(widget: string, s: WidgetState, data: TaskData = {
       const r = fillBuy(a, order.units, order.limit);
       const after = sent ? r.book : a;
       return { sent, filled: sent ? r.fills.length : 0, lastPrice: sent && r.fills.length ? r.fills[r.fills.length - 1] : 0, rest: sent ? r.rest : 0, bestBid: bestBid(after), bestAsk: bestAsk(after) };
+    }
+    case "benchmark-ghost": {
+      const g = data.ghost;
+      if (!g) return {};
+      if (g.mode === "trips") {
+        const trips = Math.round(num(s, "trips"));
+        const gross = g.gross?.at(-1) ?? 0;
+        const ghost = g.ghost?.at(-1) ?? 0;
+        const costs = round(trips * g.cost, 2);
+        const net = round(gross - costs, 2);
+        const gap = round(net - ghost, 2);
+        return { trips, gross, ghost, costs, net, gap, level: gap === 0, side: gap > 0 ? "above" : gap < 0 ? "below" : "level" };
+      }
+      const days = g.days ?? 252;
+      const r = raceResult(raceSeries(g.seed ?? 1, days, g.end), parseSwitches(s.log, days), g.cost);
+      return { done: !!s.done, ...r, net: round(r.net, 1), gross: round(r.gross, 1), ghost: round(r.ghost, 1), versus: versusGhost(r.net, r.ghost), tripsText: `${r.trips} round trip${r.trips === 1 ? "" : "s"}` };
     }
     default:
       return {};

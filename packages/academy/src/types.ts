@@ -242,6 +242,27 @@ export interface TaskData {
   options?: { id: string; label: string }[];
   /** auction-book: the book (one unit per order) and what the learner does with it. */
   auction?: AuctionSpec;
+  /** benchmark-ghost: the ghost (buy-and-hold, after costs) and what the learner races it with. */
+  ghost?: GhostSpec;
+}
+
+export interface GhostSpec {
+  /**
+   * "trips": a year's result before costs; the learner sets the round trips and watches costs pull it
+   * toward the ghost. "race": a seeded year of LABX plays out and the learner buys and sells live.
+   */
+  mode: "trips" | "race";
+  /** Percent of the account per round trip (a buy and its sell). */
+  cost: number;
+  /** trips: month-end results in percent, the trader's before costs and the ghost's after its own. */
+  gross?: number[];
+  ghost?: number[];
+  /** trips: the most round trips the slider offers. */
+  max?: number;
+  /** race: the year (raceSeries). */
+  seed?: number;
+  days?: number;
+  end?: number;
 }
 
 export interface AuctionSpec {

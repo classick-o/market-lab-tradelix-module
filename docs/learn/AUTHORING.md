@@ -99,6 +99,7 @@ Contractele sunt în `packages/academy/src/widgets.ts` (câmpurile pe care le po
 | `exposure` | expunere și levier | — |
 | `bias-spotter` | carduri: numești biasul | `cards`, `options` |
 | `auction-book` | o carte de ordine vie: `clear` (tragi prețul unic, histograma unităților se construiește din încercări), `spread` (perechile tranzacționează, apoi atingi best bid și best ask), `incoming` (trimiți un ordin și îl vezi executat) | `auction` (`buyers`, `sellers`, `step`, `mode`, `cleared?`, `incoming?`) |
+| `benchmark-ghost` | rezultatul unui trader față de ghost (buy-and-hold după costuri): `trips` (tragi numărul de round trips; costurile mănâncă linia până la ghost), `race` (un an LABX seeded rulează live, cumperi și vinzi; verdictul vine la final) | `ghost` (`mode`, `cost`; trips: `gross`, `ghost`, `max`; race: `seed`, `days`, `end`) |
 
 `TaskSpec`: `widget`, `goal` (≤ 40 de cuvinte), `start`, `locked?`, `hidden?`, `success` (condiție: `{all:[…]}`, `{any:[…]}`, `{not:…}`, `{field, eq|ne|gt|gte|lt|lte, tol?}`), `feedback?` (`[{when, text}]`, primul care se potrivește), `correct`, `incorrect?`, `hints` (1–3), `showMe`, `concept?`. Testul verifică pe cifrele reale ale widget-ului că `start` nu rezolvă task-ul și că `showMe` îl rezolvă.
 

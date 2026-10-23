@@ -112,4 +112,24 @@ export const WIDGET_CONTRACTS: Record<string, WidgetContract> = {
       rest: "units left waiting as a bid at the order's limit",
     },
   },
+  "benchmark-ghost": {
+    title: "Race the benchmark ghost",
+    controls: {
+      trips: 'mode "trips": round trips in the year, 0 to max',
+      log: 'mode "race": the days the learner bought or sold, in order ("12,40,55")',
+      done: 'mode "race": true once the year has played out',
+    },
+    outputs: {
+      gross: "the trader's result before costs, %",
+      ghost: "the ghost's result: buy-and-hold after its one round trip, %",
+      costs: "round trips × cost, in points",
+      net: "the trader's result after costs, %",
+      gap: 'mode "trips": net − ghost',
+      level: 'mode "trips": true when net equals the ghost',
+      side: 'mode "trips": "above", "below" or "level" against the ghost',
+      inDays: 'mode "race": days spent in the market',
+      versus: 'mode "race": "3.1 points behind it", "level with it" or "1.2 points ahead of it"',
+      tripsText: 'mode "race": "1 round trip", "12 round trips"',
+    },
+  },
 };

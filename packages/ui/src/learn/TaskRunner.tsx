@@ -106,7 +106,9 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
     task.widget === "bias-spotter" ||
     (task.widget === "level-drawer" && !!task.data?.breakout) ||
     // Tapping the best bid and ask, or sending the order, is the answer.
-    (task.widget === "auction-book" && task.data?.auction?.mode !== "clear");
+    (task.widget === "auction-book" && task.data?.auction?.mode !== "clear") ||
+    // The year playing out is the answer.
+    (task.widget === "benchmark-ghost" && task.data?.ghost?.mode === "race");
   useKeys({ h: hint, H: hint, Enter: () => (commitsItself ? false : check()) });
 
   return (

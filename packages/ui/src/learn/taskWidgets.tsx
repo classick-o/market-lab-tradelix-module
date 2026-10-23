@@ -11,6 +11,7 @@ import { Bars, DraggableLevel, LearnChart } from "../kit";
 import { useKeys } from "./context";
 import { Feedback } from "./parts";
 import { AuctionBook } from "./AuctionBook";
+import { BenchmarkGhost } from "./BenchmarkGhost";
 
 export interface TaskWidgetProps {
   task: TaskSpec;
@@ -33,7 +34,7 @@ const signed = (v: number, f: (x: number) => string = (x) => p2(x)) => (Math.abs
 
 // ─── Controls ──────────────────────────────────────────────────────────────
 
-function Range({ label, value, min, max, step, format, disabled, onChange }: { label: string; value: number; min: number; max: number; step: number; format?: (v: number) => string; disabled?: boolean; onChange: (v: number) => void }) {
+export function Range({ label, value, min, max, step, format, disabled, onChange }: { label: string; value: number; min: number; max: number; step: number; format?: (v: number) => string; disabled?: boolean; onChange: (v: number) => void }) {
   const id = useId();
   const text = format ? format(value) : String(value);
   return (
@@ -809,4 +810,5 @@ export const TASK_WIDGETS: Record<string, ComponentType<TaskWidgetProps>> = {
   exposure: Exposure,
   "bias-spotter": BiasSpotter,
   "auction-book": AuctionBook,
+  "benchmark-ghost": BenchmarkGhost,
 };

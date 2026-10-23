@@ -1,9 +1,7 @@
-import type { CandleData, Concept, GlossaryTerm, Lesson, Question, TaskData, TaskSpec, UnitContent } from "../../types";
+import type { Concept, GlossaryTerm, Lesson, Question, TaskData, TaskSpec, UnitContent } from "../../types";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-/** A flat candle: level 0 charts are lines, so candles only mark a value. */
-const flat = (p: number): CandleData => ({ o: p, h: p, l: p, c: p });
 const p2 = (v: number) => v.toFixed(2);
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
@@ -212,10 +210,53 @@ const CLASS_CARDS = cardSort(CLASSES, [
 const GHOST = [0, 0.8, 1.5, 1.1, 2.4, 3.2, 2.9, 4.1, 5.0, 5.8, 6.9, 8.1, 9.0];
 /** Dana's trading before costs, % at each month-end. */
 const DANA_GROSS = [0, 1.0, 2.6, 3.0, 4.2, 5.5, 6.1, 7.4, 8.8, 10.1, 11.0, 12.6, 14.0];
-/** Dana's round trips so far (3 or 4 a month, 40 in the year). */
-const DANA_TRADES = [0, 3, 7, 10, 13, 17, 20, 23, 27, 30, 33, 37, 40];
-/** After costs: about 0.2% of the account per round trip. Ends at 14.0 − 40 × 0.2 = 6.0. */
-const DANA_NET = DANA_GROSS.map((g, i) => round2(g - 0.2 * DANA_TRADES[i]));
+/** Dana made 40 round trips at about 0.2% of the account each: 14.0 − 40 × 0.2 = 6.0 after costs. */
+
+/**
+ * The benchmark-ghost task in "trips" mode: a year's result before costs against the ghost; the
+ * learner sets the round trips and finds the number that pulls the result down to the ghost's.
+ */
+function tripsTask(gross: number[], ghost: number[], goal: string, after: string): TaskSpec {
+  const g = gross[gross.length - 1];
+  const b = ghost[ghost.length - 1];
+  const breakeven = Math.round((g - b) / 0.2);
+  return {
+    widget: "benchmark-ghost",
+    goal,
+    data: { ghost: { mode: "trips", cost: 0.2, gross, ghost, max: 60 } },
+    start: { trips: 0 },
+    success: { field: "level", eq: true },
+    feedback: [
+      { when: { field: "side", eq: "above" }, text: "At {trips} round trips, costs take {costs:1} points, and {net:1}% is still above the ghost's {ghost:1}%. More trades pull it lower." },
+      { when: { field: "side", eq: "below" }, text: "At {trips} round trips, costs take {costs:1} points and leave {net:1}%, below the ghost's {ghost:1}%. Fewer trades." },
+    ],
+    correct: `Right: {trips} × 0.2 = {costs:1} points of costs, and {gross:1} − {costs:1} = {net:1}%, level with the ghost. ${after}`,
+    hints: ["Each round trip takes 0.2 points off the result before costs.", `The gap to close is ${g.toFixed(1)} − ${b.toFixed(1)} = ${(g - b).toFixed(1)} points.`, `${(g - b).toFixed(1)} ÷ 0.2 = ?`],
+    showMe: { trips: breakeven },
+    concept: "passive-benchmark",
+  };
+}
+
+/** Try: another trader, +10.0% before costs, against a ghost at +6.0%. Level at 20 round trips. */
+const TRY_GROSS = DANA_GROSS.map((v) => round2((v * 10) / 14));
+const TRY_GHOST = GHOST.map((v) => round2((v * 6) / 9));
+
+/**
+ * B5: a year of LABX plays out and the learner trades it live. Seed 130: up to about 111.80 by day
+ * 88, down to 98.20 by day 132, a recovery to 112.96, a late dip, and 109.20 at the end, so the ghost
+ * makes 9.2 − 0.2 = +9.0% after its one round trip.
+ */
+const RACE_TASK: TaskSpec = {
+  widget: "benchmark-ghost",
+  goal: "A new year of LABX, and you start in cash. **Buy** gets you in, **Sell** gets you out, as often as you like; each round trip costs 0.2%. The ghost holds all year. Try to finish ahead of it.",
+  data: { ghost: { mode: "race", cost: 0.2, seed: 130, days: 252, end: 9.2 } },
+  start: { log: "", done: false },
+  success: { field: "done", eq: true },
+  correct: "Year over: you made {net:1}% after {tripsText}, and the ghost made {ghost:1}%, so you finished {versus}. Your {costs:1} points of costs were certain. What your timing added or lost on top is the part you'd have to repeat every year to call it an edge.",
+  hints: ["Buy puts you in the market and Sell takes you back to cash. Each round trip costs 0.2%.", "While you're in cash, your line stays flat and the ghost keeps moving.", "Buying on day one and never selling makes you the ghost, exactly."],
+  showMe: { log: "0", done: true },
+  concept: "passive-benchmark",
+};
 
 // ─── 0.1.5 data ─────────────────────────────────────────────────────────────
 
@@ -698,25 +739,19 @@ const L014: Lesson = {
         text: "[[scalping|Scalpers]] and [[day-trading|day traders]] pay costs many times a week; [[swing-trading|swing]] and [[position-trading|position traders]] far less often. Before costs, trading is close to zero-sum around the market's own return. After costs, it's negative-sum for the median trader. Costs are certain; an edge is not.",
       },
       {
-        kind: "figure",
-        title: "The benchmark ghost",
-        text: "The ghost is your [[benchmark]]: the same market, bought and held, after costs. A trading result only counts as good if it beats it.",
-        figure: {
-          kind: "chart",
-          chart: {
-            candles: GHOST.map(flat),
-            range: [-1, 15],
-            height: 260,
-            describe: "One year of month-end results in percent. Buy-and-hold rises to +9.0%. Dana's trading reaches +14.0% before costs but +6.0% after the costs of 40 round trips.",
-          },
-          steps: [
-            { text: "The ghost: buy LABX on day one and hold. After costs, +9.0% at year end.", layers: [{ kind: "line", values: GHOST, role: "neutral", dashed: true, label: "GHOST" }] },
-            { text: "Dana's 40 trades before costs (GROSS): +14.0%. On paper, she beat the ghost.", layers: [{ kind: "line", values: DANA_GROSS, role: "concept", dashed: true, label: "GROSS" }] },
-            { text: "Each round trip (buy, then sell) costs about 0.2%. Forty of them: 8.0 points. After costs (NET): +6.0%.", layers: [{ kind: "line", values: DANA_NET, role: "accent", label: "NET" }] },
-            { text: "After costs, Dana is 3.0 points behind the ghost.", layers: [{ kind: "bracket", from: 6.0, to: 9.0, index: 12, label: "−3.0" }] },
-          ],
-        },
-        concept: "passive-benchmark",
+        kind: "task",
+        title: "Dana against the ghost",
+        task: tripsTask(
+          DANA_GROSS,
+          GHOST,
+          "The ghost is your [[benchmark]]: LABX bought on day one and held, after costs. Dana made +14.0% before costs; the ghost made +9.0%. Drag her round trips and find how many pull her down to the ghost.",
+          "Dana actually made 40: 8.0 points of costs, +6.0%, 3.0 behind the ghost.",
+        ),
+      },
+      {
+        kind: "task",
+        title: "Race the ghost",
+        task: RACE_TASK,
       },
       {
         kind: "worked",
@@ -741,40 +776,13 @@ const L014: Lesson = {
         concept: "passive-benchmark",
       },
       { kind: "callout", tone: "key", text: "Every result in this course is shown after costs, next to the benchmark ghost. Beating it is the real test, and most active traders don't." },
-      {
-        kind: "predict",
-        title: "Your turn: trade down to the ghost",
-        prompt: "Before costs you made +10.0%; the ghost made +6.0%. Each round trip costs about 0.2% of the account. How many trades pull your result down to the ghost's?",
-        control: {
-          kind: "slider",
-          min: 0,
-          max: 60,
-          step: 1,
-          start: 0,
-          unit: "trades",
-          answer: 20,
-          tolerance: 0,
-          feedback: [
-            { from: 0, to: 19, text: "Not yet: below 20 trades, costs take less than 4.0 points, so you stay above the ghost. At 10 trades you're at +8.0%." },
-            { from: 20, to: 20, text: "Right: 20 × 0.2 = 4.0 points of costs, and 10.0 − 4.0 = 6.0, level with the ghost." },
-            { from: 21, to: 60, text: "Too many: past 20 trades, costs drop you below the ghost. At 30 trades you're at +4.0%." },
-          ],
-        },
-        figure: {
-          kind: "bars",
-          unit: "%",
-          bars: [
-            { label: "Before costs", value: 10.0, role: "up" },
-            { label: "Costs, 20 × 0.2", value: -4.0, role: "down" },
-            { label: "After costs", value: 6.0, role: "accent" },
-            { label: "Benchmark ghost", value: 6.0, role: "neutral" },
-          ],
-          steps: ["Before costs, +10.0%. Twenty round trips at 0.2% each cost 4.0 points.", "After costs, +6.0%: exactly the ghost."],
-        },
-        reveal: "20 trades: the gap to close is 10.0 − 6.0 = 4.0 points, and 4.0 ÷ 0.2 = 20. About, ignoring compounding. The 0.2% is a position as big as the account, 99 units near 100.00, paying 19.81 in spread and commission per round trip.",
-        concept: "passive-benchmark",
-      },
     ],
+    task: tripsTask(
+      TRY_GROSS,
+      TRY_GHOST,
+      "Another trader: +10.0% before costs, against a ghost at +6.0%. Find how many round trips bring them level with it.",
+      "About, ignoring compounding: the 0.2% is a position as big as the account, 99 units near 100.00, paying 19.81 in spread and commission per round trip.",
+    ),
     check: ["q-0.1.4-1", "q-0.1.4-2", "q-0.1.4-3"],
     recap: {
       takeaways: [

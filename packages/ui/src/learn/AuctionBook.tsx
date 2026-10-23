@@ -15,7 +15,7 @@ const fmt = (p: number) => p.toFixed(2);
 const cents = (p: number) => Math.round(p * 100);
 const reduced = () => !!document.querySelector(".ml-reduced-motion") || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-function useNarrow() {
+export function useNarrow() {
   const ref = useRef<HTMLDivElement>(null);
   const [narrow, setNarrow] = useState(false);
   useEffect(() => {
