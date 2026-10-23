@@ -50,6 +50,10 @@ export interface EntryView {
   afterLoss: boolean;
   /** Risk of the previous entry, for revenge-sizing checks. */
   previousRisk: number | null;
+  /** Average true range of the visible candles when the order was placed (duels). */
+  atr?: number;
+  /** SMA 20 of the visible candles when the order was placed (duels). */
+  sma20?: number | null;
 }
 
 export interface StopChangeView {

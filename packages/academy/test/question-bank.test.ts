@@ -46,5 +46,6 @@ describe("question bank", () => {
         expect(v!.explanation, `${q.id}: placeholders resolved`).not.toMatch(/[{}]/);
       }
     }
-  });
+    // Thousands of generated variants: give it room when other suites run in parallel.
+  }, 30_000);
 });

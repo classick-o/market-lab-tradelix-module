@@ -356,12 +356,55 @@ const rewardRiskPlanned: Evaluator = (view, p: { minRatio: number }) => {
   };
 };
 
-const pacing: Evaluator = (view) => {
+// ─── Entry context (duels: what the visible candles said when the order was placed) ──
+
+const stopOutsideNoise: Evaluator = (view, p: { minAtr: number }) => {
+  const measured = view.entries.filter((e) => e.stopLoss !== null && e.atr);
+  if (measured.length === 0) return NA;
+  const scores = measured.map((e) => {
+    const dist = Math.abs(e.entryPrice - e.stopLoss!) / e.atr!;
+    return dist >= p.minAtr ? 1 : dist >= p.minAtr / 2 ? 0.5 : 0.2;
+  });
+  const tight = scores.filter((s) => s < 1).length;
+  return {
+    applicable: true,
+    score: mean(scores),
+    detail:
+      tight === 0
+        ? measured.length === 1
+          ? "Your stop sat outside the normal noise of the candles."
+          : `All ${measured.length} stops sat outside the normal noise of the candles.`
+        : `${tight} of ${plural(measured.length, "stop")} sat inside normal noise, closer than ${p.minAtr}× the average candle range. Ordinary movement can hit a stop like that before the idea is wrong.`,
+    errorTags: tight > 0 ? ["stop_inside_noise"] : [],
+  };
+};
+
+const entryNotExtended: Evaluator = (view, p: { maxAtr: number }) => {
+  const measured = view.entries.filter((e) => e.atr && e.sma20 != null);
+  if (measured.length === 0) return NA;
+  const chased = measured.filter((e) => {
+    const stretch = (e.entryPrice - e.sma20!) / e.atr!;
+    return e.side === "long" ? stretch > p.maxAtr : -stretch > p.maxAtr;
+  }).length;
+  return {
+    applicable: true,
+    score: 1 - chased / measured.length,
+    detail:
+      chased === 0
+        ? measured.length === 1
+          ? "You didn't chase: the entry was close to the average price."
+          : `None of your ${measured.length} entries chased a move that was already stretched.`
+        : `${chased} of ${plural(measured.length, "entry")} came after the move had already stretched more than ${p.maxAtr}× the average candle range from the SMA 20. That's buying late, with the stop far away or inside the pullback.`,
+    errorTags: chased > 0 ? ["chased_entry"] : [],
+  };
+};
+
+const pacing: Evaluator = (view, p: { selectivePer20?: number; busyPer20?: number } = {}) => {
   const bars = Number(view.facts.barsPlayed ?? 0);
   if (view.entries.length === 0 || bars < 20) return NA;
   const per20 = view.entries.length / (bars / 20);
-  if (per20 <= 1.5) return { applicable: true, score: 1, detail: `${plural(view.entries.length, "entry")} in ${bars} candles: selective.` };
-  if (per20 <= 3) return { applicable: true, score: 0.6, detail: `${plural(view.entries.length, "entry")} in ${bars} candles: on the busy side.` };
+  if (per20 <= (p.selectivePer20 ?? 1.5)) return { applicable: true, score: 1, detail: `${plural(view.entries.length, "entry")} in ${bars} candles: selective.` };
+  if (per20 <= (p.busyPer20 ?? 3)) return { applicable: true, score: 0.6, detail: `${plural(view.entries.length, "entry")} in ${bars} candles: on the busy side.` };
   return {
     applicable: true,
     score: 0.2,
@@ -387,5 +430,7 @@ export const EVALUATORS: Record<string, Evaluator> = {
   no_stop_widening: noStopWidening,
   no_revenge_sizing: noRevengeSizing,
   reward_risk_planned: rewardRiskPlanned,
+  stop_outside_noise: stopOutsideNoise,
+  entry_not_extended: entryNotExtended,
   pacing,
 };

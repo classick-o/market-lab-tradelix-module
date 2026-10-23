@@ -23,7 +23,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json",
     "content:generate": "tsx packages/missions/scripts/generate-data.ts",
-    "content:inspect": "tsx packages/missions/scripts/inspect.ts"
+    "content:inspect": "tsx packages/missions/scripts/inspect.ts",
+    "bots:calibrate": "tsx packages/missions/scripts/calibrate-bots.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

@@ -6,3 +6,5 @@ export * from "./evaluate";
 export * from "./placement";
 export * from "./arena";
 export * from "./content";
+export * from "./bots";
+export * from "./duel";
