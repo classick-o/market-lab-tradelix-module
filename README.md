@@ -88,7 +88,9 @@ Jos în sidebar sunt cardul „Upgrade to Pro” (devine „Manage plan” pentr
     - jurnal opțional la confirmarea ordinului: motivul, planul de ieșire, starea;
     - istoricul ordinelor și sumarul sesiunii.
   - **Duels:** 1v1 contra a 8 boți declarați, pe aceeași piață, în timp real: o lumânare la 15 secunde, 80 de lumânări (20 de minute), numărătoare de 10 secunde și pauză oricând:
-    - tranzacțiile botului se văd pe grafic și în panoul „You vs bot”, iar mișcările lui apar la închiderea lumânărilor;
+    - tranzacționare dintr-un tap (mărime, stop și target opționale), cu biletul complet disponibil pentru limit;
+    - tranzacțiile botului se văd pe grafic și în panoul „You vs bot” și se pot ascunde; mișcările lui apar la închiderea lumânărilor;
+    - zoom și privire în trecut pe grafic (butoane, rotiță, tragere);
     - câștigă procesul: 70% decision quality, 30% rezultat în R;
     - rating Elo, daily duel, Mirror (botul care joacă greșeala ta cea mai frecventă). Detalii în [PLAN_DUELS.md](PLAN_DUELS.md).
   - **Virtual Portfolio:** echitate, capital disponibil, expunere, risc deschis, curba echității, poziții închise.
