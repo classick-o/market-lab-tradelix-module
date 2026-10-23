@@ -47,6 +47,8 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 - **XP:** 15 la terminare, plus 10 pentru 3/3 din prima încercare.
 - Întrebările numerice cu generator (`vary`) apar în check cu alte cifre decât în lecție, ca să se verifice regula, nu memoria.
 - Lecția se redeschide unde a rămas; o lecție terminată se redeschide la recap.
+- Un ecran deja parcurs arată răspunsul. La un task apare și „Try again”, care repornește widget-ul de la început, cu animațiile lui.
+- „Replay lesson” (din recap) și „Start over” (din meniu) reiau lecția de la zero: animațiile pornesc singure, task-urile sunt goale, iar Continue cere din nou interacțiunea. Checkul refăcut nu schimbă primul scor și nu mai dă XP.
 - Dacă primele două interacțiuni notate din Learn sunt corecte din prima, player-ul oferă „You seem to know this. Skip to Try?”.
 - **Read mode** arată toată lecția pe o pagină, cu aceleași interacțiuni. Marcarea „Read” nu dă XP de lecție; checkul de la final o termină.
 - Cât e deschisă o lecție, sidebar-ul se strânge la rail, iar pe telefon bara de jos dispare.

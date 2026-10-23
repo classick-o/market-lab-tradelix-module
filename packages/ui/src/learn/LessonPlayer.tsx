@@ -325,7 +325,9 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
   useEffect(() => store.startLesson(lesson.id), [lesson.id, store]);
 
   const screen = screens[idx];
-  const doneOnEnter = useMemo(() => completed.has(idx), [idx]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Each replay is a new take, so even the screen already on show starts over.
+  const [take, setTake] = useState(0);
+  const doneOnEnter = useMemo(() => completed.has(idx), [idx, take]); // eslint-disable-line react-hooks/exhaustive-deps
   const ready = completed.has(idx);
   const reachable = useCallback((i: number) => i <= idx || completed.has(i) || completed.has(i - 1), [idx, completed]);
 
@@ -351,6 +353,12 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
     go(idx - 1);
     return true;
   }, [idx, go]);
+  // Replaying plays every screen again from scratch; the store keeps the first check and the XP.
+  const replay = useCallback(() => {
+    setCompleted(new Set());
+    setTake((t) => t + 1);
+    go(0);
+  }, [go]);
 
   const api: ScreenApi = useMemo(
     () => ({
@@ -437,7 +445,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
         terms={lessonTerms(lesson)}
         xp={xp}
         next={nextUp}
-        onReplay={() => go(0)}
+        onReplay={replay}
         onJump={(p) => {
           const i = screens.findIndex((s) => s.phase === p);
           if (i >= 0) go(i);
@@ -489,7 +497,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
                     <button type="button" role="menuitem" onClick={() => (setMenu(false), store.toggleBookmark(`lesson:${lesson.id}`))}>
                       <Icon name="star" size={16} /> {lab.bookmarks.includes(`lesson:${lesson.id}`) ? "Remove from saved" : "Save lesson"}
                     </button>
-                    <button type="button" role="menuitem" onClick={() => (setMenu(false), go(0))}>
+                    <button type="button" role="menuitem" onClick={() => (setMenu(false), replay())}>
                       <Icon name="replay" size={16} /> Start over
                     </button>
                     <button type="button" role="menuitem" onClick={() => (setMenu(false), setHelp(true))}>
@@ -534,7 +542,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
         <div className="lp-body">
           <main ref={mainRef} className="lp-main" aria-live="off">
             <ScreenContext.Provider value={api}>
-              <div key={idx} className={cx("lp-screen", `lp-screen--${screen.kind}`)}>
+              <div key={`${take}-${idx}`} className={cx("lp-screen", `lp-screen--${screen.kind}`)}>
                 {content}
               </div>
             </ScreenContext.Provider>

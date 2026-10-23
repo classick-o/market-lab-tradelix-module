@@ -23,6 +23,8 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
   const [message, setMessage] = useState<string | null>(null);
   const [hints, setHints] = useState(0);
   const [checks, setChecks] = useState(0);
+  // Bumped by Reset, so the widget starts over with its own animations too.
+  const [run, setRun] = useState(0);
   const anim = useRef<number | undefined>(undefined);
   const values = useMemo(() => widgetValues(task.widget, state, task.data), [task, state]);
   const solved = status === "correct" || status === "shown";
@@ -92,6 +94,7 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
     setState(start);
     setStatus("idle");
     setMessage(null);
+    setRun((r) => r + 1);
   };
   const hint = () => {
     if (solved || hints >= task.hints.length) return false;
@@ -118,7 +121,7 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
       </div>
       <div className="lp-task-widget">
         {View ? (
-          <View task={task} state={state} values={values} set={set} solved={solved} locked={new Set(task.locked ?? [])} hidden={new Set(solved ? [] : task.hidden ?? [])} check={check} hints={hints} />
+          <View key={run} task={task} state={state} values={values} set={set} solved={solved} locked={new Set(task.locked ?? [])} hidden={new Set(solved ? [] : task.hidden ?? [])} check={check} hints={hints} />
         ) : (
           <p className="ml-muted">This exercise isn't available yet.</p>
         )}
@@ -144,7 +147,14 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
           <Rich text={message} />
         </Feedback>
       ) : null)}
-      {!s.done && (
+      {s.done && solved ? (
+        // Revisited: the answer is on screen, and the widget can be played again.
+        <div className="lp-task-actions">
+          <button type="button" className="ml-btn ml-btn--secondary ml-btn--md" onClick={reset}>
+            <Icon name="replay" size={18} /> Try again
+          </button>
+        </div>
+      ) : (
         <div className="lp-task-actions">
           {!commitsItself && (
             <button type="button" className="ml-btn ml-btn--primary ml-btn--md" onClick={() => check()} disabled={solved}>
