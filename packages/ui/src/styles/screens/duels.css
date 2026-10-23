@@ -242,22 +242,36 @@
   font-weight: 600;
   line-height: 1;
 }
-.ml-duel-paused {
+/* Paused, looking back: small flags under the chart's title. */
+.ml-duel-flags {
   position: absolute;
-  top: 58px;
+  top: 104px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  pointer-events: none;
+}
+.ml-duel-flag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  border: 1px solid color-mix(in srgb, var(--ml-warn) 45%, transparent);
+  border: 1px solid var(--ml-border-strong);
   border-radius: var(--ml-r-sm);
   background: var(--ml-bg);
-  color: var(--ml-warn);
+  color: var(--ml-text-2);
   font-size: var(--ml-fs-sm);
   font-weight: 500;
   white-space: nowrap;
+}
+.ml-duel-flag.is-paused {
+  border-color: color-mix(in srgb, var(--ml-warn) 45%, transparent);
+  color: var(--ml-warn);
 }
 
 .ml-bot-note {
@@ -439,4 +453,91 @@
     max-width: none;
     order: 3;
   }
+}
+
+/* ── Chart view and the bot toggle ── */
+
+.ml-chartview {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.ml-chartview .ml-btn {
+  margin-left: var(--ml-s2);
+}
+.ml-ind--rival::before {
+  width: 0;
+  height: 0;
+  border-radius: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid var(--ml-rival);
+}
+.ml-vs.is-solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ── Quick trade ── */
+
+.ml-qt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-s3);
+}
+.ml-qt-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ml-s3);
+}
+.ml-qt-label {
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-sm);
+}
+.ml-qt-summary {
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-sm);
+}
+.ml-qt-buttons {
+  display: flex;
+  gap: var(--ml-s2);
+}
+.ml-qt-buttons > .ml-btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.ml-qt-price {
+  margin-left: 6px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.ml-qt-pos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ml-s3);
+  padding: var(--ml-s3);
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-md);
+  background: var(--ml-surface-2);
+}
+.ml-qt-pos-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ml-qt > .ml-btn--tertiary {
+  align-self: flex-start;
+}
+.ml-qt-more {
+  border-top: 1px solid var(--ml-border);
+  padding-top: var(--ml-s3);
+}
+.ml-qt-more summary {
+  cursor: pointer;
+  margin-bottom: var(--ml-s3);
+  color: var(--ml-text-2);
+  font-size: 13px;
+  font-weight: 500;
 }

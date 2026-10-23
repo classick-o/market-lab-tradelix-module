@@ -1,8 +1,8 @@
-import { advance, createContext, equityOf, initState, replay, type Candle, type EngineConfig, type LogEntry, type SimContext, type SimState } from "@market-lab/engine";
+import { advance, createContext, equityOf, initState, replay, type Candle, type EngineConfig, type LogEntry, type SimContext, type SimState, type Trade } from "@market-lab/engine";
 import { riskDisciplineScore, scoreRubric, type CriterionDef, type DqsResult } from "@market-lab/evaluation";
 import { DUEL_LEAD_IN, createRng, duelSpec, generateCandles, type ArenaRegime, type Rng } from "@market-lab/scenario-gen";
 import { ARENA_SCENARIOS, ARENA_START, analyzeArena, arenaConfig, getArenaScenario, type ArenaScenario } from "./arena";
-import { BOTS, PLAYABLE_FLAWS, botDecide, tradeR, type BotFlaw, type BotId, type BotPersona } from "./bots";
+import { BOTS, PLAYABLE_FLAWS, botDecide, type BotFlaw, type BotId, type BotPersona } from "./bots";
 import { atr, sma } from "./indicators";
 
 /**
@@ -22,7 +22,7 @@ export const DUEL_COUNTDOWN = 10;
 export const DUEL_START = ARENA_START + DUEL_LEAD_IN;
 /** The engine step (tick) at which the duel ends: the close of its last candle. */
 export const DUEL_END = DUEL_START + DUEL_CANDLES * TICKS_PER_CANDLE;
-/** Risk limit per order, enforced by the engine. */
+/** Risk limit for an order with a stop, enforced by the engine. Without a stop the risk is unknown. */
 export const DUEL_RISK_PCT = 1;
 export const DUEL_PROCESS_WEIGHT = 0.7;
 /** The outcome counts up to ±3R, so one lucky move can't decide a duel. */
@@ -30,10 +30,18 @@ export const DUEL_R_CAP = 3;
 export const DUEL_START_RATING = 1000;
 export const DUEL_K = 32;
 
-/** Arena rules plus the duel limits: a stop on every order and at most 1% risk, both enforced. */
+/** Arena rules plus the duel limit: an order with a stop risks at most 1%. A stop is optional (scored, not required). */
 export function duelConfig(s: ArenaScenario): EngineConfig {
   const cfg = arenaConfig(s);
-  return { ...cfg, rules: { ...cfg.rules, requireStop: true, maxRiskPct: DUEL_RISK_PCT, enforceMaxRisk: true } };
+  return { ...cfg, rules: { ...cfg.rules, requireStop: false, maxRiskPct: DUEL_RISK_PCT, enforceMaxRisk: true } };
+}
+
+/**
+ * A trade's result in R: the net result divided by the risk taken at entry. Without a stop the
+ * risk is unknown, so the unit is 1% of the starting account instead.
+ */
+export function duelTradeR(t: Trade, initialEquity: number): number {
+  return (t.realized - t.fees) / (t.initialRisk || (initialEquity * DUEL_RISK_PCT) / 100);
 }
 
 // ─── The market: whole candles for the chart, ticks for the engine ─────────
@@ -223,13 +231,14 @@ export function playBot(m: DuelMarket, persona: BotPersona, seed: number, foresi
 
 // ─── Scoring ───────────────────────────────────────────────────────────────
 
-/** Stops and risk are enforced by the engine in a duel, so the rubric scores what still separates players. */
+/** A stop is optional in a duel, so having one is scored; the 1% limit with a stop is enforced by the engine. */
 export const DUEL_RUBRIC: CriterionDef[] = [
-  { id: "plan", label: "Planned exits worth the risk", evaluator: "reward_risk_planned", weight: 20, skill: "scenario_analysis", appliesIf: "entered", params: { minRatio: 1.5 } },
-  { id: "noise", label: "Stops outside normal noise", evaluator: "stop_outside_noise", weight: 15, skill: "risk_management", appliesIf: "entered", params: { minAtr: 0.8 } },
+  { id: "stops", label: "Every entry had a stop-loss", evaluator: "invalidation_before_entry", weight: 20, skill: "risk_management", appliesIf: "entered" },
+  { id: "plan", label: "Planned exits worth the risk", evaluator: "reward_risk_planned", weight: 15, skill: "scenario_analysis", appliesIf: "entered", params: { minRatio: 1.5 } },
+  { id: "noise", label: "Stops outside normal noise", evaluator: "stop_outside_noise", weight: 10, skill: "risk_management", appliesIf: "entered", params: { minAtr: 0.8 } },
   { id: "chase", label: "Entries that didn't chase", evaluator: "entry_not_extended", weight: 15, skill: "market_structure", appliesIf: "entered", params: { maxAtr: 1.8 } },
-  { id: "widen", label: "Never widened a stop", evaluator: "no_stop_widening", weight: 20, skill: "decision_discipline" },
-  { id: "revenge", label: "Kept risk steady after losses", evaluator: "no_revenge_sizing", weight: 15, skill: "decision_discipline" },
+  { id: "widen", label: "Never widened a stop", evaluator: "no_stop_widening", weight: 15, skill: "decision_discipline" },
+  { id: "revenge", label: "Kept risk steady after losses", evaluator: "no_revenge_sizing", weight: 10, skill: "decision_discipline" },
   { id: "pacing", label: "Traded selectively", evaluator: "pacing", weight: 15, skill: "decision_discipline" },
 ];
 
@@ -238,7 +247,7 @@ export interface DuelSide {
   /** Decision quality on the duel rubric; null without a trade. */
   process: number | null;
   rds: number | null;
-  /** Sum of the trades' R-multiples (net result ÷ initial risk). Size can't change it. */
+  /** Sum of the trades' R-multiples (`duelTradeR`). With a stop, size can't change it. */
   r: number;
   /** 0–100: 50 at 0R, 0 at −3R or worse, 100 at +3R or better. */
   outcome: number;
@@ -281,7 +290,7 @@ export function evaluateDuelSide(m: DuelMarket, log: readonly LogEntry[]): DuelS
     facts: { barsPlayed: candles },
   });
   const trades = a.state.trades;
-  const r = trades.reduce((s, t) => s + (tradeR(t) ?? 0), 0);
+  const r = trades.reduce((s, t) => s + duelTradeR(t, m.ctx.cfg.initialEquity), 0);
   const process = trades.length > 0 ? dqs.dqs : null;
   const outcome = outcomeScore(r);
   return {

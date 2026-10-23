@@ -51,12 +51,13 @@ import type { ArenaRegime } from "@market-lab/scenario-gen";
 import { Chart, type ChartMarker } from "../components/Chart";
 import { BotAvatar, BotTag, DuelLegend, VsPanel, formatR } from "../components/DuelParts";
 import { OrderTicket, initialTicket, parseTicket, type TicketValue } from "../components/OrderTicket";
+import { QUICK_DEFAULTS, QuickTrade } from "../components/QuickTrade";
 import { Card, PageHead, Pnl, SubNav } from "../components/Page";
 import { usePlaybackKeys } from "../components/Playback";
 import { ChartTitle, StageBar, useChartHeight, useMediaQuery, useReducedMotion } from "../components/Stage";
 import { smaSeries } from "../components/series";
 import { useToast } from "../components/Toast";
-import { Button, Checkbox, Chips, Dialog, Empty, Icon, InlineError, KeyValues, Tabs, Tag, TextField, cx } from "../components/ui";
+import { Button, Checkbox, Chips, Dialog, Empty, Icon, IconButton, InlineError, KeyValues, Tabs, Tag, TextField, cx } from "../components/ui";
 import { draftLines, linesFromState, markersFrom, rivalLinesFromState } from "../components/visuals";
 import { DIFFICULTY_LABEL, relativeTime } from "../format";
 import { usePlan } from "../host";
@@ -191,7 +192,8 @@ export function DuelsPage() {
             <li>
               A live market: each candle forms in {CANDLE_SECONDS} seconds, {DUEL_CANDLES} candles in all (about {minutes} minutes). A {DUEL_COUNTDOWN}-second countdown first; pause whenever you want to think.
             </li>
-            <li>A stop on every order, at most {DUEL_RISK_PCT}% risk. The engine enforces both.</li>
+            <li>Trade with one tap: pick a size, add a stop and a target if you want. A stop is optional but scored; with one, the risk is capped at {DUEL_RISK_PCT}%.</li>
+            <li>Each bot's level and rating stay the same. Only your rating moves.</li>
             <li>
               Duel score = {Math.round(DUEL_PROCESS_WEIGHT * 100)}% decision quality + {Math.round((1 - DUEL_PROCESS_WEIGHT) * 100)}% result in R. No trade, no win.
             </li>
@@ -244,7 +246,9 @@ export function DuelsPage() {
                 <dl className="ml-bot-facts">
                   <div>
                     <dt>Level</dt>
-                    <dd className="num">{isMirror ? "Adaptive" : `${b.level} · ${DIFFICULTY_LABEL[b.level]}`}</dd>
+                    <dd className="num">
+                      {b.level} · {DIFFICULTY_LABEL[b.level]}
+                    </dd>
                   </div>
                   <div>
                     <dt>Rating</dt>
@@ -376,6 +380,35 @@ function useAccount(ctx: SimContext, log: readonly LogEntry[], to: number): { st
   }, [ctx, log, to]);
 }
 
+/** Zoom and looking back on a chart: the candle width, and the candle the window ends at (null = the newest). */
+function useChartView(lastIdx: number, oldest: number, initialZoom = 6) {
+  const [zoom, setZoom] = useState(initialZoom);
+  const [viewEnd, setViewEnd] = useState<number | null>(null);
+  const zoomBy = (dir: 1 | -1) => setZoom((z) => Math.min(24, Math.max(2, dir > 0 ? z * 1.25 : z / 1.25)));
+  const pan = (candles: number) =>
+    setViewEnd((v) => {
+      const next = (v ?? lastIdx) - candles;
+      return next >= lastIdx ? null : Math.max(oldest, next);
+    });
+  return { zoom, viewEnd, zoomBy, pan, live: () => setViewEnd(null) };
+}
+
+function ChartViewControls({ view, liveLabel = "Back to now" }: { view: ReturnType<typeof useChartView>; liveLabel?: string }) {
+  return (
+    <div className="ml-chartview" role="group" aria-label="Chart view">
+      <IconButton icon="minus" label="Zoom out" size="sm" onClick={() => view.zoomBy(-1)} />
+      <IconButton icon="plus" label="Zoom in" size="sm" onClick={() => view.zoomBy(1)} />
+      <IconButton icon="arrow-left" label="Look back" size="sm" onClick={() => view.pan(15)} />
+      <IconButton icon="arrow-right" label="Look forward" size="sm" onClick={() => view.pan(-15)} disabled={view.viewEnd === null} />
+      {view.viewEnd !== null && (
+        <Button size="sm" variant="secondary" onClick={view.live}>
+          {liveLabel}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
   const lab = useLab();
   const store = useStore();
@@ -387,6 +420,8 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
   const { ctx, scenario } = m;
   const bot = botOf(duel);
   const chart = lab.settings.chart;
+  const showBot = lab.settings.duelShowBot !== false;
+  const quick = lab.settings.duelQuick ?? QUICK_DEFAULTS;
 
   const [cursor, setCursor] = useState(duel.cursor);
   const [log, setLog] = useState<LogEntry[]>(duel.log);
@@ -395,12 +430,13 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
   const [botNext, setBotNext] = useState(duel.botNext);
   const [countdown, setCountdown] = useState(duel.status === "active" ? DUEL_COUNTDOWN : 0);
   const [paused, setPaused] = useState(false);
-  const [tab, setTab] = useState<"order" | "position" | "bot">("order");
+  const [tab, setTab] = useState<"trade" | "position" | "bot">("trade");
   const [ticket, setTicket] = useState<TicketValue>(() => initialTicket("buy", { riskPct: DUEL_RISK_PCT }));
   const [error, setError] = useState<string | null>(null);
   const [slText, setSlText] = useState("");
   const [tpText, setTpText] = useState("");
   const [resigning, setResigning] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
 
   const over = cursor >= DUEL_END;
   const running = !over && countdown === 0 && !paused && !resigning;
@@ -494,15 +530,15 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
   };
 
   const updateBrackets = () => {
-    const sl = parsePrice(slText);
+    const sl = slText.trim() === "" ? null : parsePrice(slText);
     const tp = tpText.trim() === "" ? null : parsePrice(tpText);
-    if (sl === null) return setError("A duel position always keeps a stop-loss. Enter a valid price.");
-    if (tpText.trim() && tp === null) return setError("Enter a valid price for the target.");
+    if ((slText.trim() && sl === null) || (tpText.trim() && tp === null)) return setError("Enter valid prices for the stop and the target, or leave them empty.");
     act({ type: "modify_brackets", stopLoss: sl, takeProfit: tp }, "Stop and target updated");
   };
 
   const candles = useMemo(() => duelChartCandles(m, cursor), [m, cursor]);
   const lastIdx = candles.length - 1;
+  const view = useChartView(lastIdx, 30, phone ? 5 : 6);
   const overlays = [
     ...(chart.sma20 ? [{ id: "sma20", label: "SMA 20", values: smaSeries(candles, 20, lastIdx), tone: 1 as const }] : []),
     ...(chart.sma50 ? [{ id: "sma50", label: "SMA 50", values: smaSeries(candles, 50, lastIdx), tone: 2 as const }] : []),
@@ -546,7 +582,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
 
       <div className="ml-stage-grid">
         <section className="ml-stage-main" aria-label="Market">
-          {latest && (
+          {showBot && latest && (
             <p className="ml-bot-note" aria-live="polite">
               <BotAvatar bot={bot} size={22} />
               <span>
@@ -559,8 +595,9 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
           )}
           <div className="ml-panel ml-chart-panel ml-duel-chart">
             <div className="ml-chart-tools">
-              <DuelLegend bot={bot} />
-              <div className="ml-row ml-chart-toggles" role="group" aria-label="Indicators">
+              <ChartViewControls view={view} />
+              <div className="ml-row ml-chart-toggles" role="group" aria-label="Show on the chart">
+                <Checkbox checked={showBot} onChange={(v) => store.setSettings({ duelShowBot: v })} label={<span className="ml-ind ml-ind--rival">{bot.name}'s trades</span>} />
                 <Checkbox checked={chart.sma20} onChange={(v) => store.setChart({ sma20: v })} label={<span className="ml-ind ml-ind--1">SMA 20</span>} />
                 <Checkbox checked={chart.sma50} onChange={(v) => store.setChart({ sma50: v })} label={<span className="ml-ind ml-ind--2">SMA 50</span>} />
                 <Checkbox checked={chart.volume} onChange={(v) => store.setChart({ volume: v })} label="Volume" />
@@ -571,11 +608,14 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
               candles={candles}
               visibleTo={lastIdx}
               futureSlots={over ? 0 : 6}
-              minBarWidth={phone ? 5 : 6}
+              minBarWidth={view.zoom}
+              viewEnd={view.viewEnd ?? undefined}
+              onZoom={view.zoomBy}
+              onPan={view.pan}
               height={chartHeight}
-              label="Duel price chart, live"
-              lines={over ? [] : [...linesFromState(you.state), ...rivalLinesFromState(them.state, bot.name), ...draftLines(tab === "order" ? ticket : null)]}
-              markers={onCandles([...markersFrom(you.events, cursor), ...markersFrom(them.events, cursor, true)])}
+              label="Duel price chart, live. Scroll to zoom, drag to look back."
+              lines={over ? [] : [...linesFromState(you.state), ...(showBot ? rivalLinesFromState(them.state, bot.name) : []), ...draftLines(tab === "trade" && advanced ? ticket : null)]}
+              markers={onCandles([...markersFrom(you.events, cursor), ...(showBot ? markersFrom(them.events, cursor, true) : [])])}
               zone={{ from: DUEL_START + 1, to: DUEL_START + DUEL_CANDLES }}
               overlays={overlays}
               showVolume={chart.volume}
@@ -588,9 +628,14 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                 <span>Read the history. The market starts moving in {countdown} s.</span>
               </div>
             )}
-            {paused && !over && countdown === 0 && (
-              <div className="ml-duel-paused" role="status">
-                <Icon name="pause" size={14} /> Paused · the market waits for you
+            {!over && countdown === 0 && (paused || view.viewEnd !== null) && (
+              <div className="ml-duel-flags" role="status">
+                {paused && (
+                  <span className="ml-duel-flag is-paused">
+                    <Icon name="pause" size={14} /> Paused · the market waits for you
+                  </span>
+                )}
+                {view.viewEnd !== null && <span className="ml-duel-flag is-lookback">{paused ? "Looking back" : "Looking back · the market keeps moving"}</span>}
               </div>
             )}
           </div>
@@ -606,27 +651,29 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                 setError(null);
               }}
               items={[
-                { value: "order", label: "Order" },
+                { value: "trade", label: "Trade" },
                 { value: "position", label: "Position", count: pos ? 1 : you.state.orders.length || undefined },
                 { value: "bot", label: bot.name, count: notes.length || undefined },
               ]}
             />
           </div>
 
-          {tab === "order" && (
+          {tab === "trade" && (
             <div className="ml-dock-body">
               {!over ? (
                 <>
-                  <p className="ml-objective-note">
-                    <Icon name="target" size={15} />
-                    <span>{scenario.objective}</span>
-                  </p>
-                  <OrderTicket ctx={ctx} state={youLive.state} value={ticket} onChange={setTicket} sides={scenario.allowShort ? ["buy", "sell"] : ["buy"]} orderTypes={scenario.orderTypes} riskLimitPct={DUEL_RISK_PCT} />
-                  {error && <InlineError>{error}</InlineError>}
-                  <Button variant="secondary" block iconLeft="plus" onClick={placeOrder}>
-                    Place order
-                  </Button>
-                  <p className="ml-fine">Market orders fill at the live price. Pause any time to think: orders still go in, at the price the market stopped at.</p>
+                  <QuickTrade ctx={ctx} state={youLive.state} prefs={quick} onPrefs={(q) => store.setSettings({ duelQuick: q })} onAct={act} allowShort={scenario.allowShort} riskLimitPct={DUEL_RISK_PCT} />
+                  <p className="ml-fine">Orders fill at the live price, also while the market is paused.</p>
+                  <details className="ml-qt-more" open={advanced} onToggle={(e) => setAdvanced((e.target as HTMLDetailsElement).open)}>
+                    <summary>Limit order or exact prices</summary>
+                    <div className="ml-stack-4">
+                      <OrderTicket ctx={ctx} state={youLive.state} value={ticket} onChange={setTicket} sides={scenario.allowShort ? ["buy", "sell"] : ["buy"]} orderTypes={scenario.orderTypes} riskLimitPct={DUEL_RISK_PCT} />
+                      {error && <InlineError>{error}</InlineError>}
+                      <Button variant="secondary" block iconLeft="plus" onClick={placeOrder}>
+                        Place order
+                      </Button>
+                    </div>
+                  </details>
                 </>
               ) : (
                 <p className="ml-muted">The duel is over.</p>
@@ -647,7 +694,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                   {!over && (
                     <>
                       <div className="ml-grid-2">
-                        <TextField label="Stop-loss" inputMode="decimal" value={slText} onChange={(e) => setSlText(e.target.value)} />
+                        <TextField label="Stop-loss" inputMode="decimal" value={slText} onChange={(e) => setSlText(e.target.value)} placeholder="None" />
                         <TextField label="Take-profit" inputMode="decimal" value={tpText} onChange={(e) => setTpText(e.target.value)} placeholder="None" />
                       </div>
                       {error && <InlineError>{error}</InlineError>}
@@ -708,7 +755,9 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                 ]}
               />
               <h3 className="ml-h3">{bot.name}'s moves</h3>
-              {notes.length === 0 ? (
+              {!showBot ? (
+                <p className="ml-muted">Hidden. Turn on “{bot.name}'s trades” above the chart to see them.</p>
+              ) : notes.length === 0 ? (
                 <p className="ml-muted">{bot.name} decides when a candle closes. Its moves appear here.</p>
               ) : (
                 <ol className="ml-duel-notes">
@@ -746,7 +795,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
       </div>
 
       {/* Below the chart and the dock: on a phone the order ticket comes right after the chart. */}
-      <VsPanel ctx={ctx} bot={bot} you={you.state} rival={them.state} />
+      <VsPanel ctx={ctx} bot={bot} you={you.state} rival={them.state} showRival={showBot} />
 
       <Dialog
         open={resigning}
@@ -815,10 +864,11 @@ function DuelResult({ duel }: { duel: DuelSession }) {
   const youRun = useMemo(() => replay(ctx, DUEL_START, youLog), [ctx, youLog]);
   const botRun = useMemo(() => replay(ctx, DUEL_START, botLog), [ctx, botLog]);
   const r = duel.result;
+  const end = youRun.state.step;
+  const candles = useMemo(() => duelChartCandles(m, end), [m, end]);
+  const view = useChartView(candles.length - 1, 30, 4);
   if (!r) return <Empty title="This duel has no result yet" action={<Link to="/arena/duels" className="ml-text-link">Back to Duels</Link>} />;
 
-  const end = youRun.state.step;
-  const candles = duelChartCandles(m, end);
   const title = r.reason === "resigned" ? "You resigned" : r.winner === "you" ? "You won the duel" : r.winner === "bot" ? `${bot.name} won the duel` : "Draw";
   const diff = r.ratingAfter - r.ratingBefore;
   const mission = MISSIONS.find((x) => r.you.errorTags.some((t) => x.targets.includes(t)));
@@ -892,6 +942,7 @@ function DuelResult({ duel }: { duel: DuelSession }) {
 
       <div className="ml-panel ml-chart-panel">
         <div className="ml-chart-tools">
+          <ChartViewControls view={view} liveLabel="Back to the end" />
           <DuelLegend bot={bot} />
         </div>
         <Chart
@@ -899,11 +950,13 @@ function DuelResult({ duel }: { duel: DuelSession }) {
           candles={candles}
           visibleTo={candles.length - 1}
           height={300}
-          label="Duel chart with both players' trades"
+          label="Duel chart with both players' trades. Scroll to zoom, drag to look back."
           markers={onCandles([...markersFrom(youRun.events, end), ...markersFrom(botRun.events, end, true)])}
           zone={{ from: DUEL_START + 1, to: DUEL_START + DUEL_CANDLES, label: "Duel" }}
-          windowStart={Math.max(0, DUEL_START - 30)}
-          minBarWidth={2}
+          minBarWidth={view.zoom}
+          viewEnd={view.viewEnd ?? undefined}
+          onZoom={view.zoomBy}
+          onPan={view.pan}
         />
       </div>
 
@@ -997,7 +1050,7 @@ function DuelResult({ duel }: { duel: DuelSession }) {
           </table>
         </div>
         <p className="ml-fine num">
-          You: {formula(you)}. {bot.name}: {formula(botSide)}. Criteria that don't apply (n/a) don't count. Stops and the {DUEL_RISK_PCT}% limit are enforced by the engine, so they aren't scored.
+          You: {formula(you)}. {bot.name}: {formula(botSide)}. Criteria that don't apply (n/a) don't count. With a stop, the engine caps the risk at {DUEL_RISK_PCT}%; without one, R uses {DUEL_RISK_PCT}% of the starting account as its unit.
         </p>
       </section>
 

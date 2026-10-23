@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { equityOf, formatPrice, openTrade, unrealizedPnl, type SimContext, type SimState } from "@market-lab/engine";
-import { tradeR, type BotPersona } from "@market-lab/missions";
+import { duelTradeR, type BotPersona } from "@market-lab/missions";
 import { Pnl } from "./Page";
 import { Tag, cx } from "./ui";
 
@@ -38,11 +38,12 @@ export function DuelLegend({ bot }: { bot: BotPersona }) {
   );
 }
 
-/** Closed R so far, plus the open position's R at the current price. */
+/** Closed R so far, plus the open position's R at the current price (1% of the account is the unit without a stop). */
 export function accountR(ctx: SimContext, state: SimState): { closed: number; open: number | null } {
-  const closed = state.trades.filter((t) => t.exitStep !== null).reduce((s, t) => s + (tradeR(t) ?? 0), 0);
+  const unit = ctx.cfg.initialEquity / 100;
+  const closed = state.trades.filter((t) => t.exitStep !== null).reduce((s, t) => s + duelTradeR(t, ctx.cfg.initialEquity), 0);
   const trade = openTrade(state);
-  const open = state.position && trade?.initialRisk ? unrealizedPnl(state.position, ctx.candles[state.step].c) / trade.initialRisk : null;
+  const open = state.position && trade ? unrealizedPnl(state.position, ctx.candles[state.step].c) / (trade.initialRisk || unit) : null;
   return { closed, open };
 }
 
@@ -134,7 +135,7 @@ function SideColumn({ title, rival, ctx, state }: { title: ReactNode; rival?: bo
             </thead>
             <tbody>
               {[...closed].reverse().map((t) => {
-                const r = tradeR(t);
+                const r = duelTradeR(t, ctx.cfg.initialEquity);
                 return (
                   <tr key={t.id}>
                     <th scope="row" className="num">
@@ -144,7 +145,7 @@ function SideColumn({ title, rival, ctx, state }: { title: ReactNode; rival?: bo
                     <td className="num">
                       <Pnl value={t.realized - t.fees} unit={false} />
                     </td>
-                    <td className="num">{r !== null ? formatR(r) : "—"}</td>
+                    <td className="num">{formatR(r)}</td>
                   </tr>
                 );
               })}
@@ -157,11 +158,11 @@ function SideColumn({ title, rival, ctx, state }: { title: ReactNode; rival?: bo
 }
 
 /** The player's account next to the bot's: positions, orders and closed trades, side by side. */
-export function VsPanel({ ctx, bot, you, rival }: { ctx: SimContext; bot: BotPersona; you: SimState; rival: SimState }) {
+export function VsPanel({ ctx, bot, you, rival, showRival = true }: { ctx: SimContext; bot: BotPersona; you: SimState; rival: SimState; showRival?: boolean }) {
   return (
-    <div className="ml-vs" role="region" aria-label={`You vs ${bot.name}: positions and trades`}>
+    <div className={cx("ml-vs", !showRival && "is-solo")} role="region" aria-label={showRival ? `You vs ${bot.name}: positions and trades` : "Your positions and trades"}>
       <SideColumn ctx={ctx} state={you} title={<span className="ml-vs-name">You</span>} />
-      <SideColumn
+      {showRival && <SideColumn
         ctx={ctx}
         state={rival}
         rival
@@ -171,7 +172,7 @@ export function VsPanel({ ctx, bot, you, rival }: { ctx: SimContext; bot: BotPer
             {bot.name} <BotTag />
           </span>
         }
-      />
+      />}
     </div>
   );
 }

@@ -242,6 +242,10 @@ export interface Settings {
   streakPauses?: boolean;
   /** Bumped when the default palette changes, so saved settings can migrate once. */
   paletteVersion?: number;
+  /** Duels: show the bot's trades on the chart and in the panel (on unless turned off). */
+  duelShowBot?: boolean;
+  /** Duels: the quick ticket's last size, stop and target. */
+  duelQuick?: { size: number; stop: number; target: number };
 }
 
 export interface LabData {

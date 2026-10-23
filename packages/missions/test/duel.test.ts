@@ -19,6 +19,7 @@ import {
   duelLadder,
   duelMarket,
   duelScore,
+  duelTradeR,
   duelVerdict,
   eloUpdate,
   evaluateDuelSide,
@@ -110,14 +111,31 @@ describe("the duel market", () => {
     expect(fill && fill.type === "order_filled" && fill.price).toBe(close + m.ctx.cfg.costs.halfSpread);
   });
 
-  it("rejects an order without a stop and an order over the 1% risk limit", () => {
+  it("accepts an order without a stop, and caps the risk of an order with one at 1%", () => {
     const m = duelMarket("bullish", 5);
     const { state } = replay(m.ctx, DUEL_START, []);
     const close = m.ctx.candles[DUEL_START].c;
     const qty = Math.floor((0.5 * equityOf(m.ctx, state)) / close);
-    expect(apply(m.ctx, state, { type: "submit_order", side: "buy", orderType: "market", qty: 1 }).rejected?.code).toBe("STOP_REQUIRED");
+    expect(apply(m.ctx, state, { type: "submit_order", side: "buy", orderType: "market", qty }).rejected).toBeUndefined();
     // Half the account with a stop 10% away risks about 5%.
     expect(apply(m.ctx, state, { type: "submit_order", side: "buy", orderType: "market", qty, stopLoss: Math.round(close * 0.9) }).rejected?.code).toBe("RISK_LIMIT_EXCEEDED");
+  });
+
+  it("scores a trade without a stop: R in units of 1% of the account, and the missing stop costs process points", () => {
+    const m = duelMarket("bullish", 5);
+    const close = m.ctx.candles[DUEL_START].c;
+    const qty = Math.floor((0.25 * m.ctx.cfg.initialEquity) / close);
+    const log: LogEntry[] = [
+      { kind: "action", step: DUEL_START, action: { type: "submit_order", side: "buy", orderType: "market", qty } },
+      { kind: "action", step: candleCloseStep(DUEL_START + 10), action: { type: "close_position" } },
+    ];
+    const side = evaluateDuelSide(m, closeDuelLog(log));
+    const trade = replay(m.ctx, DUEL_START, closeDuelLog(log)).state.trades[0];
+    expect(trade.initialRisk).toBeNull();
+    expect(side.r).toBeCloseTo((trade.realized - trade.fees) / (m.ctx.cfg.initialEquity / 100), 9);
+    expect(duelTradeR(trade, m.ctx.cfg.initialEquity)).toBeCloseTo(side.r, 9);
+    expect(side.dqs.criteria.find((c) => c.id === "stops")?.score).toBe(0);
+    expect(side.dqs.errorTags).toContain("no_stop");
   });
 });
 

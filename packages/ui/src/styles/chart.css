@@ -382,3 +382,12 @@ text.ml-ptag-text.is-rival {
 .ml-marker--exit.is-rival {
   fill: var(--ml-bg);
 }
+
+/* Charts you can zoom and drag to look back (duels). Vertical swipes still scroll the page. */
+.ml-chart-canvas.is-pannable {
+  cursor: grab;
+  touch-action: pan-y;
+}
+.ml-chart-canvas.is-pannable:active {
+  cursor: grabbing;
+}

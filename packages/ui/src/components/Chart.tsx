@@ -54,6 +54,12 @@ export interface ChartProps {
   showGrid?: boolean;
   /** Label for candle i on the time axis (defaults to 1-hour candles). */
   timeLabelOf?: (i: number) => string;
+  /** Rolling charts: the window ends at this candle instead of the newest one (looking back). */
+  viewEnd?: number;
+  /** Mouse wheel over the chart: 1 to zoom in, −1 to zoom out. */
+  onZoom?: (dir: 1 | -1) => void;
+  /** Dragging the chart sideways, in candles: positive towards the past. */
+  onPan?: (candles: number) => void;
 }
 
 const PAD = { top: 12, right: 76, bottom: 26, left: 4 };
@@ -120,6 +126,9 @@ export function Chart(props: ChartProps) {
     showVolume = true,
     showGrid = true,
     timeLabelOf = timeLabel,
+    viewEnd,
+    onZoom,
+    onPan,
   } = props;
   const [wrapRef, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<{ i: number; y: number } | null>(null);
@@ -140,12 +149,17 @@ export function Chart(props: ChartProps) {
     if (fixedEnd !== undefined) {
       end = Math.min(fixedEnd, candles.length - 1);
       start = props.windowStart ?? Math.max(0, end + 1 - capacity);
+    } else if (viewEnd !== undefined && viewEnd < last) {
+      end = Math.max(0, viewEnd);
+      start = props.windowStart ?? Math.max(0, end + 1 - capacity);
     } else {
       end = last + futureSlots;
       start = props.windowStart ?? Math.max(0, end + 1 - capacity);
     }
     start = Math.min(start, last);
-    const shown = candles.slice(start, last + 1);
+    // The newest candle drawn: the last visible one, or the end of a window that looks back.
+    const viewLast = Math.min(last, end);
+    const shown = candles.slice(start, viewLast + 1);
     const slotW = plotW / Math.max(1, end - start + 1);
 
     // Price domain from visible candles only; it only ever widens during a session, so candles don't jump.
@@ -178,17 +192,17 @@ export function Chart(props: ChartProps) {
     const step = niceStep(hi - lo, 4);
     const ticks: number[] = [];
     for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) ticks.push(Math.round(t));
-    return { start, end, shown, slotW, y, x, priceAt, maxV, ticks };
-  }, [candles, last, plotW, priceH, minBarWidth, fixedEnd, futureSlots, lines, picked, props.windowStart]);
+    return { start, end, viewLast, shown, slotW, y, x, priceAt, maxV, ticks };
+  }, [candles, last, plotW, priceH, minBarWidth, fixedEnd, futureSlots, lines, picked, props.windowStart, viewEnd]);
 
-  const { start, end, shown, slotW, y, x, priceAt, maxV, ticks } = geo;
+  const { start, end, viewLast, shown, slotW, y, x, priceAt, maxV, ticks } = geo;
   const bodyW = Math.max(1, Math.min(12, slotW * 0.62));
   const timeEvery = Math.max(1, Math.ceil(64 / slotW));
   const plotRight = PAD.left + plotW;
   const nowX = PAD.left + (last - start + 1) * slotW;
   const hasFuture = end > last;
 
-  const indexFromX = (px: number) => Math.max(start, Math.min(last, start + Math.floor((px - PAD.left) / slotW)));
+  const indexFromX = (px: number) => Math.max(start, Math.min(viewLast, start + Math.floor((px - PAD.left) / slotW)));
   const onMove = (e: MouseEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const px = e.clientX - r.left;
@@ -207,10 +221,10 @@ export function Chart(props: ChartProps) {
     e.preventDefault();
     e.stopPropagation();
     setFocusIdx((cur) => {
-      const c = cur ?? last;
+      const c = cur ?? viewLast;
       if (e.key === "Home") return start;
-      if (e.key === "End") return last;
-      return Math.max(start, Math.min(last, c + (e.key === "ArrowLeft" ? -1 : 1)));
+      if (e.key === "End") return viewLast;
+      return Math.max(start, Math.min(viewLast, c + (e.key === "ArrowLeft" ? -1 : 1)));
     });
   };
 
@@ -230,6 +244,29 @@ export function Chart(props: ChartProps) {
   }, [shown, label]);
 
   const glide = tickMs ? { transitionDuration: `${tickMs}ms`, transitionTimingFunction: "linear" } : undefined;
+
+  // Zoom with the mouse wheel (a native listener, so the page doesn't scroll) and look back by dragging.
+  const handlers = useRef({ onZoom, onPan, slotW });
+  handlers.current = { onZoom, onPan, slotW };
+  const interactive = Boolean(onZoom || onPan);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || !interactive) return;
+    const onWheel = (e: WheelEvent) => {
+      const h = handlers.current;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        if (!h.onPan) return;
+        e.preventDefault();
+        h.onPan((e.deltaX > 0 ? -1 : 1) * Math.max(1, Math.round(Math.abs(e.deltaX) / h.slotW)));
+      } else if (h.onZoom && e.deltaY !== 0) {
+        e.preventDefault();
+        h.onZoom(e.deltaY < 0 ? 1 : -1);
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [interactive, wrapRef]);
+  const drag = useRef<{ x: number; moved: number } | null>(null);
 
   return (
     <div className={cx("ml-chart", pickMode && "is-pick")}>
@@ -260,7 +297,7 @@ export function Chart(props: ChartProps) {
           )}
         </div>
       )}
-      <div className="ml-chart-canvas" ref={wrapRef} style={{ height }}>
+      <div className={cx("ml-chart-canvas", onPan && "is-pannable")} ref={wrapRef} style={{ height }}>
         {width > 0 && (
           <svg
             width={width}
@@ -271,6 +308,21 @@ export function Chart(props: ChartProps) {
             tabIndex={0}
             onMouseMove={onMove}
             onMouseLeave={() => setHover(null)}
+            onPointerDown={(e) => {
+              if (!onPan || e.button !== 0) return;
+              drag.current = { x: e.clientX, moved: 0 };
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }}
+            onPointerMove={(e) => {
+              if (!drag.current || !onPan) return;
+              const n = Math.trunc((e.clientX - drag.current.x) / slotW) - drag.current.moved;
+              if (n !== 0) {
+                drag.current.moved += n;
+                onPan(n);
+              }
+            }}
+            onPointerUp={() => (drag.current = null)}
+            onPointerCancel={() => (drag.current = null)}
             onClick={onClick}
             onKeyDown={onKey}
             onBlur={() => setFocusIdx(null)}
@@ -295,7 +347,7 @@ export function Chart(props: ChartProps) {
 
             {zone && zone.to >= start && (
               <g className="ml-zone">
-                <rect x={x(Math.max(zone.from, start)) - slotW / 2} y={PAD.top} width={(Math.min(zone.to, last) - Math.max(zone.from, start) + 1) * slotW} height={priceH} />
+                <rect x={x(Math.max(zone.from, start)) - slotW / 2} y={PAD.top} width={Math.max(0, Math.min(zone.to, viewLast) - Math.max(zone.from, start) + 1) * slotW} height={priceH} />
                 {zone.label && (
                   <text x={x(Math.max(zone.from, start)) - slotW / 2 + 8} y={PAD.top + 16}>
                     {zone.label}
@@ -345,7 +397,7 @@ export function Chart(props: ChartProps) {
 
             {overlays.map((o) => {
               let d = "";
-              for (let i = start; i <= last; i++) {
+              for (let i = start; i <= viewLast; i++) {
                 const v = o.values[i];
                 if (v == null) continue;
                 d += `${d === "" || o.values[i - 1] == null ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
@@ -354,7 +406,7 @@ export function Chart(props: ChartProps) {
             })}
 
             {decisionSteps
-              .filter((d) => d.step >= start && d.step <= last)
+              .filter((d) => d.step >= start && d.step <= viewLast)
               .map((d) => (
                 <g key={`d${d.step}${d.label}`} className="ml-decision">
                   <line x1={x(d.step)} x2={x(d.step)} y1={PAD.top + 22} y2={PAD.top + plotH} />
@@ -397,7 +449,7 @@ export function Chart(props: ChartProps) {
             ))}
 
             {markers
-              .filter((m) => m.step >= start && m.step <= last)
+              .filter((m) => m.step >= start && m.step <= viewLast)
               .map((m, idx) => {
                 const cx0 = x(m.step);
                 const cy = y(m.price);
@@ -409,7 +461,7 @@ export function Chart(props: ChartProps) {
                 return <circle key={idx} cx={cx0} cy={cy} r={m.rival ? 5.5 : 4.5} className={cx("ml-marker", `ml-marker--${m.kind}`, rival)} />;
               })}
 
-            {lastC && (
+            {lastC && viewLast === last && (
               <g className="ml-last">
                 <rect x={plotRight + 4} y={y(lastC.c) - 10} width={PAD.right - 6} height={20} rx={5} />
                 <text x={plotRight + 10} y={y(lastC.c) + 4}>
