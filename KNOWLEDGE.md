@@ -50,6 +50,8 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 - Dacă primele două interacțiuni notate din Learn sunt corecte din prima, player-ul oferă „You seem to know this. Skip to Try?”.
 - **Read mode** arată toată lecția pe o pagină, cu aceleași interacțiuni. Marcarea „Read” nu dă XP de lecție; checkul de la final o termină.
 - Cât e deschisă o lecție, sidebar-ul se strânge la rail, iar pe telefon bara de jos dispare.
+- **Animațiile (`scene`)** pornesc singure și se pot derula pe capitole. Se opresc la întrebări și continuă după răspuns, indiferent dacă e corect sau greșit. Continue se deblochează la final, inclusiv dacă utilizatorul derulează până la capăt. Cu reduced motion nu pornesc singure și nu blochează Continue. Când ecranul e revăzut, arată ultimul cadru.
+- **Widget-urile cu animație proprie** (de exemplu trimiterea unui ordin în `auction-book`) arată explicația abia după ce animația s-a terminat, ca să n-o dea de gol.
 - În cod: `packages/ui/src/learn/` (`LessonPlayer`, `CheckPhase`, `Recap`, `LessonRead`), `finishLessonCheck` și `completeScriptedLesson` din `packages/ui/src/store.ts`.
 
 ### Continuitatea
