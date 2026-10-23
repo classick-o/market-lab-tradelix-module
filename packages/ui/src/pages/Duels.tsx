@@ -1,53 +1,67 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { dayKey } from "@market-lab/academy";
-import { apply, formatPrice, parsePrice, previewOrder, replay, type Action, type LogEntry } from "@market-lab/engine";
+import {
+  advance,
+  apply,
+  formatPrice,
+  initState,
+  parsePrice,
+  previewOrder,
+  replay,
+  type Action,
+  type EngineEvent,
+  type LogEntry,
+  type SimContext,
+  type SimState,
+} from "@market-lab/engine";
 import { ERROR_TAGS, type CriterionResult } from "@market-lab/evaluation";
 import {
   ARENA_SCENARIOS,
   BOTS,
+  CANDLE_SECONDS,
+  DUEL_CANDLES,
+  DUEL_COUNTDOWN,
   DUEL_END,
   DUEL_PROCESS_WEIGHT,
-  DUEL_ROUNDS,
-  DUEL_RUBRIC,
   DUEL_RISK_PCT,
+  DUEL_RUBRIC,
   DUEL_START,
   FLAW_LABEL,
   MISSIONS,
+  TICKS_PER_CANDLE,
+  TICK_MS,
+  botTurn,
+  candleAt,
   closeDuelLog,
   dailyDuel,
-  duelContext,
+  duelCandlesClosed,
+  duelChartCandles,
   duelLadder,
+  duelMarket,
   evaluateDuelSide,
   getArenaScenario,
   getBot,
   mirrorPersona,
-  roundStep,
   type BotId,
+  type BotNote,
   type BotPersona,
   type DuelSide,
 } from "@market-lab/missions";
 import type { ArenaRegime } from "@market-lab/scenario-gen";
-import { Chart } from "../components/Chart";
+import { Chart, type ChartMarker } from "../components/Chart";
 import { BotAvatar, BotTag, DuelLegend, VsPanel, formatR } from "../components/DuelParts";
 import { OrderTicket, initialTicket, parseTicket, type TicketValue } from "../components/OrderTicket";
 import { Card, PageHead, Pnl, SubNav } from "../components/Page";
+import { usePlaybackKeys } from "../components/Playback";
 import { ChartTitle, StageBar, useChartHeight, useMediaQuery, useReducedMotion } from "../components/Stage";
 import { smaSeries } from "../components/series";
 import { useToast } from "../components/Toast";
-import { Button, Checkbox, Chips, Dialog, Empty, Icon, InlineError, KeyValues, Segmented, Tabs, Tag, TextField, cx } from "../components/ui";
+import { Button, Checkbox, Chips, Dialog, Empty, Icon, InlineError, KeyValues, Tabs, Tag, TextField, cx } from "../components/ui";
 import { draftLines, linesFromState, markersFrom, rivalLinesFromState } from "../components/visuals";
-import { DIFFICULTY_LABEL, plural, relativeTime } from "../format";
+import { DIFFICULTY_LABEL, relativeTime } from "../format";
 import { usePlan } from "../host";
 import { Link, useRouter } from "../router";
-import { useLab, useStore, type DuelSession } from "../store";
-
-type Timer = 0 | 30 | 60;
-
-const TIMERS: { value: "30" | "60" | "0"; label: string }[] = [
-  { value: "30", label: "30 s" },
-  { value: "60", label: "60 s" },
-  { value: "0", label: "Off" },
-];
+import { useLab, useStore, type DuelProgress, type DuelSession } from "../store";
 
 /** The duel's bot, with Mirror's habit as it was fixed when the duel started. */
 function botOf(d: DuelSession): BotPersona {
@@ -56,13 +70,25 @@ function botOf(d: DuelSession): BotPersona {
 
 /** A finished duel's log: played to the end and closed, or (resigned) closed where it stopped. */
 function finalLog(d: DuelSession, log: readonly LogEntry[]): LogEntry[] {
-  return d.status === "resigned" ? [...log, { kind: "advance", to: roundStep(d.round) }, { kind: "finish" }] : closeDuelLog(log);
+  return d.status === "resigned" ? closeDuelLog(log, d.cursor) : closeDuelLog(log);
 }
 
 function resultLabel(d: DuelSession): string {
   const w = d.result?.winner;
   return w === "you" ? "Won" : w === "bot" ? (d.result?.reason === "resigned" ? "Resigned" : "Lost") : "Draw";
 }
+
+/** Duel candles played at a tick, for "candle 23 of 80". */
+function candleNumber(cursor: number): number {
+  return Math.min(DUEL_CANDLES, Math.max(1, Math.ceil((cursor - DUEL_START) / TICKS_PER_CANDLE) || 1));
+}
+
+const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+
+/** Engine fills are on ticks; the chart draws whole candles. */
+const onCandles = (markers: ChartMarker[]) => markers.map((m) => ({ ...m, step: candleAt(m.step) }));
+
+const noteLabel = (n: BotNote) => (n.candle === 0 ? "At the start" : `After candle ${n.candle}`);
 
 // ─── Lobby ──────────────────────────────────────────────────────────────────
 
@@ -73,7 +99,6 @@ export function DuelsPage() {
   const { pro } = usePlan();
   const active = store.activeDuel();
   const [regime, setRegime] = useState<ArenaRegime>("bullish");
-  const [timer, setTimer] = useState<Timer>(30);
   const [blocked, setBlocked] = useState(false);
 
   const finished = Object.values(lab.duels)
@@ -95,9 +120,7 @@ export function DuelsPage() {
 
   const start = (botId: BotId, opts: { daily?: boolean } = {}) => {
     if (active) return setBlocked(true);
-    const id = opts.daily
-      ? store.startDuel(daily.botId, daily.regime, { timer, daily: today, seed: daily.seed })
-      : store.startDuel(botId, regime, { timer });
+    const id = opts.daily ? store.startDuel(daily.botId, daily.regime, { daily: today, seed: daily.seed }) : store.startDuel(botId, regime);
     navigate(`/arena/duels/${id}`);
   };
   const pickScenario = (id: string) => {
@@ -107,19 +130,20 @@ export function DuelsPage() {
   };
 
   const bots: BotPersona[] = [...BOTS, mirrorPersona(habit)];
+  const minutes = Math.round((DUEL_CANDLES * CANDLE_SECONDS) / 60);
 
   return (
     <div className="ml-page ml-duels">
       <PageHead
         title="Duels"
-        sub="Trade the same simulated market as a bot, round by round. The better process wins, not the bigger profit. Every opponent here is a bot, and labelled as one."
+        sub="Trade the same live market as a bot. The better process wins, not the bigger profit. Every opponent here is a bot, and labelled as one."
       />
       <SubNav module="arena" />
 
       {active && (
         <Card className="ml-duel-active" eyebrow="Duel in progress" title={`vs ${botOf(active).name} · ${getArenaScenario(active.regime).title}`}>
           <p className="ml-muted num">
-            Round {Math.min(active.round + 1, DUEL_ROUNDS)} of {DUEL_ROUNDS}
+            Candle {candleNumber(active.cursor)} of {DUEL_CANDLES}
             {active.daily ? " · daily duel" : ""} · started {relativeTime(active.createdAt)}
           </p>
           <div className="ml-actions">
@@ -164,7 +188,9 @@ export function DuelsPage() {
         </Card>
         <Card eyebrow="How duels work" title="Same market, better process">
           <ul className="ml-list ml-list--dash">
-            <li>8 rounds of 10 candles. Place your orders, press Ready, then both accounts play the round.</li>
+            <li>
+              A live market: each candle forms in {CANDLE_SECONDS} seconds, {DUEL_CANDLES} candles in all (about {minutes} minutes). A {DUEL_COUNTDOWN}-second countdown first; pause whenever you want to think.
+            </li>
             <li>A stop on every order, at most {DUEL_RISK_PCT}% risk. The engine enforces both.</li>
             <li>
               Duel score = {Math.round(DUEL_PROCESS_WEIGHT * 100)}% decision quality + {Math.round((1 - DUEL_PROCESS_WEIGHT) * 100)}% result in R. No trade, no win.
@@ -173,20 +199,15 @@ export function DuelsPage() {
         </Card>
       </div>
 
-      <Card title="Duel settings" eyebrow="For the next duel you start">
-        <div className="ml-duel-settings">
-          <Chips
-            single
-            label="Market"
-            options={ARENA_SCENARIOS.map((s) => ({ id: s.id, label: s.tier === "pro" && !pro ? `${s.title} (Pro)` : s.title }))}
-            selected={[regime]}
-            onToggle={pickScenario}
-          />
-          <Segmented label="Time to decide each round" value={String(timer) as "30" | "60" | "0"} onChange={(v) => setTimer(Number(v) as Timer)} options={TIMERS} />
-        </div>
-        <p className="ml-fine">
-          {getArenaScenario(regime).tagline} Bot duels don't use your Arena sessions. The round timer can be turned off.
-        </p>
+      <Card title="Market" eyebrow="For the next duel you start">
+        <Chips
+          single
+          label="Market"
+          options={ARENA_SCENARIOS.map((s) => ({ id: s.id, label: s.tier === "pro" && !pro ? `${s.title} (Pro)` : s.title }))}
+          selected={[regime]}
+          onToggle={pickScenario}
+        />
+        <p className="ml-fine">{getArenaScenario(regime).tagline} Bot duels don't use your Arena sessions.</p>
       </Card>
 
       <section className="ml-section" aria-labelledby="ml-bots-title">
@@ -311,33 +332,48 @@ export function DuelsPage() {
 export function DuelPage({ duelId }: { duelId: string }) {
   const lab = useLab();
   const d = lab.duels[duelId];
-  // A duel that ends while it's on screen keeps the live view until its last round has played out.
+  // A duel that ends while it's on screen keeps the live view until the player opens the result.
   const [live, setLive] = useState(d?.status === "active");
   if (!d) return <Empty title="Duel not found" action={<Link to="/arena/duels" className="ml-text-link">Back to Duels</Link>} />;
   if (live || d.status === "active") return <DuelLive key={d.id} duel={d} onDone={() => setLive(false)} />;
   return <DuelResult duel={d} />;
 }
 
-function RoundStrip({ round, phase, left, timer }: { round: number; phase: "decide" | "play" | "over"; left: number; timer: Timer }) {
-  const shown = phase === "decide" ? round : round - 1;
-  return (
-    <div className="ml-roundbar">
-      <ol className="ml-rounds" aria-label={`Round ${Math.min(shown + 1, DUEL_ROUNDS)} of ${DUEL_ROUNDS}`}>
-        {Array.from({ length: DUEL_ROUNDS }, (_, i) => (
-          <li key={i} className={cx("ml-rounds-seg", i < shown && "is-done", i === shown && phase !== "over" && "is-now", phase === "over" && "is-done")} />
-        ))}
-      </ol>
-      <span className="ml-roundbar-label num">
-        {phase === "over" ? "Duel over" : phase === "play" ? `Round ${shown + 1} of ${DUEL_ROUNDS} · playing` : `Round ${shown + 1} of ${DUEL_ROUNDS} · your move`}
-      </span>
-      {phase === "decide" && timer > 0 && (
-        <span className={cx("ml-timer num", left <= 10 && "is-low")} role="timer" aria-label={`${left} seconds left to decide`}>
-          <Icon name="clock" size={14} />
-          0:{String(left).padStart(2, "0")}
-        </span>
-      )}
-    </div>
-  );
+/**
+ * One account at a tick. While the market runs it moves forward from where it was; it replays
+ * from the start only when the log changes in the past.
+ */
+function useAccount(ctx: SimContext, log: readonly LogEntry[], to: number): { state: SimState; events: EngineEvent[] } {
+  const memo = useRef<{ ctx: SimContext; n: number; state: SimState; events: EngineEvent[] } | null>(null);
+  return useMemo(() => {
+    let c = memo.current;
+    if (!c || c.ctx !== ctx || c.n > log.length || c.state.step > to || log.slice(c.n).some((e) => e.kind === "action" && e.step < c!.state.step)) {
+      c = { ctx, n: 0, state: initState(ctx, DUEL_START), events: [] };
+    }
+    let state = c.state;
+    const events = c.events.slice();
+    const keep = (evs: EngineEvent[]) => {
+      for (const e of evs) if (e.type !== "step_advanced") events.push(e);
+    };
+    for (const e of log.slice(c.n)) {
+      if (e.kind !== "action") continue;
+      if (e.step > state.step) {
+        const r = advance(ctx, state, e.step);
+        state = r.state;
+        keep(r.events);
+      }
+      const r = apply(ctx, state, e.action);
+      state = r.state;
+      keep(r.events);
+    }
+    if (to > state.step) {
+      const r = advance(ctx, state, to);
+      state = r.state;
+      keep(r.events);
+    }
+    memo.current = { ctx, n: log.length, state, events };
+    return { state, events };
+  }, [ctx, log, to]);
 }
 
 function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
@@ -347,28 +383,86 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
   const reduced = useReducedMotion();
   const phone = useMediaQuery("(max-width: 720px)");
   const chartHeight = useChartHeight();
-  const { ctx, scenario } = useMemo(() => duelContext(duel.regime, duel.seed), [duel.regime, duel.seed]);
+  const m = useMemo(() => duelMarket(duel.regime, duel.seed), [duel.regime, duel.seed]);
+  const { ctx, scenario } = m;
   const bot = botOf(duel);
   const chart = lab.settings.chart;
-  const speed = lab.settings.speed;
 
+  const [cursor, setCursor] = useState(duel.cursor);
   const [log, setLog] = useState<LogEntry[]>(duel.log);
-  const target = roundStep(duel.round);
-  const [cursor, setCursor] = useState(target);
-  const over = duel.status !== "active" && cursor >= target;
-  const phase: "decide" | "play" | "over" = cursor < target ? "play" : over ? "over" : "decide";
+  const [botLog, setBotLog] = useState<LogEntry[]>(duel.botLog);
+  const [notes, setNotes] = useState<BotNote[]>(duel.botNotes);
+  const [botNext, setBotNext] = useState(duel.botNext);
+  const [countdown, setCountdown] = useState(duel.status === "active" ? DUEL_COUNTDOWN : 0);
+  const [paused, setPaused] = useState(false);
   const [tab, setTab] = useState<"order" | "position" | "bot">("order");
   const [ticket, setTicket] = useState<TicketValue>(() => initialTicket("buy", { riskPct: DUEL_RISK_PCT }));
   const [error, setError] = useState<string | null>(null);
   const [slText, setSlText] = useState("");
   const [tpText, setTpText] = useState("");
   const [resigning, setResigning] = useState(false);
-  const [left, setLeft] = useState<number>(duel.timer);
-  const committed = useRef(-1);
 
-  // Both accounts at the cursor. The bot's actions for the current round don't exist until the player is ready.
-  const you = useMemo(() => replay(ctx, DUEL_START, phase === "over" ? closeDuelLog(log) : [...log, { kind: "advance", to: cursor }]), [ctx, log, cursor, phase]);
-  const them = useMemo(() => replay(ctx, DUEL_START, phase === "over" ? closeDuelLog(duel.botLog) : [...duel.botLog, { kind: "advance", to: cursor }]), [ctx, duel.botLog, cursor, phase]);
+  const over = cursor >= DUEL_END;
+  const running = !over && countdown === 0 && !paused && !resigning;
+  const progress = useRef<DuelProgress>({ cursor, log, botLog, botNotes: notes, botNext });
+  progress.current = { cursor, log, botLog, botNotes: notes, botNext };
+
+  // The countdown, then the market: one tick every TICK_MS.
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = window.setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [countdown]);
+  useEffect(() => {
+    if (!running) return;
+    const t = window.setInterval(() => setCursor((c) => Math.min(DUEL_END, c + 1)), TICK_MS);
+    return () => window.clearInterval(t);
+  }, [running]);
+
+  // The bot decides at each candle close, from its own account (catching up after a resume).
+  useEffect(() => {
+    if (countdown > 0) return;
+    const closed = Math.min(duelCandlesClosed(cursor), DUEL_CANDLES - 1);
+    if (botNext > closed) return;
+    let nextLog = botLog;
+    const nextNotes = [...notes];
+    let next = botNext;
+    for (; next <= closed; next++) {
+      const turn = botTurn(m, bot, nextLog, next, duel.seed, duel.foresight);
+      nextLog = [...nextLog, ...turn.entries];
+      if (turn.note) nextNotes.push(turn.note);
+    }
+    setBotLog(nextLog);
+    setNotes(nextNotes);
+    setBotNext(next);
+    store.saveDuel(duel.id, { cursor, log, botLog: nextLog, botNotes: nextNotes, botNext: next });
+  }, [cursor, countdown]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The last candle closed: the duel is scored.
+  useEffect(() => {
+    if (over && duel.status === "active") store.finishDuel(duel.id, progress.current);
+  }, [over]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Saved on pause and when leaving; a hidden tab pauses the market.
+  useEffect(() => {
+    if (paused) store.saveDuel(duel.id, progress.current);
+  }, [paused]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const onVisibility = () => document.hidden && setPaused(true);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      store.saveDuel(duel.id, progress.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  usePlaybackKeys(!over && countdown === 0, { toggle: () => setPaused((p) => !p), step: () => undefined });
+
+  const youLive = useAccount(ctx, log, cursor);
+  const themLive = useAccount(ctx, botLog, cursor);
+  const final = useMemo(() => (over ? { you: replay(ctx, DUEL_START, closeDuelLog(log)), them: replay(ctx, DUEL_START, closeDuelLog(botLog)) } : null), [over]); // eslint-disable-line react-hooks/exhaustive-deps
+  const you = final?.you ?? youLive;
+  const them = final?.them ?? themLive;
   const pos = you.state.position;
 
   useEffect(() => {
@@ -376,42 +470,9 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
     setTpText(pos?.takeProfit != null ? (pos.takeProfit / 100).toFixed(2) : "");
   }, [pos?.tradeId, pos?.stopLoss, pos?.takeProfit]);
 
-  // Playback: candle by candle up to the next decision (instantly with reduced motion).
-  useEffect(() => {
-    if (cursor >= target) return;
-    if (reduced) {
-      setCursor(target);
-      return;
-    }
-    const t = window.setTimeout(() => setCursor((c) => Math.min(target, c + 1)), 1000 / speed);
-    return () => window.clearTimeout(t);
-  }, [cursor, target, speed, reduced]);
-
-  const commit = () => {
-    if (phase !== "decide" || committed.current === duel.round) return;
-    committed.current = duel.round;
-    // Reset now, so the next decision window doesn't open with the expired timer and end at once.
-    setLeft(duel.timer);
-    setError(null);
-    store.playDuelRound(duel.id, log);
-    setTicket(initialTicket(ticket.side, { riskPct: Number(ticket.riskPct) || DUEL_RISK_PCT }));
-  };
-
-  const commitRef = useRef(commit);
-  commitRef.current = commit;
-  useEffect(() => {
-    if (phase !== "decide" || !duel.timer || resigning) return;
-    if (left <= 0) {
-      commitRef.current();
-      return;
-    }
-    const t = window.setTimeout(() => setLeft((l) => l - 1), 1000);
-    return () => window.clearTimeout(t);
-  }, [left, phase, resigning, duel.timer]);
-
   const act = (action: Action, message: string): boolean => {
-    if (phase !== "decide") return false;
-    const r = apply(ctx, you.state, action);
+    if (over) return false;
+    const r = apply(ctx, youLive.state, action);
     if (r.rejected) {
       setError(r.rejected.message);
       return false;
@@ -419,7 +480,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
     setError(null);
     const next = [...log, { kind: "action" as const, step: cursor, action }];
     setLog(next);
-    store.saveDuelLog(duel.id, next);
+    store.saveDuel(duel.id, { ...progress.current, log: next });
     toast(message);
     return true;
   };
@@ -428,7 +489,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
     const { order, problem } = parseTicket(ticket);
     if (!order) return setError(problem);
     // The ticket already shows why the engine would refuse the order (no stop, over 1%, buying power).
-    if (!previewOrder(ctx, you.state, { type: "submit_order", ...order }).ok) return setError(null);
+    if (!previewOrder(ctx, youLive.state, { type: "submit_order", ...order }).ok) return setError(null);
     if (act({ type: "submit_order", ...order }, "Order placed")) setTicket(initialTicket(ticket.side, { riskPct: Number(ticket.riskPct) || DUEL_RISK_PCT }));
   };
 
@@ -440,15 +501,18 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
     act({ type: "modify_brackets", stopLoss: sl, takeProfit: tp }, "Stop and target updated");
   };
 
-  const roundNotes = [...duel.botNotes].reverse();
-  const latest = duel.botNotes[duel.botNotes.length - 1];
-  const shownRound = phase === "decide" ? duel.round : duel.round - 1;
-
+  const candles = useMemo(() => duelChartCandles(m, cursor), [m, cursor]);
+  const lastIdx = candles.length - 1;
   const overlays = [
-    ...(chart.sma20 ? [{ id: "sma20", label: "SMA 20", values: smaSeries(ctx.candles, 20, cursor), tone: 1 as const }] : []),
-    ...(chart.sma50 ? [{ id: "sma50", label: "SMA 50", values: smaSeries(ctx.candles, 50, cursor), tone: 2 as const }] : []),
+    ...(chart.sma20 ? [{ id: "sma20", label: "SMA 20", values: smaSeries(candles, 20, lastIdx), tone: 1 as const }] : []),
+    ...(chart.sma50 ? [{ id: "sma50", label: "SMA 50", values: smaSeries(candles, 50, lastIdx), tone: 2 as const }] : []),
   ];
-  const rounds = Array.from({ length: DUEL_ROUNDS }, (_, i) => ({ step: roundStep(i), label: String(i + 1) })).filter((r) => r.step <= cursor);
+  const played = cursor - DUEL_START;
+  const intoCandle = played % TICKS_PER_CANDLE;
+  const candleLeft = ((TICKS_PER_CANDLE - intoCandle) * TICK_MS) / 1000;
+  const totalLeft = ((DUEL_END - cursor) * TICK_MS) / 1000;
+  const latest = notes[notes.length - 1];
+  const status = over ? "Duel over" : countdown > 0 ? `Starts in ${countdown}` : paused ? "Paused" : "Live";
 
   return (
     <div className="ml-stage ml-duel">
@@ -462,32 +526,38 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
         }
       >
         <Tag variant="outline">Synthetic data</Tag>
-        {phase !== "over" && (
+        {!over && (
           <Button size="sm" variant="secondary" onClick={() => setResigning(true)}>
             Resign
           </Button>
         )}
       </StageBar>
 
-      <RoundStrip round={duel.round} phase={phase} left={left} timer={duel.timer} />
-      <p className="ml-sr" aria-live="polite">
-        {phase === "decide" && duel.timer > 0 && left === 10 ? "10 seconds left to decide." : ""}
-      </p>
+      <div className="ml-duelbar">
+        <span className={cx("ml-duel-status", `is-${over ? "over" : countdown > 0 ? "countdown" : paused ? "paused" : "live"}`)}>{status}</span>
+        <div className="ml-duel-progress" role="progressbar" aria-label="Duel progress" aria-valuemin={0} aria-valuemax={DUEL_CANDLES} aria-valuenow={Math.max(0, Math.floor(played / TICKS_PER_CANDLE))}>
+          <span style={{ width: `${(played / (DUEL_END - DUEL_START)) * 100}%` }} />
+        </div>
+        <span className="ml-duelbar-label num">
+          Candle {candleNumber(cursor)} of {DUEL_CANDLES}
+          {!over && countdown === 0 && ` · next close in 0:${String(Math.ceil(candleLeft)).padStart(2, "0")} · ${clock(totalLeft)} left`}
+        </span>
+      </div>
 
       <div className="ml-stage-grid">
         <section className="ml-stage-main" aria-label="Market">
-          {phase !== "decide" && latest && (
+          {latest && (
             <p className="ml-bot-note" aria-live="polite">
               <BotAvatar bot={bot} size={22} />
               <span>
                 <b>
-                  {bot.name}, round {latest.round + 1}:
+                  {bot.name}, {noteLabel(latest).toLowerCase()}:
                 </b>{" "}
                 {latest.text}
               </span>
             </p>
           )}
-          <div className="ml-panel ml-chart-panel">
+          <div className="ml-panel ml-chart-panel ml-duel-chart">
             <div className="ml-chart-tools">
               <DuelLegend bot={bot} />
               <div className="ml-row ml-chart-toggles" role="group" aria-label="Indicators">
@@ -497,21 +567,32 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
               </div>
             </div>
             <Chart
-              title={<ChartTitle symbol="LABX" meta={`/ vUSD · 1H · candle ${cursor - DUEL_START} of ${DUEL_END - DUEL_START}`} />}
-              candles={ctx.candles}
-              visibleTo={cursor}
-              {...(phone ? { futureSlots: phase === "over" ? 0 : 10, minBarWidth: 5 } : { fixedEnd: DUEL_END, windowStart: DUEL_START - 40 })}
+              title={<ChartTitle symbol="LABX" meta={`/ vUSD · 1H · candle ${candleNumber(cursor)} of ${DUEL_CANDLES}`} />}
+              candles={candles}
+              visibleTo={lastIdx}
+              futureSlots={over ? 0 : 6}
+              minBarWidth={phone ? 5 : 6}
               height={chartHeight}
-              label="Duel price chart"
-              lines={phase === "over" ? [] : [...linesFromState(you.state), ...rivalLinesFromState(them.state, bot.name), ...draftLines(phase === "decide" && tab === "order" ? ticket : null)]}
-              markers={[...markersFrom(you.events, cursor), ...markersFrom(them.events, cursor, true)]}
-              decisionSteps={rounds}
+              label="Duel price chart, live"
+              lines={over ? [] : [...linesFromState(you.state), ...rivalLinesFromState(them.state, bot.name), ...draftLines(tab === "order" ? ticket : null)]}
+              markers={onCandles([...markersFrom(you.events, cursor), ...markersFrom(them.events, cursor, true)])}
+              zone={{ from: DUEL_START + 1, to: DUEL_START + DUEL_CANDLES }}
               overlays={overlays}
               showVolume={chart.volume}
               showGrid={chart.grid}
-              tickMs={phase === "play" && !reduced ? 1000 / speed : undefined}
-              animateNewest={phase === "play" && !reduced}
+              animateNewest={running && !reduced}
             />
+            {countdown > 0 && !over && (
+              <div className="ml-duel-countdown" role="status" aria-live="polite">
+                <span className="ml-duel-countdown-n num">{countdown}</span>
+                <span>Read the history. The market starts moving in {countdown} s.</span>
+              </div>
+            )}
+            {paused && !over && countdown === 0 && (
+              <div className="ml-duel-paused" role="status">
+                <Icon name="pause" size={14} /> Paused · the market waits for you
+              </div>
+            )}
           </div>
         </section>
 
@@ -527,28 +608,28 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
               items={[
                 { value: "order", label: "Order" },
                 { value: "position", label: "Position", count: pos ? 1 : you.state.orders.length || undefined },
-                { value: "bot", label: bot.name, count: duel.botNotes.length || undefined },
+                { value: "bot", label: bot.name, count: notes.length || undefined },
               ]}
             />
           </div>
 
           {tab === "order" && (
             <div className="ml-dock-body">
-              {phase === "decide" ? (
+              {!over ? (
                 <>
                   <p className="ml-objective-note">
                     <Icon name="target" size={15} />
                     <span>{scenario.objective}</span>
                   </p>
-                  <OrderTicket ctx={ctx} state={you.state} value={ticket} onChange={setTicket} sides={scenario.allowShort ? ["buy", "sell"] : ["buy"]} orderTypes={scenario.orderTypes} riskLimitPct={DUEL_RISK_PCT} />
+                  <OrderTicket ctx={ctx} state={youLive.state} value={ticket} onChange={setTicket} sides={scenario.allowShort ? ["buy", "sell"] : ["buy"]} orderTypes={scenario.orderTypes} riskLimitPct={DUEL_RISK_PCT} />
                   {error && <InlineError>{error}</InlineError>}
                   <Button variant="secondary" block iconLeft="plus" onClick={placeOrder}>
                     Place order
                   </Button>
-                  <p className="ml-fine">Orders fill from the next candle (market orders at the current close). {bot.name} decides at the same time and you'll see its move when the round starts.</p>
+                  <p className="ml-fine">Market orders fill at the live price. Pause any time to think: orders still go in, at the price the market stopped at.</p>
                 </>
               ) : (
-                <p className="ml-muted">{phase === "play" ? "The round is playing. Stops, targets and limits fill on their own." : "The duel is over."}</p>
+                <p className="ml-muted">The duel is over.</p>
               )}
             </div>
           )}
@@ -563,7 +644,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                       { label: "Average entry", value: formatPrice(Math.round(pos.costBasis / pos.qty)) },
                     ]}
                   />
-                  {phase === "decide" && (
+                  {!over && (
                     <>
                       <div className="ml-grid-2">
                         <TextField label="Stop-loss" inputMode="decimal" value={slText} onChange={(e) => setSlText(e.target.value)} />
@@ -596,7 +677,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                         <span className="num">
                           {o.side === "buy" ? "Buy" : "Sell"} limit · {o.qty} @ {formatPrice(o.limitPrice)}
                         </span>
-                        {phase === "decide" && (
+                        {!over && (
                           <Button size="sm" variant="tertiary" onClick={() => act({ type: "cancel_order", orderId: o.id }, "Order cancelled")}>
                             Cancel
                           </Button>
@@ -626,14 +707,14 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
                   { label: "Watch for", value: bot.watch },
                 ]}
               />
-              <h3 className="ml-h3">{bot.name}'s notes</h3>
-              {roundNotes.length === 0 ? (
-                <p className="ml-muted">{bot.name} decides when you press Ready. Its reasoning for each round appears here.</p>
+              <h3 className="ml-h3">{bot.name}'s moves</h3>
+              {notes.length === 0 ? (
+                <p className="ml-muted">{bot.name} decides when a candle closes. Its moves appear here.</p>
               ) : (
                 <ol className="ml-duel-notes">
-                  {roundNotes.map((n) => (
-                    <li key={n.round}>
-                      <span className="ml-duel-notes-round num">Round {n.round + 1}</span>
+                  {[...notes].reverse().map((n) => (
+                    <li key={n.step}>
+                      <span className="ml-duel-notes-round num">{noteLabel(n)}</span>
                       <span>{n.text}</span>
                     </li>
                   ))}
@@ -643,17 +724,21 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
           )}
 
           <div className="ml-dock-foot">
-            {phase === "decide" ? (
-              <Button variant="primary" size="lg" block iconRight="arrow-right" onClick={commit}>
-                Ready · play round {shownRound + 1}
-              </Button>
-            ) : phase === "play" ? (
-              <Button variant="secondary" size="lg" block iconLeft="skip" onClick={() => setCursor(target)}>
-                Skip to the end of the round
-              </Button>
-            ) : (
+            {over ? (
               <Button variant="primary" size="lg" block iconRight="arrow-right" onClick={onDone}>
                 See the result
+              </Button>
+            ) : countdown > 0 ? (
+              <Button variant="secondary" size="lg" block disabled>
+                The market starts in {countdown} s
+              </Button>
+            ) : paused ? (
+              <Button variant="primary" size="lg" block iconLeft="play" onClick={() => setPaused(false)}>
+                Resume the market
+              </Button>
+            ) : (
+              <Button variant="secondary" size="lg" block iconLeft="pause" onClick={() => setPaused(true)}>
+                Pause
               </Button>
             )}
           </div>
@@ -677,7 +762,7 @@ function DuelLive({ duel, onDone }: { duel: DuelSession; onDone: () => void }) {
               variant="destructive"
               onClick={() => {
                 setResigning(false);
-                store.resignDuel(duel.id, log);
+                store.resignDuel(duel.id, progress.current);
                 onDone();
               }}
             >
@@ -697,7 +782,7 @@ const pctScore = (c: CriterionResult | undefined) => (c && c.applicable ? String
 function verdictText(d: DuelSession, you: DuelSide, botSide: DuelSide, bot: BotPersona): string {
   const r = d.result!;
   const weakest = (s: DuelSide) => s.dqs.criteria.filter((c) => c.applicable && c.score < 0.6).sort((a, b) => b.weight * (1 - b.score) - a.weight * (1 - a.score))[0];
-  if (r.reason === "resigned") return "Resigning counts as a loss. The rounds you played are below.";
+  if (r.reason === "resigned") return "Resigning counts as a loss. The candles you played are below.";
   if (r.reason === "no_trade") {
     if (r.winner === "draw") return "Neither of you took a trade, so the duel is a draw.";
     return r.winner === "bot" ? `You didn't take a trade, so the duel goes to ${bot.name}. A duel needs at least one trade.` : `${bot.name} didn't take a trade, so the duel is yours.`;
@@ -720,21 +805,23 @@ function DuelResult({ duel }: { duel: DuelSession }) {
   const { navigate } = useRouter();
   const lab = useLab();
   const store = useStore();
-  const { ctx, scenario } = useMemo(() => duelContext(duel.regime, duel.seed), [duel.regime, duel.seed]);
+  const m = useMemo(() => duelMarket(duel.regime, duel.seed), [duel.regime, duel.seed]);
+  const { ctx, scenario } = m;
   const bot = botOf(duel);
   const youLog = useMemo(() => finalLog(duel, duel.log), [duel]);
   const botLog = useMemo(() => finalLog(duel, duel.botLog), [duel]);
-  const you = useMemo(() => evaluateDuelSide(ctx, youLog), [ctx, youLog]);
-  const botSide = useMemo(() => evaluateDuelSide(ctx, botLog), [ctx, botLog]);
+  const you = useMemo(() => evaluateDuelSide(m, youLog), [m, youLog]);
+  const botSide = useMemo(() => evaluateDuelSide(m, botLog), [m, botLog]);
   const youRun = useMemo(() => replay(ctx, DUEL_START, youLog), [ctx, youLog]);
   const botRun = useMemo(() => replay(ctx, DUEL_START, botLog), [ctx, botLog]);
   const r = duel.result;
   if (!r) return <Empty title="This duel has no result yet" action={<Link to="/arena/duels" className="ml-text-link">Back to Duels</Link>} />;
 
   const end = youRun.state.step;
+  const candles = duelChartCandles(m, end);
   const title = r.reason === "resigned" ? "You resigned" : r.winner === "you" ? "You won the duel" : r.winner === "bot" ? `${bot.name} won the duel` : "Draw";
   const diff = r.ratingAfter - r.ratingBefore;
-  const mission = MISSIONS.find((m) => r.you.errorTags.some((t) => m.targets.includes(t)));
+  const mission = MISSIONS.find((x) => r.you.errorTags.some((t) => x.targets.includes(t)));
   const ladder = duelLadder(
     Object.values(lab.duels)
       .filter((d) => d.result)
@@ -742,7 +829,7 @@ function DuelResult({ duel }: { duel: DuelSession }) {
     lab.duelRating,
   );
   const nextBot = getBot(ladder.recommended !== duel.botId ? ladder.recommended : (BOTS.find((b) => b.rating > bot.rating)?.id ?? "sage"));
-  const rematch = (botId: BotId) => navigate(`/arena/duels/${store.startDuel(botId, duel.regime, { timer: duel.timer })}`);
+  const rematch = (botId: BotId) => navigate(`/arena/duels/${store.startDuel(botId, duel.regime)}`);
   const rows: { label: string; you: ReactNode; bot: ReactNode; strong?: boolean }[] = [
     { label: "Decision quality", you: you.process ?? "—", bot: botSide.process ?? "—" },
     { label: "Risk discipline", you: you.rds ?? "—", bot: botSide.rds ?? "—" },
@@ -752,7 +839,7 @@ function DuelResult({ duel }: { duel: DuelSession }) {
     { label: "Duel score", you: you.score ?? "—", bot: botSide.score ?? "—", strong: true },
   ];
   const formula = (s: DuelSide) =>
-    s.process === null ? "no trade" : `${DUEL_PROCESS_WEIGHT} × ${s.process} + ${(1 - DUEL_PROCESS_WEIGHT).toFixed(1)} × ${Math.round(s.outcome)} (${formatR(s.r)}) = ${s.score}`;
+    s.process === null ? "no trade" : `${DUEL_PROCESS_WEIGHT} × ${s.process} + ${(1 - DUEL_PROCESS_WEIGHT).toFixed(1)} × ${s.outcome} (${formatR(s.r)}) = ${s.score}`;
   const misses = (s: DuelSide) => s.dqs.criteria.filter((c) => c.applicable && c.score < 0.6);
 
   return (
@@ -761,7 +848,7 @@ function DuelResult({ duel }: { duel: DuelSession }) {
         back={{ to: "/arena/duels", label: "Duels" }}
         eyebrow={`Duel result · ${scenario.title}${duel.daily ? " · daily duel" : ""} · synthetic data, simulated orders`}
         title={title}
-        sub={`You ${you.score ?? "—"} vs ${bot.name} ${botSide.score ?? "—"}`}
+        sub={`You ${you.score ?? "—"} vs ${bot.name} ${botSide.score ?? "—"} · ${you.candles} of ${DUEL_CANDLES} candles`}
       />
 
       <div className="ml-duel-scoreboard">
@@ -808,14 +895,14 @@ function DuelResult({ duel }: { duel: DuelSession }) {
           <DuelLegend bot={bot} />
         </div>
         <Chart
-          title={<ChartTitle symbol="LABX" meta={`/ vUSD · 1H · ${plural(Math.round((end - DUEL_START) / 10), "round")}`} />}
-          candles={ctx.candles}
-          visibleTo={end}
+          title={<ChartTitle symbol="LABX" meta={`/ vUSD · 1H · ${you.candles} duel candles`} />}
+          candles={candles}
+          visibleTo={candles.length - 1}
           height={300}
           label="Duel chart with both players' trades"
-          markers={[...markersFrom(youRun.events, end), ...markersFrom(botRun.events, end, true)]}
-          decisionSteps={Array.from({ length: DUEL_ROUNDS }, (_, i) => ({ step: roundStep(i), label: String(i + 1) })).filter((x) => x.step < end)}
-          windowStart={Math.max(0, DUEL_START - 20)}
+          markers={onCandles([...markersFrom(youRun.events, end), ...markersFrom(botRun.events, end, true)])}
+          zone={{ from: DUEL_START + 1, to: DUEL_START + DUEL_CANDLES, label: "Duel" }}
+          windowStart={Math.max(0, DUEL_START - 30)}
           minBarWidth={2}
         />
       </div>
@@ -861,14 +948,14 @@ function DuelResult({ duel }: { duel: DuelSession }) {
             )}
           </div>
         </Card>
-        <Card title={`What ${bot.name} was thinking`}>
+        <Card title={`${bot.name}'s moves`}>
           {duel.botNotes.length === 0 ? (
-            <p className="ml-muted">No rounds were played.</p>
+            <p className="ml-muted">{bot.name} didn't do anything in this duel.</p>
           ) : (
             <ol className="ml-duel-notes">
               {duel.botNotes.map((n) => (
-                <li key={n.round}>
-                  <span className="ml-duel-notes-round num">Round {n.round + 1}</span>
+                <li key={n.step}>
+                  <span className="ml-duel-notes-round num">{noteLabel(n)}</span>
                   <span>{n.text}</span>
                 </li>
               ))}

@@ -17,8 +17,9 @@ import { atr, highestHigh, lowestLow, sma } from "./indicators";
 
 /**
  * Duel bots: declared sparring partners, each with a trading style and, for most, one habit the
- * duel rubric can detect. A bot sees exactly what the player sees: the candles revealed so far
- * and its own account. It sizes with the same helper and is checked by the same engine rules.
+ * duel rubric can detect. A bot decides at each candle close from the closed candles and its own
+ * account, sizes with the same helper as the player and is checked by the same engine rules. In
+ * some duels it also has foresight (see `duelForesight` in duel.ts).
  */
 
 export type BotId = "pip" | "dash" | "blaze" | "grudge" | "hope" | "rook" | "sage" | "mirror";
@@ -45,6 +46,8 @@ export interface BotParams {
   quickExit?: boolean;
   /** Trades the trend direction without waiting for a pullback. */
   loose?: boolean;
+  /** Candles to wait after a trade closes before the next one. */
+  cooldown?: number;
 }
 
 export interface BotPersona {
@@ -75,7 +78,7 @@ export const BOTS: BotPersona[] = [
     id: "pip",
     name: "Pip",
     title: "The eager beginner",
-    bio: "Trades on a hunch almost every round and keeps stops tight, so every loss feels small.",
+    bio: "Trades on a hunch almost every candle and keeps stops tight, so every loss feels small.",
     level: 1,
     rating: 850,
     style: "impulse",
@@ -87,7 +90,7 @@ export const BOTS: BotPersona[] = [
     id: "dash",
     name: "Dash",
     title: "The overtrader",
-    bio: "Can't sit still. A new trade every round, out again at the next one, small targets.",
+    bio: "Can't sit still. A new trade every candle, out again at the next one, small targets.",
     level: 1,
     rating: 950,
     style: "churn",
@@ -96,28 +99,28 @@ export const BOTS: BotPersona[] = [
     params: { riskPct: 1, stopAtr: 1, targetR: 0.9, takeChance: 1, quickExit: true },
   },
   {
-    id: "grudge",
-    name: "Grudge",
-    title: "The revenge trader",
-    bio: "Follows the trend at small size, until a loss. Then it has to win it back, bigger.",
-    level: 2,
-    rating: 1050,
-    style: "trend",
-    flaws: ["revenge_size_up"],
-    watch: "The trade right after a loss: Grudge more than doubles the risk.",
-    params: { riskPct: 0.4, stopAtr: 1.1, targetR: 1.5, takeChance: 0.9, revengeMult: 2.4, loose: true },
-  },
-  {
     id: "blaze",
     name: "Blaze",
     title: "The momentum chaser",
     bio: "Buys the big green candle and the fresh breakout. Hates missing a move.",
     level: 2,
-    rating: 1150,
+    rating: 1050,
     style: "momentum",
     flaws: ["chased_entry"],
     watch: "Entries after the move has already stretched far from the average, close to the top.",
-    params: { riskPct: 1, stopAtr: 1, targetR: 1.2, takeChance: 0.9 },
+    params: { riskPct: 1, stopAtr: 1, targetR: 1.2, takeChance: 0.9, cooldown: 2 },
+  },
+  {
+    id: "grudge",
+    name: "Grudge",
+    title: "The revenge trader",
+    bio: "Follows the trend at small size, until a loss. Then it has to win it back, bigger.",
+    level: 2,
+    rating: 1150,
+    style: "trend",
+    flaws: ["revenge_size_up"],
+    watch: "The trade right after a loss: Grudge more than doubles the risk.",
+    params: { riskPct: 0.4, stopAtr: 1.1, targetR: 1.5, takeChance: 0.9, revengeMult: 2.4, loose: true, cooldown: 1 },
   },
   {
     id: "hope",
@@ -129,7 +132,7 @@ export const BOTS: BotPersona[] = [
     style: "trend",
     flaws: ["moved_stop_away"],
     watch: "Hope's stop when price comes near it. Rare losses, but larger than planned.",
-    params: { riskPct: 1, stopAtr: 1.1, targetR: 2.5, takeChance: 0.85, widenChance: 0.9 },
+    params: { riskPct: 1, stopAtr: 1.1, targetR: 2.5, takeChance: 0.85, widenChance: 0.9, cooldown: 3 },
   },
   {
     id: "rook",
@@ -141,7 +144,7 @@ export const BOTS: BotPersona[] = [
     style: "trend",
     flaws: [],
     watch: "Rook is hard to beat in a trend and has nothing to do in a range.",
-    params: { riskPct: 1, stopAtr: 1.2, targetR: 2, takeChance: 0.9 },
+    params: { riskPct: 1, stopAtr: 1.2, targetR: 2, takeChance: 0.9, cooldown: 4 },
   },
   {
     id: "sage",
@@ -153,7 +156,7 @@ export const BOTS: BotPersona[] = [
     style: "range",
     flaws: [],
     watch: "How long Sage waits. Fewer trades, each with a defined edge.",
-    params: { riskPct: 1, stopAtr: 1.3, targetR: 2.2, takeChance: 0.85 },
+    params: { riskPct: 1, stopAtr: 1.3, targetR: 2.2, takeChance: 0.85, cooldown: 5 },
   },
 ];
 
@@ -167,14 +170,14 @@ const MIRROR_BASE: BotPersona = {
   style: "trend",
   flaws: [],
   watch: "Your own habit, played against you.",
-  params: { riskPct: 1, stopAtr: 1.2, targetR: 2, takeChance: 0.9 },
+  params: { riskPct: 1, stopAtr: 1.2, targetR: 2, takeChance: 0.9, cooldown: 3 },
 };
 
 const FLAW_PARAMS: Record<BotFlaw, Partial<BotParams>> = {
   stop_inside_noise: { stopAtr: 0.35 },
-  overtrading: { takeChance: 0.95, quickExit: true, loose: true, targetR: 1 },
+  overtrading: { takeChance: 0.95, quickExit: true, loose: true, targetR: 1, cooldown: 0 },
   chased_entry: { targetR: 1.2 },
-  revenge_size_up: { riskPct: 0.4, revengeMult: 2.4, loose: true },
+  revenge_size_up: { riskPct: 0.4, revengeMult: 2.4, loose: true, cooldown: 1 },
   moved_stop_away: { widenChance: 0.9 },
 };
 
@@ -191,24 +194,22 @@ export function getBot(id: BotId | string, mirrorFlaw?: BotFlaw | null): BotPers
 
 // ─── Lines in character ────────────────────────────────────────────────────
 
-type LineKey = "enter" | "wait" | "stopped" | "target" | "widen" | "revenge" | "last";
+type LineKey = "enter" | "stopped" | "target" | "widen" | "revenge";
 
 const LINES: Partial<Record<BotId, Partial<Record<LineKey, string[]>>>> = {
   pip: {
     enter: ["Feels like it's going that way.", "Small stop, so it can't hurt much."],
-    wait: ["Hmm. Nothing jumps out."],
     stopped: ["Stopped again. Funny how that keeps happening.", "Oops."],
     target: ["Told you!"],
     widen: ["Just a little more room…"],
   },
   dash: {
-    enter: ["New round, new trade.", "Can't win if you don't play."],
+    enter: ["New candle, new trade.", "Can't win if you don't play."],
     stopped: ["Next!"],
     target: ["Banked it. Next!"],
   },
   blaze: {
     enter: ["Look at that candle. I'm in!", "Breakout! Not missing this one."],
-    wait: ["Nothing exciting. Waiting for a big move."],
     stopped: ["Bought the top again…"],
     target: ["Momentum pays!"],
   },
@@ -225,19 +226,14 @@ const LINES: Partial<Record<BotId, Partial<Record<LineKey, string[]>>>> = {
     target: ["Patience paid off."],
   },
   rook: {
-    wait: ["No pullback yet. Waiting.", "No clear trend. Flat is a position too."],
     stopped: ["Stopped out. That's what the stop is for."],
     target: ["Target hit. The plan worked."],
-    last: ["Last round: no new trades, there's no time left for a plan to work."],
   },
   sage: {
-    wait: ["Nothing at the edges. Patience.", "No edge here. I'll wait."],
     stopped: ["Wrong this time. The loss was the planned one."],
     target: ["Edge to edge."],
-    last: ["Last round. Nothing new."],
   },
   mirror: {
-    wait: ["Waiting, like you would."],
     stopped: ["Familiar, isn't it?"],
     widen: ["You'd move it too, wouldn't you?"],
     revenge: ["You'd want it back too."],
@@ -315,21 +311,31 @@ function readMarket(v: readonly Candle[]): Read {
 
 export interface BotTurn {
   actions: Action[];
-  note: string;
+  /** The bot's account after these actions. */
+  state: SimState;
+  /** What the bot did, in character; null when it only waited. */
+  note: string | null;
 }
 
 export interface BotTurnOptions {
-  /** Index of this decision (0-based) and how many decisions the duel has. */
-  round: number;
-  rounds: number;
+  /** Whole candles closed so far, up to the one that just closed. */
+  candles: readonly Candle[];
+  /** Duel candles closed so far (0 at the start), and the duel's length in candles. */
+  index: number;
+  total: number;
+  /** Engine steps (ticks) per candle: positions and orders age in candles. */
+  ticksPerCandle: number;
   /** The previous decision's step: trades closed since then are reported in the note. */
   sinceStep: number;
+  /** Foresight: the next ticks of the market. Given only in some duels, and never shown to the player. */
+  future?: readonly Candle[];
 }
 
 interface EntryPlan {
   side: "long" | "short";
   orderType: "market" | "limit";
   limitPrice?: number;
+  /** Why, from the closed candles. Empty for a foresight entry: its real reason can't be shown. */
   why: string;
   /** Range trades put the stop beyond the range and cap the target at the other side. */
   rangeStop?: number;
@@ -380,25 +386,25 @@ function planEntry(p: BotPersona, m: Read, opts: BotTurnOptions, hasTraded: bool
   }
 
   if (!plan && p.flaws.includes("overtrading")) plan = m.last.c >= m.sma20 ? longWhy("Price is above the SMA 20") : shortWhy("Price is below the SMA 20");
-  // Late in the duel without a single trade, every bot takes the trend's side rather than sit out.
-  if (!plan && !hasTraded && chase && opts.round >= opts.rounds - 4) {
+  // Late in the duel without a single trade, every bot takes a side rather than sit out.
+  if (!plan && !hasTraded && chase && opts.index >= opts.total - 30) {
     plan = { ...(m.last.c >= m.sma20 ? longWhy("Price is running above the SMA 20 and I'm not missing it") : shortWhy("Price is running below the SMA 20 and I'm not missing it")), forced: true };
   }
-  if (!plan && !hasTraded && opts.round >= opts.rounds - 3) {
-    plan = { ...(m.sma20 >= m.sma50 ? longWhy("Running out of rounds; the SMA 20 is above the SMA 50") : shortWhy("Running out of rounds; the SMA 20 is below the SMA 50")), forced: true };
+  if (!plan && !hasTraded && opts.index >= opts.total - 20) {
+    plan = { ...(m.sma20 >= m.sma50 ? longWhy("Time is running out; the SMA 20 is above the SMA 50") : shortWhy("Time is running out; the SMA 20 is below the SMA 50")), forced: true };
   }
   return plan;
 }
 
 /**
- * One decision of a bot at the current step of its account. Pure and deterministic for a given
- * random stream: it only reads the candles revealed so far (`0…state.step`) and its own state.
- * Every returned action has been accepted by the engine, in order.
+ * One decision of a bot, at the close of a candle. Deterministic for a given random stream: it
+ * reads the closed candles, its own account and, with foresight, the coming ticks. Every returned
+ * action has been accepted by the engine, in order.
  */
 export function botDecide(ctx: SimContext, start: SimState, p: BotPersona, rng: Rng, opts: BotTurnOptions): BotTurn {
-  const visible = ctx.candles.slice(0, start.step + 1);
-  const m = readMarket(visible);
+  const m = readMarket(opts.candles);
   const params = p.params;
+  const T = opts.ticksPerCandle;
   const actions: Action[] = [];
   const said: string[] = [];
   const flavor: (string | null)[] = [];
@@ -412,12 +418,11 @@ export function botDecide(ctx: SimContext, start: SimState, p: BotPersona, rng: 
   };
 
   // What happened since the last decision.
-  const closedSince = start.trades.filter((t) => t.exitStep !== null && t.exitStep > opts.sinceStep);
-  for (const t of closedSince) {
+  for (const t of start.trades.filter((x) => x.exitStep !== null && x.exitStep > opts.sinceStep)) {
     const r = tradeR(t);
     const label = t.exitReason === "stop" ? "Stopped out" : t.exitReason === "target" ? "Target hit" : "Closed";
     said.push(`${label} at ${fmt(exitPrice(t))}${r !== null ? ` (${r1(r)})` : ""}.`);
-    flavor.push(line(p.id, t.exitReason === "stop" ? "stopped" : t.exitReason === "target" ? "target" : "stopped", rng));
+    flavor.push(line(p.id, t.exitReason === "target" ? "target" : "stopped", rng));
   }
 
   // Managing the open position.
@@ -427,8 +432,8 @@ export function botDecide(ctx: SimContext, start: SimState, p: BotPersona, rng: 
     const turned = (p.style === "trend" || p.style === "range") && (long ? m.sma20 < m.sma50 && m.last.c < m.sma20 : m.sma20 > m.sma50 && m.last.c > m.sma20);
     const losing = unrealizedPnl(pos, m.last.c) < 0;
     const near = pos.stopLoss !== null && (long ? m.last.c - pos.stopLoss : pos.stopLoss - m.last.c) < 2 * m.atr;
-    if (params.quickExit && state.step - pos.openedStep >= 5) {
-      if (act({ type: "close_position" })) said.push(`Closed the ${pos.side} at market after one round.`);
+    if (params.quickExit && state.step - pos.openedStep >= T) {
+      if (act({ type: "close_position" })) said.push(`Closed the ${pos.side} at market after one candle.`);
     } else if (turned) {
       if (act({ type: "close_position" })) said.push("The trend turned (SMA 20 crossed the SMA 50), so the reason for the trade is gone. Closed at market.");
     } else if (params.widenChance && losing && (near || params.widenChance >= 0.9) && pos.stopLoss !== null && rng.next() < params.widenChance) {
@@ -437,42 +442,71 @@ export function botDecide(ctx: SimContext, start: SimState, p: BotPersona, rng: 
         said.push(`Moved the stop from ${fmt(pos.stopLoss)} to ${fmt(to)}.`);
         flavor.push(line(p.id, "widen", rng));
       }
-    } else {
-      said.push(`Holding the ${pos.side}: stop ${pos.stopLoss !== null ? fmt(pos.stopLoss) : "none"}${pos.takeProfit !== null ? `, target ${fmt(pos.takeProfit)}` : ""}.`);
     }
   }
 
-  // A limit order that has waited two rounds is cancelled.
+  // A limit order that has waited three candles is cancelled.
   for (const o of state.orders) {
-    if (state.step - o.submittedStep >= 20 && act({ type: "cancel_order", orderId: o.id })) said.push(`Cancelled the ${o.side} limit at ${fmt(o.limitPrice)}: it didn't fill.`);
+    if (state.step - o.submittedStep >= 3 * T && act({ type: "cancel_order", orderId: o.id })) said.push(`Cancelled the ${o.side} limit at ${fmt(o.limitPrice)}: it didn't fill.`);
   }
 
   // A new entry, when flat with nothing pending.
   if (!state.position && state.orders.length === 0) {
+    const closed = state.trades.filter((t) => t.exitStep !== null);
+    const last = closed[closed.length - 1];
+    const resting = Boolean(last && last.exitStep !== null && state.step - last.exitStep < (params.cooldown ?? 0) * T);
     const hasTraded = state.trades.length > 0;
-    const lastRound = opts.round >= opts.rounds - 1;
-    const disciplined = p.flaws.length === 0;
-    let plan = lastRound && disciplined && hasTraded ? null : planEntry(p, m, opts, hasTraded);
-    if (plan?.side === "short" && !ctx.cfg.rules.allowShort) plan = null;
-    if (lastRound && disciplined && hasTraded) flavor.push(line(p.id, "last", rng));
-    if (plan && !plan.forced && rng.next() > params.takeChance) {
-      said.push(`${plan.why}, but I let this one go.`);
-      plan = null;
-    } else if (plan) {
-      const placed = placeEntry(ctx, state, p, m, plan);
-      if (placed) {
-        act(placed.action);
-        said.push(placed.text);
-        flavor.push(line(p.id, placed.revenge ? "revenge" : "enter", rng));
-      } else said.push(`${plan.why}, but no order fits the risk limit here. Waiting.`);
-    } else if (!lastRound || !disciplined || !hasTraded) {
-      said.push("No setup. Waiting.");
-      flavor.push(line(p.id, "wait", rng));
+    // No new trade in the last candles once something was traded: there's no time left for a plan to work.
+    const late = hasTraded && opts.index >= opts.total - 4 && p.flaws.length === 0;
+    if (!resting && !late) {
+      const seen = opts.future ? foresightEntry(ctx, state, p, m, opts.future) : null;
+      if (seen) {
+        if (act(seen.action)) said.push(seen.text);
+      } else if (!opts.future || (!hasTraded && opts.index >= opts.total - 20)) {
+        // Without foresight, or with nothing winning in sight late in the duel: the bot's own reading.
+        let plan = planEntry(p, m, opts, hasTraded);
+        if (plan?.side === "short" && !ctx.cfg.rules.allowShort) plan = null;
+        if (plan && !plan.forced && rng.next() > params.takeChance) plan = null;
+        const placed = plan && placeEntry(ctx, state, p, m, plan);
+        if (placed && act(placed.action)) {
+          said.push(placed.text);
+          flavor.push(line(p.id, placed.revenge ? "revenge" : "enter", rng));
+        }
+      }
     }
   }
 
+  if (said.length === 0) return { actions, state, note: null };
   const extra = flavor.find((f): f is string => Boolean(f));
-  return { actions, note: [...said, ...(extra ? [`“${extra}”`] : [])].join(" ") };
+  return { actions, state, note: [...said, ...(extra ? [`“${extra}”`] : [])].join(" ") };
+}
+
+/**
+ * Foresight: of the bot's usual long and short orders, the one whose target the coming ticks reach
+ * before its stop (the earliest, if both do). The note only says what the bot did.
+ */
+function foresightEntry(ctx: SimContext, state: SimState, p: BotPersona, m: Read, future: readonly Candle[]): { action: Action; text: string } | null {
+  const hs = ctx.cfg.costs.halfSpread;
+  let best: { action: Action; text: string; at: number } | null = null;
+  for (const side of ["long", "short"] as const) {
+    if (side === "short" && !ctx.cfg.rules.allowShort) continue;
+    const placed = placeEntry(ctx, state, p, m, { side, orderType: "market", why: "" });
+    if (!placed || placed.action.type !== "submit_order") continue;
+    const { stopLoss: stop, takeProfit: target } = placed.action;
+    if (stop == null || target == null) continue;
+    for (let i = 0; i < future.length && (!best || i < best.at); i++) {
+      // The exit side of the book: the bid for a long, the ask for a short. A tick that touches both counts as a loss.
+      const c = future[i];
+      const lo = side === "long" ? c.l - hs : c.l + hs;
+      const hi = side === "long" ? c.h - hs : c.h + hs;
+      if (side === "long" ? lo <= stop : hi >= stop) break;
+      if (side === "long" ? hi >= target : lo <= target) {
+        best = { ...placed, at: i };
+        break;
+      }
+    }
+  }
+  return best;
 }
 
 function placeEntry(ctx: SimContext, state: SimState, p: BotPersona, m: Read, plan: EntryPlan): { action: Action; text: string; revenge: boolean } | null {
@@ -517,7 +551,7 @@ function placeEntry(ctx: SimContext, state: SimState, p: BotPersona, m: Read, pl
       const how = plan.orderType === "limit" ? `${long ? "Buy" : "Sell"} limit ${qty} at ${fmt(plan.limitPrice!)}` : `${long ? "Long" : "Short"} ${qty} at market`;
       const rr = pv.rewardRisk !== null ? ` (${pv.rewardRisk.toFixed(1)}R)` : "";
       const size = revenge ? ` Risking ${riskPct.toFixed(1)}% after the loss, up from ${params.riskPct.toFixed(1)}%.` : "";
-      return { action: { ...base, qty }, text: `${plan.why}. ${how}, stop ${fmt(stop)}, target ${fmt(target)}${rr}.${size}`, revenge };
+      return { action: { ...base, qty }, text: `${plan.why ? `${plan.why}. ` : ""}${how}, stop ${fmt(stop)}, target ${fmt(target)}${rr}.${size}`, revenge };
     }
     qty = Math.floor(qty * 0.9);
   }

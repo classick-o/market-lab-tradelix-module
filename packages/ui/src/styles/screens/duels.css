@@ -161,50 +161,103 @@
   align-items: center;
   gap: var(--ml-s2);
 }
-.ml-roundbar {
+/* Status, progress through the 80 candles, and the clock. */
+.ml-duelbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--ml-s3) var(--ml-s4);
 }
-.ml-rounds {
-  display: flex;
-  gap: 4px;
-  flex: 1 1 240px;
-  max-width: 420px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.ml-duel-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: 3px;
+  color: var(--ml-text-2);
+  font-size: var(--ml-fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
 }
-.ml-rounds-seg {
-  flex: 1;
+.ml-duel-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--ml-r-full);
+  background: currentColor;
+}
+.ml-duel-status.is-live {
+  color: var(--ml-accent-fg);
+  border-color: var(--ml-accent-line);
+}
+.ml-duel-status.is-paused,
+.ml-duel-status.is-countdown {
+  color: var(--ml-warn);
+  border-color: color-mix(in srgb, var(--ml-warn) 45%, transparent);
+}
+.ml-duel-progress {
+  flex: 1 1 200px;
+  max-width: 420px;
   height: 6px;
   border-radius: 3px;
   background: var(--ml-border);
+  overflow: hidden;
 }
-.ml-rounds-seg.is-done {
-  background: var(--ml-text-3);
-}
-.ml-rounds-seg.is-now {
+.ml-duel-progress > span {
+  display: block;
+  height: 100%;
   background: var(--ml-accent);
 }
-.ml-roundbar-label {
+.ml-duelbar-label {
   color: var(--ml-text-2);
   font-size: var(--ml-fs-sm);
 }
-.ml-timer {
+
+/* The chart panel holds the countdown and the paused label on top of the chart. */
+.ml-duel-chart {
+  position: relative;
+}
+.ml-duel-countdown {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ml-s2);
+  width: min(320px, calc(100% - 32px));
+  padding: var(--ml-s5) var(--ml-s6);
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-r-lg);
+  background: color-mix(in srgb, var(--ml-bg) 88%, transparent);
+  text-align: center;
+  color: var(--ml-text-2);
+}
+.ml-duel-countdown-n {
+  color: var(--ml-text);
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1;
+}
+.ml-duel-paused {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 26px;
-  padding: 0 9px;
-  border: 1px solid var(--ml-border-strong);
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--ml-warn) 45%, transparent);
   border-radius: var(--ml-r-sm);
-  font-weight: 600;
-}
-.ml-timer.is-low {
+  background: var(--ml-bg);
   color: var(--ml-warn);
-  border-color: color-mix(in srgb, var(--ml-warn) 50%, transparent);
+  font-size: var(--ml-fs-sm);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .ml-bot-note {
@@ -381,8 +434,9 @@
   .ml-bots {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ml-rounds {
+  .ml-duel-progress {
     flex-basis: 100%;
     max-width: none;
+    order: 3;
   }
 }

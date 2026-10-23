@@ -27,13 +27,13 @@ import {
   type SkillState,
 } from "@market-lab/learning";
 import {
-  DUEL_ROUNDS,
+  DUEL_START,
   DUEL_START_RATING,
   PLACEMENT,
   arenaContext,
-  botRound,
   closeDuelLog,
-  duelContext,
+  duelForesight,
+  duelMarket,
   duelVerdict,
   eloUpdate,
   evaluateArena,
@@ -42,7 +42,6 @@ import {
   getBot,
   getMission,
   mostFrequentFlaw,
-  roundStep,
   type BotFlaw,
   type BotId,
   type BotNote,
@@ -104,7 +103,7 @@ export interface DuelResultSummary {
   xp: number;
 }
 
-/** A duel against a declared bot (PLAN_DUELS.md): same market, eight rounds of ten candles. */
+/** A duel against a declared bot (PLAN_DUELS.md): the same market in real time, 80 candles of 15 seconds. */
 export interface DuelSession {
   id: string;
   botId: BotId;
@@ -112,23 +111,28 @@ export interface DuelSession {
   mirrorFlaw?: BotFlaw | null;
   regime: ArenaRegime;
   seed: number;
-  /** Seconds to decide each round; 0 turns the timer off. */
-  timer: 0 | 30 | 60;
+  /** The bot sees the coming candles in this duel (fixed by the seed; not shown to the player). */
+  foresight: boolean;
   /** Day key of a daily duel (unrated). */
   daily?: string;
-  /** Rounds played (0–8). */
-  round: number;
+  /** The engine tick reached: the duel resumes here. */
+  cursor: number;
   /** The player's actions. */
   log: LogEntry[];
   /** The bot's actions, saved so a finished duel never changes when bots are tuned. */
   botLog: LogEntry[];
   botNotes: BotNote[];
+  /** The next candle close at which the bot decides (0 = the start). */
+  botNext: number;
   status: "active" | "completed" | "resigned";
   createdAt: number;
   updatedAt: number;
   completedAt?: number;
   result?: DuelResultSummary;
 }
+
+/** What the live duel saves as it goes. */
+export type DuelProgress = Pick<DuelSession, "cursor" | "log" | "botLog" | "botNotes" | "botNext">;
 
 function sideSummary(side: DuelSide): DuelSideSummary {
   return { process: side.process, rds: side.rds, r: side.r, net: side.net, score: side.score, trades: side.trades, errorTags: side.dqs.errorTags };
@@ -374,6 +378,8 @@ function migrate(saved: Partial<LabData>): LabData {
     learnPrefs: { ...f.learnPrefs, ...saved.learnPrefs },
     // Data saved before achievements existed adopts what is already earned without a burst of toasts.
     seenAchievements: saved.seenAchievements ?? ["*init"],
+    // Duels from the first, round-based prototype can't be replayed on today's real-time market.
+    duels: Object.fromEntries(Object.entries(saved.duels ?? {}).filter(([, d]) => "cursor" in d)),
     settings,
   } as LabData;
   // Data saved before spaced review existed: earlier check answers seed the review queue and the
@@ -748,22 +754,25 @@ export class LabStore {
   }
 
   /** Starts a duel, unless one is already active (then that one is returned). */
-  startDuel(botId: BotId, regime: ArenaRegime, opts: { timer: 0 | 30 | 60; daily?: string; seed?: number }): string {
+  startDuel(botId: BotId, regime: ArenaRegime, opts: { daily?: string; seed?: number } = {}): string {
     const active = this.activeDuel();
     if (active) return active.id;
     const now = Date.now();
+    const mirrorFlaw = botId === "mirror" ? this.duelHabit() : undefined;
+    const seed = opts.seed ?? Math.floor(Math.random() * 2 ** 31);
     const duel: DuelSession = {
       id: uid(),
       botId,
-      ...(botId === "mirror" ? { mirrorFlaw: this.duelHabit() } : {}),
+      ...(botId === "mirror" ? { mirrorFlaw } : {}),
       regime,
-      seed: opts.seed ?? Math.floor(Math.random() * 2 ** 31),
-      timer: opts.timer,
+      seed,
+      foresight: duelForesight(seed, getBot(botId, mirrorFlaw)),
       ...(opts.daily ? { daily: opts.daily } : {}),
-      round: 0,
+      cursor: DUEL_START,
       log: [],
       botLog: [],
       botNotes: [],
+      botNext: 0,
       status: "active",
       createdAt: now,
       updatedAt: now,
@@ -772,33 +781,25 @@ export class LabStore {
     return duel.id;
   }
 
-  /** Saves the player's orders during a decision, so a duel left mid-round resumes with them. */
-  saveDuelLog(id: string, log: LogEntry[]): void {
+  /** Saves a live duel as it goes (every candle close, every order, on pause), so it resumes where it was. */
+  saveDuel(id: string, progress: DuelProgress): void {
     this.update((d) => {
       const s = d.duels[id];
       if (!s || s.status !== "active") return d;
-      return { ...d, duels: { ...d.duels, [id]: { ...s, log, updatedAt: Date.now() } } };
+      return { ...d, duels: { ...d.duels, [id]: { ...s, ...progress, updatedAt: Date.now() } } };
     });
   }
 
-  /**
-   * Ends the player's decision for the current round: the bot decides now (it never sees the
-   * player's orders), then the round counts as played. After the last round the duel is scored.
-   */
-  playDuelRound(id: string, log: LogEntry[]): void {
+  /** The duel's last candle has closed: both sides are scored, the rating and XP follow. */
+  finishDuel(id: string, progress: DuelProgress): void {
     const s = this.data.duels[id];
-    if (!s || s.status !== "active" || s.round >= DUEL_ROUNDS) return;
-    const { ctx } = duelContext(s.regime, s.seed);
-    const { entries, note } = botRound(ctx, getBot(s.botId, s.mirrorFlaw), s.botLog, s.round, s.seed);
-    const at = Date.now();
-    const next: DuelSession = { ...s, log, botLog: [...s.botLog, ...entries], botNotes: [...s.botNotes, note], round: s.round + 1, updatedAt: at };
-    if (next.round < DUEL_ROUNDS) {
-      this.update((d) => ({ ...d, duels: { ...d.duels, [id]: next } }));
-      return;
-    }
-    const you = evaluateDuelSide(ctx, closeDuelLog(next.log));
-    const bot = evaluateDuelSide(ctx, closeDuelLog(next.botLog));
+    if (!s || s.status !== "active") return;
+    const next: DuelSession = { ...s, ...progress };
+    const m = duelMarket(s.regime, s.seed);
+    const you = evaluateDuelSide(m, closeDuelLog(next.log));
+    const bot = evaluateDuelSide(m, closeDuelLog(next.botLog));
     const verdict = duelVerdict(you, bot);
+    const at = Date.now();
     this.update((d) => {
       const rated = !next.daily;
       const before = d.duelRating;
@@ -810,18 +811,18 @@ export class LabStore {
       return {
         ...d,
         duelRating: after,
-        duels: { ...d.duels, [id]: { ...next, status: "completed", completedAt: at, result } },
+        duels: { ...d.duels, [id]: { ...next, status: "completed", completedAt: at, updatedAt: at, result } },
         xp: xp > 0 ? [...d.xp, this.xpEntry(xp, "duel", id, at)] : d.xp,
       };
     });
   }
 
-  /** Gives up an active duel: a loss (rated, unless it's the daily duel), no XP. */
-  resignDuel(id: string, log: LogEntry[]): void {
+  /** Gives up an active duel: positions close where it stopped. A loss (rated, unless it's the daily duel), no XP. */
+  resignDuel(id: string, progress: DuelProgress): void {
     const s = this.data.duels[id];
     if (!s || s.status !== "active") return;
-    const { ctx } = duelContext(s.regime, s.seed);
-    const closeNow = (l: LogEntry[]): LogEntry[] => [...l, { kind: "advance", to: roundStep(s.round) }, { kind: "finish" }];
+    const next: DuelSession = { ...s, ...progress };
+    const m = duelMarket(s.regime, s.seed);
     const at = Date.now();
     this.update((d) => {
       const rated = !s.daily;
@@ -830,14 +831,14 @@ export class LabStore {
       const result: DuelResultSummary = {
         winner: "bot",
         reason: "resigned",
-        you: sideSummary(evaluateDuelSide(ctx, closeNow(log))),
-        bot: sideSummary(evaluateDuelSide(ctx, closeNow(s.botLog))),
+        you: sideSummary(evaluateDuelSide(m, closeDuelLog(next.log, next.cursor))),
+        bot: sideSummary(evaluateDuelSide(m, closeDuelLog(next.botLog, next.cursor))),
         rated,
         ratingBefore: before,
         ratingAfter: after,
         xp: 0,
       };
-      return { ...d, duelRating: after, duels: { ...d.duels, [id]: { ...s, log, status: "resigned", completedAt: at, updatedAt: at, result } } };
+      return { ...d, duelRating: after, duels: { ...d.duels, [id]: { ...next, status: "resigned", completedAt: at, updatedAt: at, result } } };
     });
   }
 

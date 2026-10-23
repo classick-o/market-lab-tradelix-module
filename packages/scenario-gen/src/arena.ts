@@ -190,6 +190,16 @@ export function arenaSpec(regime: ArenaRegime, seed: number): ScenarioSpec {
   return { seed, start, segments };
 }
 
+/** Extra history before a duel's market, so the player can read it before the duel starts. */
+export const DUEL_LEAD_IN = 60;
+
+/** A duel's market: the Arena scenario with a longer history in front of it. Same regime + seed → same market. */
+export function duelSpec(regime: ArenaRegime, seed: number): ScenarioSpec {
+  const spec = arenaSpec(regime, seed);
+  const vol = regime === "low_volatility" || regime === "event_shock" ? 0.003 : regime === "high_volatility" ? 0.012 : 0.006;
+  return { ...spec, segments: [{ kind: "walk", bars: DUEL_LEAD_IN, vol, drift: 0 }, ...spec.segments] };
+}
+
 function legacySpec(regime: "trending" | "ranging" | "volatile" | "mixed", seed: number): ScenarioSpec {
   const rng = createRng(seed ^ 0x9e3779b9);
   const segments: SegmentSpec[] = [{ kind: "walk", bars: 60, vol: 0.006, drift: 0 }];

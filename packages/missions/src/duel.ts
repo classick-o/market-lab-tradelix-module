@@ -1,19 +1,27 @@
-import { createContext, equityOf, replay, type EngineConfig, type LogEntry, type SimContext } from "@market-lab/engine";
+import { advance, createContext, equityOf, initState, replay, type Candle, type EngineConfig, type LogEntry, type SimContext, type SimState } from "@market-lab/engine";
 import { riskDisciplineScore, scoreRubric, type CriterionDef, type DqsResult } from "@market-lab/evaluation";
-import { arenaSpec, createRng, generateCandles, type ArenaRegime } from "@market-lab/scenario-gen";
+import { DUEL_LEAD_IN, createRng, duelSpec, generateCandles, type ArenaRegime, type Rng } from "@market-lab/scenario-gen";
 import { ARENA_SCENARIOS, ARENA_START, analyzeArena, arenaConfig, getArenaScenario, type ArenaScenario } from "./arena";
 import { BOTS, PLAYABLE_FLAWS, botDecide, tradeR, type BotFlaw, type BotId, type BotPersona } from "./bots";
 import { atr, sma } from "./indicators";
 
 /**
- * Duels (PLAN_DUELS.md): the player and a declared bot trade the same Arena market, round by
- * round. The better process wins: Duel score = 70% decision quality + 30% outcome in R.
+ * Duels (PLAN_DUELS.md): the player and a declared bot trade the same market in real time. Each
+ * candle forms over 15 seconds; the engine runs on ticks inside it, so orders fill at the live
+ * price. The better process wins: Duel score = 70% decision quality + 30% outcome in R.
  */
 
-export const DUEL_ROUNDS = 8;
-export const DUEL_ROUND_BARS = 10;
-export const DUEL_START = ARENA_START;
-export const DUEL_END = DUEL_START + DUEL_ROUNDS * DUEL_ROUND_BARS;
+export const DUEL_CANDLES = 80;
+export const CANDLE_SECONDS = 15;
+/** Price updates per candle: one every 250 ms. */
+export const TICKS_PER_CANDLE = 60;
+export const TICK_MS = (CANDLE_SECONDS * 1000) / TICKS_PER_CANDLE;
+/** Seconds of countdown before the market starts moving. */
+export const DUEL_COUNTDOWN = 10;
+/** The last history candle: closed when the duel starts. The history is the Arena's plus a longer lead-in. */
+export const DUEL_START = ARENA_START + DUEL_LEAD_IN;
+/** The engine step (tick) at which the duel ends: the close of its last candle. */
+export const DUEL_END = DUEL_START + DUEL_CANDLES * TICKS_PER_CANDLE;
 /** Risk limit per order, enforced by the engine. */
 export const DUEL_RISK_PCT = 1;
 export const DUEL_PROCESS_WEIGHT = 0.7;
@@ -28,57 +36,187 @@ export function duelConfig(s: ArenaScenario): EngineConfig {
   return { ...cfg, rules: { ...cfg.rules, requireStop: true, maxRiskPct: DUEL_RISK_PCT, enforceMaxRisk: true } };
 }
 
-/** Both players trade this market. Same regime + seed → same candles. */
-export function duelContext(regime: ArenaRegime, seed: number): { ctx: SimContext; scenario: ArenaScenario } {
+// ─── The market: whole candles for the chart, ticks for the engine ─────────
+
+export interface DuelMarket {
+  scenario: ArenaScenario;
+  /** The engine's market: the history as whole candles, then TICKS_PER_CANDLE ticks per duel candle. */
+  ctx: SimContext;
+  /** Whole candles: the history and the duel's candles. */
+  candles: readonly Candle[];
+}
+
+/** One candle's path in `n` ticks: open → first extreme → second extreme → close, with some noise. */
+export function subdivide(c: Candle, n: number, rng: Rng): Candle[] {
+  const highFirst = c.path ? c.path === "OHLC" : c.c < c.o;
+  const anchors: [number, number][] = [
+    [0, c.o],
+    [Math.round(n * rng.between(0.15, 0.4)), highFirst ? c.h : c.l],
+    [Math.round(n * rng.between(0.6, 0.85)), highFirst ? c.l : c.h],
+    [n, c.c],
+  ];
+  const noise = (c.h - c.l) * 0.12;
+  const p: number[] = [];
+  for (let a = 0; a < anchors.length - 1; a++) {
+    const [i0, v0] = anchors[a];
+    const [i1, v1] = anchors[a + 1];
+    // A Brownian bridge between two anchors: free in the middle, exact at both ends.
+    const walk = [0];
+    for (let i = i0 + 1; i <= i1; i++) walk.push(walk[walk.length - 1] + rng.normal());
+    const end = walk[walk.length - 1];
+    for (let i = i0; i < i1; i++) {
+      const f = (i - i0) / (i1 - i0);
+      const w = walk[i - i0] - f * end;
+      p.push(Math.round(Math.min(c.h, Math.max(c.l, v0 + f * (v1 - v0) + (noise * w) / Math.sqrt(i1 - i0 + 1)))));
+    }
+  }
+  p.push(c.c);
+  const vol = c.v / n;
+  const out: Candle[] = [];
+  for (let k = 1; k <= n; k++) {
+    const o = p[k - 1];
+    const cl = p[k];
+    out.push({ o, h: Math.max(o, cl), l: Math.min(o, cl), c: cl, v: vol, path: cl >= o ? "OLHC" : "OHLC" });
+  }
+  return out;
+}
+
+const markets = new Map<string, DuelMarket>();
+
+/** Both players trade this market. Same regime + seed → same market, tick for tick. */
+export function duelMarket(regime: ArenaRegime, seed: number): DuelMarket {
+  const key = `${regime}:${seed}`;
+  const cached = markets.get(key);
+  if (cached) return cached;
   const scenario = getArenaScenario(regime);
-  return { ctx: createContext(duelConfig(scenario), generateCandles(arenaSpec(regime, seed))), scenario };
+  const candles = generateCandles(duelSpec(regime, seed)).slice(0, DUEL_START + 1 + DUEL_CANDLES);
+  const rng = createRng((seed ^ 0x51ed27) >>> 0);
+  const ticks: Candle[] = candles.slice(0, DUEL_START + 1);
+  for (let i = DUEL_START + 1; i < candles.length; i++) ticks.push(...subdivide(candles[i], TICKS_PER_CANDLE, rng));
+  const market: DuelMarket = { scenario, ctx: createContext(duelConfig(scenario), ticks), candles };
+  if (markets.size > 6) markets.delete(markets.keys().next().value!);
+  markets.set(key, market);
+  return market;
 }
 
-/** The decision step of a round (0-based); round DUEL_ROUNDS is the end of the duel. */
-export function roundStep(round: number): number {
-  return DUEL_START + round * DUEL_ROUND_BARS;
+/** The chart candle a tick belongs to. */
+export function candleAt(step: number): number {
+  return step <= DUEL_START ? step : DUEL_START + Math.ceil((step - DUEL_START) / TICKS_PER_CANDLE);
 }
 
-/** A log closed at the end of the duel: the remaining candles play, then open positions close at market. */
-export function closeDuelLog(log: readonly LogEntry[]): LogEntry[] {
-  return [...log, { kind: "advance", to: DUEL_END }, { kind: "finish" }];
+/** The last fully closed candle at a tick. */
+export function closedCandleAt(step: number): number {
+  return step <= DUEL_START ? step : DUEL_START + Math.floor((step - DUEL_START) / TICKS_PER_CANDLE);
+}
+
+/** The tick at which a chart candle closes. */
+export function candleCloseStep(index: number): number {
+  return index <= DUEL_START ? index : DUEL_START + (index - DUEL_START) * TICKS_PER_CANDLE;
+}
+
+/** Duel candles closed so far (0–80) at a tick. */
+export function duelCandlesClosed(step: number): number {
+  return closedCandleAt(step) - DUEL_START;
+}
+
+/** The chart at a tick: the closed candles, plus the one forming, built from its ticks so far. */
+export function duelChartCandles(m: DuelMarket, step: number): Candle[] {
+  const i = candleAt(step);
+  if (step === candleCloseStep(i)) return m.candles.slice(0, i + 1);
+  const ticks = m.ctx.candles.slice(candleCloseStep(i - 1) + 1, step + 1);
+  const forming: Candle = {
+    o: ticks[0].o,
+    h: Math.max(...ticks.map((t) => t.h)),
+    l: Math.min(...ticks.map((t) => t.l)),
+    c: ticks[ticks.length - 1].c,
+    v: ticks.reduce((s, t) => s + t.v, 0),
+  };
+  return [...m.candles.slice(0, i), forming];
+}
+
+/** A log closed at a tick (the end of the duel by default): positions close at market there. */
+export function closeDuelLog(log: readonly LogEntry[], at = DUEL_END): LogEntry[] {
+  return [...log, { kind: "advance", to: at }, { kind: "finish" }];
 }
 
 // ─── The bot's side ────────────────────────────────────────────────────────
 
 export interface BotNote {
-  round: number;
+  /** Duel candles closed when the bot decided (0 = at the start). */
+  candle: number;
   step: number;
   text: string;
 }
 
-/** The bot's random stream for one round: from the duel, the bot and the round, so a duel always replays the same way. */
-function botSeed(seed: number, botId: string, round: number): number {
-  let h = seed >>> 0;
-  for (const ch of botId) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
-  return (h ^ Math.imul(round + 1, 0x9e3779b1)) >>> 0;
+/**
+ * Chance, by level, that the bot sees the coming candles in a duel (product decision of
+ * 23.10.2026: some duels the bot should win). The player is not told; the bot's notes in those
+ * duels say only what it did, never an invented reason.
+ */
+export const FORESIGHT_CHANCE: Record<number, number> = { 1: 0.15, 2: 0.2, 3: 0.25, 4: 0.3, 5: 0.35 };
+/** How far ahead a bot with foresight sees, in candles. */
+export const FORESIGHT_CANDLES = 12;
+
+function fnv(text: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
+  return h;
 }
 
-/** The bot's decision at the start of a round: log entries to append (all accepted by the engine) and its note. */
-export function botRound(ctx: SimContext, persona: BotPersona, botLog: readonly LogEntry[], round: number, seed: number): { entries: LogEntry[]; note: BotNote } {
-  const step = roundStep(round);
-  const { state } = replay(ctx, DUEL_START, [...botLog, { kind: "advance", to: step }]);
-  const turn = botDecide(ctx, state, persona, createRng(botSeed(seed, persona.id, round)), {
-    round,
-    rounds: DUEL_ROUNDS,
-    sinceStep: round === 0 ? DUEL_START : roundStep(round - 1),
+/** Whether the bot has foresight in this duel: fixed by the seed, so a duel always replays the same way. */
+export function duelForesight(seed: number, bot: BotPersona): boolean {
+  return (fnv(`foresight:${seed}:${bot.id}`) % 1000) / 1000 < (FORESIGHT_CHANCE[bot.level] ?? 0);
+}
+
+/** The bot's random stream for one decision: from the duel, the bot and the candle. */
+function botSeed(seed: number, botId: string, candle: number): number {
+  let h = seed >>> 0;
+  for (const ch of botId) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
+  return (h ^ Math.imul(candle + 1, 0x9e3779b1)) >>> 0;
+}
+
+/**
+ * The bot's decision at the close of a duel candle (`candle` closed so far, 0 at the start):
+ * log entries to append, all accepted by the engine, and its note when it did something.
+ */
+export function botTurn(
+  m: DuelMarket,
+  persona: BotPersona,
+  botLog: readonly LogEntry[],
+  candle: number,
+  seed: number,
+  foresight = false,
+  /** The bot's account at this candle's close, when the caller already has it (saves a replay). */
+  at?: SimState,
+): { entries: LogEntry[]; note: BotNote | null; state: SimState } {
+  const step = candleCloseStep(DUEL_START + candle);
+  const state = at ?? replay(m.ctx, DUEL_START, [...botLog, { kind: "advance", to: step }]).state;
+  const turn = botDecide(m.ctx, state, persona, createRng(botSeed(seed, persona.id, candle)), {
+    candles: m.candles.slice(0, DUEL_START + candle + 1),
+    index: candle,
+    total: DUEL_CANDLES,
+    ticksPerCandle: TICKS_PER_CANDLE,
+    sinceStep: candle === 0 ? DUEL_START : candleCloseStep(DUEL_START + candle - 1),
+    future: foresight ? m.ctx.candles.slice(step + 1, step + 1 + FORESIGHT_CANDLES * TICKS_PER_CANDLE) : undefined,
   });
-  return { entries: turn.actions.map((action) => ({ kind: "action" as const, step, action })), note: { round, step, text: turn.note } };
+  return {
+    entries: turn.actions.map((action) => ({ kind: "action" as const, step, action })),
+    note: turn.note ? { candle, step, text: turn.note } : null,
+    state: turn.state,
+  };
 }
 
 /** A whole duel played by the bot alone (tests and calibration). */
-export function playBot(ctx: SimContext, persona: BotPersona, seed: number): { log: LogEntry[]; notes: BotNote[] } {
-  let log: LogEntry[] = [];
+export function playBot(m: DuelMarket, persona: BotPersona, seed: number, foresight = false): { log: LogEntry[]; notes: BotNote[] } {
+  const log: LogEntry[] = [];
   const notes: BotNote[] = [];
-  for (let round = 0; round < DUEL_ROUNDS; round++) {
-    const { entries, note } = botRound(ctx, persona, log, round, seed);
-    log = [...log, ...entries];
-    notes.push(note);
+  let state = initState(m.ctx, DUEL_START);
+  for (let candle = 0; candle < DUEL_CANDLES; candle++) {
+    state = advance(m.ctx, state, candleCloseStep(DUEL_START + candle)).state;
+    const turn = botTurn(m, persona, log, candle, seed, foresight, state);
+    log.push(...turn.entries);
+    state = turn.state;
+    if (turn.note) notes.push(turn.note);
   }
   return { log, notes };
 }
@@ -92,7 +230,7 @@ export const DUEL_RUBRIC: CriterionDef[] = [
   { id: "chase", label: "Entries that didn't chase", evaluator: "entry_not_extended", weight: 15, skill: "market_structure", appliesIf: "entered", params: { maxAtr: 1.8 } },
   { id: "widen", label: "Never widened a stop", evaluator: "no_stop_widening", weight: 20, skill: "decision_discipline" },
   { id: "revenge", label: "Kept risk steady after losses", evaluator: "no_revenge_sizing", weight: 15, skill: "decision_discipline" },
-  { id: "pacing", label: "Traded selectively", evaluator: "pacing", weight: 15, skill: "decision_discipline", params: { selectivePer20: 0.75, busyPer20: 1.25 } },
+  { id: "pacing", label: "Traded selectively", evaluator: "pacing", weight: 15, skill: "decision_discipline" },
 ];
 
 export interface DuelSide {
@@ -110,6 +248,8 @@ export interface DuelSide {
   fees: number;
   trades: number;
   winners: number;
+  /** Duel candles played. */
+  candles: number;
 }
 
 /** Whole points, so the formula shown in the result adds up exactly. */
@@ -122,19 +262,23 @@ export function duelScore(process: number, outcome: number): number {
 }
 
 /** Scores one side of a finished duel (a log closed with `closeDuelLog`). */
-export function evaluateDuelSide(ctx: SimContext, log: readonly LogEntry[]): DuelSide {
-  const a = analyzeArena(ctx, log, DUEL_START);
-  // What the visible candles said when each order was placed: for the noise and chase criteria.
-  const entries = a.entries.map((e) => ({ ...e, atr: atr(ctx.candles, e.step, 14), sma20: sma(ctx.candles, e.step, 20) }));
+export function evaluateDuelSide(m: DuelMarket, log: readonly LogEntry[]): DuelSide {
+  const a = analyzeArena(m.ctx, log, DUEL_START);
+  // What the closed candles said when each order was placed: for the noise and chase criteria.
+  const entries = a.entries.map((e) => {
+    const i = closedCandleAt(e.step);
+    return { ...e, atr: atr(m.candles, i, 14), sma20: sma(m.candles, i, 20) };
+  });
+  const candles = candleAt(a.state.step) - DUEL_START;
   const dqs = scoreRubric(DUEL_RUBRIC, {
     missionId: "DUEL",
-    initialEquity: ctx.cfg.initialEquity,
-    commissionBps: ctx.cfg.costs.commissionBps,
-    rules: ctx.cfg.rules,
+    initialEquity: m.ctx.cfg.initialEquity,
+    commissionBps: m.ctx.cfg.costs.commissionBps,
+    rules: m.ctx.cfg.rules,
     answers: [],
     entries,
     stopChanges: a.stopChanges,
-    facts: { barsPlayed: a.barsPlayed },
+    facts: { barsPlayed: candles },
   });
   const trades = a.state.trades;
   const r = trades.reduce((s, t) => s + (tradeR(t) ?? 0), 0);
@@ -147,10 +291,11 @@ export function evaluateDuelSide(ctx: SimContext, log: readonly LogEntry[]): Due
     r,
     outcome,
     score: process === null ? null : duelScore(process, outcome),
-    net: equityOf(ctx, a.state) - ctx.cfg.initialEquity,
+    net: equityOf(m.ctx, a.state) - m.ctx.cfg.initialEquity,
     fees: a.state.fees,
     trades: trades.length,
     winners: trades.filter((t) => t.realized - t.fees > 0).length,
+    candles,
   };
 }
 
@@ -180,12 +325,6 @@ export function eloUpdate(rating: number, opponent: number, result: 0 | 0.5 | 1,
 // ─── Daily duel, Mirror, ladder ────────────────────────────────────────────
 
 const DAILY_BOTS: BotId[] = ["pip", "dash", "blaze", "grudge", "hope", "rook", "sage"];
-
-function fnv(text: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-  return h;
-}
 
 /** Today's duel: the same bot, scenario and market for everyone on that day ("YYYY-MM-DD"). */
 export function dailyDuel(day: string): { botId: BotId; regime: ArenaRegime; seed: number } {
