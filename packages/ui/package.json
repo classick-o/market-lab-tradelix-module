@@ -8,8 +8,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css",
-    "./scenes/core": "./src/scenes/core.ts"
+    "./styles.css": "./src/styles.css"
   },
   "dependencies": {
     "@market-lab/academy": "0.1.0",
