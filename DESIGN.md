@@ -113,6 +113,17 @@ Se pun cu clasa `ml-art` plus o variantă (`ml-art--peak`, `--range`, `--mountai
 | Concept Library: grilă fără selecție, listă + detaliu cu selecție | Grila din design pentru explorare, lista pentru citit concept după concept. |
 | Biletul de risc arată datele misiunii (1% sau 2%, 10.000 vUSD) | Nu e un număr decorativ: se schimbă de la o misiune la alta. |
 
+## Paginile de prezentare (Home)
+
+Pachetul `packages/site`, cu stilurile în [`packages/site/src/styles/site.css`](packages/site/src/styles/site.css). Clasele au prefixul `tx-` (pagina), `dd-` (demo-ul de decizie) și `rs-` (scenele), deci stau lângă `ml-` fără conflicte. Paleta e aceeași: negru, Electric #55A8FF, violet #B19AF4, verde-salvia și roșu-cărămiziu doar pentru rezultate, auriul de rival doar la Duels. Culorile sunt fixe (nu urmează tema și accentul ales în modul), pentru că pagina reprezintă brandul.
+
+- **Direcția** (din referințele primite): fundal negru cu un „portal” de fire luminoase în hero, navigație centrală în formă de pilulă, titluri mari cu a doua linie în gradient, carduri întunecate cu colțul din dreapta-sus tăiat și obiecte 3D de sticlă care ies din card.
+- **Tipografie:** Inter pentru tot, Geist Mono pentru etichete mici (uppercase, spațiere 0,08–0,12em). Display 44–104px, −0,045em; titluri de secțiune 34–66px.
+- **Obiecte 3D:** opt obiecte decupate (fundal transparent), generate cu 3D AI Studio în același material: sticlă cu lumină albastră în interior și reflexii violet. Stau în fața cardului (`translateZ`), iar la înclinarea cardului cu mouse-ul ies și mai mult în relief. Obiectele late se micșorează (`--fit`), ca toate să ocupe cam aceeași suprafață. Prompturile sunt în [`packages/site/src/assets/PROMPTS.md`](packages/site/src/assets/PROMPTS.md).
+- **Scenele camerelor** (Learn, Missions, Arena, Duels, Journal, Achievements) sunt construite ca în HyperFrames: un timeline GSAP oprit, care poate fi derulat, peste un SVG calculat dinainte. Pe desktop rulează doar scena camerei din mijlocul ecranului, într-un „device” lipicios; pe telefon, fiecare card are scena lui. Se opresc când nu se văd.
+- **Mișcare:** smooth scroll cu Lenis (doar mouse și trackpad), apariții la scroll doar cu `opacity` și `transform`, panoul demo care se îndreaptă din perspectivă la scroll, manifestul care se aprinde cuvânt cu cuvânt, linia nivelurilor care se umple. O singură buclă de scroll pentru toate efectele (`onScrollFrame`).
+- **Performanță:** `/home` nu încarcă modulul. Prima afișare cere React, ~19 KB gzip de JS și ~11 KB de CSS; GSAP (27 KB), scenele (8 KB) și Lenis (6 KB) vin după. Imaginile sunt WebP: portalul are 73 KB (1280px) sau 202 KB (2400px), după ecran; obiectele au 35–69 KB și se încarcă leneș.
+
 ## QA
 
 **Verificat automat** (Chrome headless, pe build-ul de producție):

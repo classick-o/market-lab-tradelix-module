@@ -2,6 +2,8 @@
 
 Modulul de învățare a trading-ului pentru Tradelix. Utilizatorul învață prin lecții scurte, misiuni și o piață simulată, cu bani virtuali. Primește scoruri separate pentru **calitatea deciziei**, **disciplina de risc** și **rezultatul simulat**: un trade profitabil nu înseamnă automat o decizie bună.
 
+Lângă modul stau și **paginile de prezentare Tradelix** (`/home`), un pachet separat care se încarcă fără modul (vezi „Paginile de prezentare”).
+
 Interfața e în engleză. Planul complet e în [PLAN_DEZVOLTARE.md](PLAN_DEZVOLTARE.md), sistemul de design (tokeni, componente, navigație, QA) e în [DESIGN.md](DESIGN.md), regulile de funcționare ale fiecărui ecran sunt în [KNOWLEDGE.md](KNOWLEDGE.md), iar planul sistemului de învățare (Learn) e în [PLAN_LEARN.md](PLAN_LEARN.md).
 
 ## Pornire
@@ -10,7 +12,7 @@ Ai nevoie de Node.js 22.12 sau mai nou.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5180
+npm run dev        # http://localhost:5180 (modulul), http://localhost:5180/home (prezentarea)
 ```
 
 | Comandă | Ce face |
@@ -136,6 +138,7 @@ packages/
   missions/      misiunile, runtime-ul, scenariile Arena, alternativele what-if, duelurile și boții
   academy/       lecții, întrebări, concepte, glosar, trasee, realizări, streak-uri, provocări
   ui/            modulul React <MarketLab />: sidebar, router propriu, pagini, stiluri izolate
+  site/          paginile de prezentare Tradelix <TradelixSite />: Home, cu sub-rute pregătite
 apps/
   standalone/    gazdă Vite care rulează modulul separat de Tradelix
 ```
@@ -170,6 +173,33 @@ import "@market-lab/ui/styles.css";
 | `onUpgrade`, `onManageBilling` | Checkout-ul și portalul de facturare ale Tradelix, în locul celor demo. |
 | `onSignOut`, `user` | Sign-out-ul și identitatea reale. |
 | `showNav={false}` | Ascunde sidebar-ul și barele modulului, dacă navigația o asigură Tradelix. Secțiunile rămân accesibile prin tab-urile din pagini. |
+
+## Paginile de prezentare
+
+`@market-lab/site` exportă `<TradelixSite />`: paginile de prezentare, montate sub `/home`. Deocamdată e doar homepage-ul; paginile următoare se adaugă în `PAGES` din `packages/site/src/TradelixSite.tsx` (de exemplu `/home/duels`), iar header-ul și footer-ul le primesc automat.
+
+- **Separat de modul, ca să fie rapid.** Gazda (`apps/standalone/src/main.tsx`) alege după adresă: `/home…` încarcă doar pachetul `site` (~90 KB gzip de JS, cu React), restul încarcă `<MarketLab />`. GSAP, animațiile și Lenis vin după prima afișare, pe bucăți separate.
+- **Legăturile spre modul** trec prin `appHref`, deci aplicația mamă decide unde stă modulul.
+- **Cifrele de pe pagină** (lecții, întrebări, boți, niveluri, termeni) sunt copiate în `packages/site/src/data/facts.ts`, pentru că pachetele de conținut sunt prea mari pentru o pagină de prezentare. `packages/site/test/facts.test.ts` le compară cu conținutul real: dacă se schimbă conținutul, testul spune ce trebuie actualizat.
+
+```astro
+---
+// src/pages/home/[...path].astro
+import { TradelixSite } from "@market-lab/site";
+---
+<TradelixSite
+  client:only="react"
+  basePath="/home"
+  appHref={(to) => `/learn${to}`}
+  visitor={{ returning: !!user, name: user?.name }}
+/>
+```
+
+| Prop | Rol |
+|---|---|
+| `basePath` | Unde stau paginile (implicit `/home`). |
+| `appHref` | Construiește un link spre o rută a modulului (`/start`, `/learn/course`…). |
+| `visitor` | Vizitatorul care a mai folosit modulul vede „Continue” în loc de „Start” și un „Welcome back”. Standalone, se citește din `localStorage`. |
 
 ## Portarea în Angular
 

@@ -25,6 +25,17 @@ Când o regulă se schimbă, se schimbă întâi aici, apoi în cod.
 - **Bara de sus:** afișează streak-ul de învățare și XP-ul de azi față de goal-ul zilnic. Nu are breadcrumb și nu are insigna „Simulation”. Pe telefon are butonul de meniu, logo-ul și streak-ul; XP-ul de azi se vede acolo în cardul Daily goal.
   - În cod: `Topbar` din `packages/ui/src/components/Shell.tsx`.
 
+## Home (paginile de prezentare)
+
+- **Ruta:** `/home` e homepage-ul; paginile următoare vor fi sub-rute (`/home/learn`, `/home/duels`…). O sub-rută necunoscută duce la homepage și corectează adresa.
+  - În cod: `PAGES` din `packages/site/src/TradelixSite.tsx`.
+- **Nu încarcă modulul.** Paginile de prezentare sunt un pachet separat (`packages/site`), ca prima afișare să fie rapidă. Butoanele duc în modul prin `appHref`.
+- **Prezintă doar ce există în modul:** Learn, Missions, Trading Arena, Duels, Trade Journal, Achievements și uneltele lor. Cifrele vin din `packages/site/src/data/facts.ts` și sunt verificate de teste față de conținutul real; cele cu „+” sunt praguri (conținutul real poate fi mai mare).
+- **Demo-ul din hero:** vizitatorul alege Buy, Wait sau Sell pe un grafic sintetic, iar viitorul e ascuns sub văl până la decizie. După reveal apar cele trei scoruri, separat. „Same call, other future” rejoacă aceeași decizie pe celălalt viitor: Decision Quality rămâne la fel, rezultatul se schimbă. Rezultatul se calculează din lumânări (stopul se verifică primul), nu e scris de mână.
+  - În cod: `planFor`, `outcomeOf`, `GRADES` din `packages/site/src/data/market.ts`.
+- **Vizitatorul care revine** (a terminat onboarding-ul pe acest dispozitiv) vede „Continue” / „Continue learning” în loc de „Start” și „Welcome back” la final.
+- **Reduced motion:** fără smooth scroll și fără animații; scenele arată direct ultimul cadru, cu valorile finale.
+
 ## Learn
 
 Secțiunile sunt Course, Lessons, Practice, Library și Tracks. `/learn` deschide Course. Rutele vechi (`/learn/paths`, `/learn/concepts`, `/learn/glossary`, `/learn/checks`) duc la secțiunile noi.
