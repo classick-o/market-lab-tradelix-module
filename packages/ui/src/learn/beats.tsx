@@ -10,6 +10,7 @@ import { FigureView } from "./FigureView";
 import { useLab, useStore } from "../store";
 import { BeatTitle, Feedback, Para } from "./parts";
 import { SceneView } from "./SceneView";
+import { Prompt, ToLab, ToLearn, useSlots } from "./split";
 import { TaskRunner } from "./TaskRunner";
 
 type BeatOf<K extends Beat["kind"]> = Extract<Beat, { kind: K }>;
@@ -60,6 +61,25 @@ function SceneBeat({ b }: { b: BeatOf<"scene"> }) {
 
 function CalloutBeat({ b }: { b: BeatOf<"callout"> }) {
   useCompleteNow();
+  return <Callout b={b} />;
+}
+
+/** Beats that are only read; a split screen gathers them around the beat that has something to do. */
+export const isTextBeat = (b: Beat) => (b.kind === "explain" && !b.figure) || b.kind === "callout";
+
+/** A text beat on a split screen, where the beat it leads into completes the screen. */
+export function TextBeat({ b }: { b: Beat }) {
+  if (b.kind === "callout") return <Callout b={b} />;
+  if (b.kind !== "explain") return null;
+  return (
+    <>
+      {b.title && <h2 className="lp-beat-title">{b.title}</h2>}
+      <Para text={b.text} />
+    </>
+  );
+}
+
+function Callout({ b }: { b: BeatOf<"callout"> }) {
   return (
     <aside className={cx("lp-callout", `is-${b.tone}`)}>
       <span className="lp-callout-icon" aria-hidden="true">
@@ -181,6 +201,7 @@ function RevealBeat({ b }: { b: BeatOf<"reveal"> }) {
 
 function WorkedBeat({ b }: { b: BeatOf<"worked"> }) {
   const s = useScreen();
+  const slots = useSlots();
   const total = b.lines.length;
   const [shown, setShown] = useState(s.done || s.mode === "read" ? total : 1);
   const [typed, setTyped] = useState("");
@@ -223,6 +244,8 @@ function WorkedBeat({ b }: { b: BeatOf<"worked"> }) {
   return (
     <>
       <BeatTitle kicker="Worked example">{b.title}</BeatTitle>
+      {slots && <Prompt done={allLines && !needsAnswer}>{b.ask ? "Step through the example, then work out the last line yourself." : "Step through the example, one line at a time."}</Prompt>}
+      <ToLab>
       <ol className="lp-worked">
         {b.lines.slice(0, shown).map((line, i) => {
           const isAsk = !!b.ask && i === total - 1;
@@ -258,14 +281,17 @@ function WorkedBeat({ b }: { b: BeatOf<"worked"> }) {
           </button>
         </div>
       )}
+      </ToLab>
+      <ToLearn>
       {miss && !solved && <Feedback tone="wrong" title="Not quite.">{miss !== "Not quite. Go back over the lines above." && <Rich text={miss} />}</Feedback>}
-      {solved === "right" && !s.done && b.ask && <Feedback tone="right" title="Right.">{b.ask.correct && <Rich text={b.ask.correct} />}</Feedback>}
+      {solved === "right" && !s.done && b.ask && <Feedback tone="right" title="Right.">{b.ask.correct && <Rich text={b.ask.correct.replace(/^Right[.:]\s*(.)/, (_, c: string) => c.toUpperCase())} />}</Feedback>}
       {solved === "given" && (
         <Feedback tone="wrong" title={`The answer is ${fmtAnswer}.`}>
           {miss && miss !== "Not quite. Go back over the lines above." && <Rich text={miss} />}
         </Feedback>
       )}
       {allLines && !needsAnswer && <Para text={b.after} />}
+      </ToLearn>
     </>
   );
 }
@@ -306,9 +332,10 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
   return (
     <>
       <BeatTitle kicker="Match">{b.title}</BeatTitle>
-      <p className="lp-prompt">
+      <Prompt done={all}>
         <Rich text={b.prompt} />
-      </p>
+      </Prompt>
+      <ToLab>
       <div className="lp-match">
         <div className="lp-match-col" role="group" aria-label={b.columns?.[0] ?? "Items"}>
           {b.columns && <span className="lp-kicker">{b.columns[0]}</span>}
@@ -342,6 +369,8 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
         </div>
       </div>
       {!all && <p className="ml-muted ml-small lp-match-help">{left === null ? "Choose an item on the left, then its match on the right." : "Now choose its match on the right."}</p>}
+      </ToLab>
+      <ToLearn>
       {miss && (
         <Feedback tone="wrong">
           <Rich text={miss.text} />
@@ -352,6 +381,7 @@ function MatchBeat({ b }: { b: BeatOf<"match"> }) {
           {b.correct && <Rich text={b.correct} />}
         </Feedback>
       )}
+      </ToLearn>
     </>
   );
 }
@@ -383,9 +413,10 @@ function SortBeat({ b }: { b: BeatOf<"match"> }) {
   return (
     <>
       <BeatTitle kicker="Sort">{b.title}</BeatTitle>
-      <p className="lp-prompt">
+      <Prompt done={all}>
         <Rich text={b.prompt} />
-      </p>
+      </Prompt>
+      <ToLab>
       <ul className="lp-sort">
         {b.pairs.map((p, i) => {
           const ok = placed[i] === p.right;
@@ -410,11 +441,14 @@ function SortBeat({ b }: { b: BeatOf<"match"> }) {
           );
         })}
       </ul>
+      </ToLab>
+      <ToLearn>
       {all && !s.done && (
         <Feedback tone="right" title="All sorted.">
           {b.correct && <Rich text={b.correct} />}
         </Feedback>
       )}
+      </ToLearn>
     </>
   );
 }

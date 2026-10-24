@@ -10,12 +10,14 @@ import { Icon, cx } from "../components/ui";
 import { useReducedMotion } from "../components/Stage";
 import { Feedback } from "./parts";
 import { useKeys, useScreen } from "./context";
+import { Instructions, ToLab, ToLearn, useSlots } from "./split";
 import { TASK_WIDGETS } from "./taskWidgets";
 
 type Status = "idle" | "incorrect" | "correct" | "shown";
 
 export function TaskRunner({ task }: { task: TaskSpec }) {
   const s = useScreen();
+  const slots = useSlots();
   const reduced = useReducedMotion();
   const start = useMemo<WidgetState>(() => ({ ...WIDGET_DEFAULTS[task.widget], ...task.start }), [task]);
   const [state, setState] = useState<WidgetState>(() => (s.done ? { ...start, ...task.showMe } : start));
@@ -111,6 +113,95 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
     (task.widget === "benchmark-ghost" && task.data?.ghost?.mode === "race");
   useKeys({ h: hint, H: hint, Enter: () => (commitsItself ? false : check()) });
 
+  const widget = (
+    <div className="lp-task-widget">
+      {View ? (
+        <View key={run} task={task} state={state} values={values} set={set} solved={solved} locked={new Set(task.locked ?? [])} hidden={new Set(solved ? [] : task.hidden ?? [])} check={check} hints={hints} />
+      ) : (
+        <p className="ml-muted">This exercise isn't available yet.</p>
+      )}
+    </div>
+  );
+  const hintList = hints > 0 && (
+    <ol className="lp-hints" aria-label="Hints">
+      {task.hints.slice(0, hints).map((h, i) => (
+        <li key={i}>
+          <Icon name="bulb" size={15} />
+          <span>
+            <Rich text={h} />
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+  const feedback =
+    message &&
+    (status === "incorrect" ? (
+      <Feedback tone="wrong" title="Not yet.">
+        <Rich text={message} />
+      </Feedback>
+    ) : status === "correct" || status === "shown" ? (
+      <Feedback tone={status === "correct" ? "right" : "info"} title={status === "correct" ? "Solved." : "Here's one way."}>
+        <Rich text={message} />
+      </Feedback>
+    ) : null);
+  const hintLabel = `Hint${task.hints.length > 1 ? ` ${Math.min(hints + 1, task.hints.length)}/${task.hints.length}` : ""}`;
+  const revisited = s.done && solved;
+  const tryAgain = (
+    <button type="button" className="ml-btn ml-btn--secondary ml-btn--md" onClick={reset}>
+      <Icon name="replay" size={18} /> Try again
+    </button>
+  );
+  const resetAndShow = (
+    <>
+      <span className="lp-task-spacer" />
+      <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md" onClick={reset}>
+        <Icon name="replay" size={18} /> Reset
+      </button>
+      <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md" onClick={showMe} disabled={solved}>
+        <Icon name="eye" size={18} /> Show me
+      </button>
+    </>
+  );
+  const checkButton = !commitsItself && (
+    <button type="button" className="ml-btn ml-btn--primary ml-btn--md" onClick={() => check()} disabled={solved}>
+      <Icon name="check" size={18} /> Check
+    </button>
+  );
+
+  if (slots)
+    return (
+      <>
+        <ToLearn>
+          <Instructions done={solved}>
+            <p className="lp-instr-text">
+              <Rich text={task.goal} />
+            </p>
+          </Instructions>
+          {!solved && hints < task.hints.length && (
+            <button type="button" className="lp-stuck" onClick={hint} aria-keyshortcuts="H">
+              <Icon name="bulb" size={15} /> {hints === 0 ? "Stuck? Get a hint" : `Another hint (${hints + 1}/${task.hints.length})`}
+            </button>
+          )}
+          {hintList}
+          {feedback}
+        </ToLearn>
+        <ToLab className={cx("lp-task", `is-${status}`)}>
+          {widget}
+          <div className="lp-task-actions">
+            {revisited ? (
+              tryAgain
+            ) : (
+              <>
+                {checkButton}
+                {resetAndShow}
+              </>
+            )}
+          </div>
+        </ToLab>
+      </>
+    );
+
   return (
     <section className={cx("lp-task", `is-${status}`)} aria-label="Task">
       <div className="lp-task-goal">
@@ -121,58 +212,19 @@ export function TaskRunner({ task }: { task: TaskSpec }) {
           <Rich text={task.goal} />
         </p>
       </div>
-      <div className="lp-task-widget">
-        {View ? (
-          <View key={run} task={task} state={state} values={values} set={set} solved={solved} locked={new Set(task.locked ?? [])} hidden={new Set(solved ? [] : task.hidden ?? [])} check={check} hints={hints} />
-        ) : (
-          <p className="ml-muted">This exercise isn't available yet.</p>
-        )}
-      </div>
-      {hints > 0 && (
-        <ol className="lp-hints" aria-label="Hints">
-          {task.hints.slice(0, hints).map((h, i) => (
-            <li key={i}>
-              <Icon name="bulb" size={15} />
-              <span>
-                <Rich text={h} />
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
-      {message && (status === "incorrect" ? (
-        <Feedback tone="wrong" title="Not yet.">
-          <Rich text={message} />
-        </Feedback>
-      ) : status === "correct" || status === "shown" ? (
-        <Feedback tone={status === "correct" ? "right" : "info"} title={status === "correct" ? "Solved." : "Here's one way."}>
-          <Rich text={message} />
-        </Feedback>
-      ) : null)}
-      {s.done && solved ? (
+      {widget}
+      {hintList}
+      {feedback}
+      {revisited ? (
         // Revisited: the answer is on screen, and the widget can be played again.
-        <div className="lp-task-actions">
-          <button type="button" className="ml-btn ml-btn--secondary ml-btn--md" onClick={reset}>
-            <Icon name="replay" size={18} /> Try again
-          </button>
-        </div>
+        <div className="lp-task-actions">{tryAgain}</div>
       ) : (
         <div className="lp-task-actions">
-          {!commitsItself && (
-            <button type="button" className="ml-btn ml-btn--primary ml-btn--md" onClick={() => check()} disabled={solved}>
-              <Icon name="check" size={18} /> Check
-            </button>
-          )}
+          {checkButton}
           <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md" onClick={hint} disabled={solved || hints >= task.hints.length} aria-keyshortcuts="H">
-            <Icon name="bulb" size={18} /> Hint{task.hints.length > 1 ? ` ${Math.min(hints + 1, task.hints.length)}/${task.hints.length}` : ""}
+            <Icon name="bulb" size={18} /> {hintLabel}
           </button>
-          <span className="lp-task-spacer" />
-          <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md" onClick={reset}>
-            <Icon name="replay" size={18} /> Reset
-          </button>
-          <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md" onClick={showMe} disabled={solved}>
-            <Icon name="eye" size={18} /> Show me
-          </button>
+          {resetAndShow}
         </div>
       )}
     </section>

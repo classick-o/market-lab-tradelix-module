@@ -2,9 +2,12 @@
 import type { ReactNode } from "react";
 import { Rich } from "../components/Page";
 import { Icon, cx } from "../components/ui";
+import { useSlots } from "./split";
 
 export function BeatTitle({ children, kicker }: { children?: ReactNode; kicker?: string }) {
-  if (!children && !kicker) return null;
+  // On a split screen the panes carry the headings.
+  const split = !!useSlots();
+  if (split || (!children && !kicker)) return null;
   return (
     <header className="lp-beat-head">
       {kicker && <span className="lp-kicker">{kicker}</span>}

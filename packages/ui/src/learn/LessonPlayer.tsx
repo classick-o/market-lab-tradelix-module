@@ -13,7 +13,7 @@ import { useFocusMode } from "../focus";
 import { Link, useRouter } from "../router";
 import { useLab, useStore } from "../store";
 import { AnswerControlView, hasAnswer, type AnswerValue } from "./AnswerControl";
-import { BeatView, needText } from "./beats";
+import { BeatView, TextBeat, isTextBeat, needText } from "./beats";
 import { CheckPhase } from "./CheckPhase";
 import { KeyRegistry, KeysContext, ScreenContext, hashSeed, useKeys, useScreen, type ScreenApi } from "./context";
 import { CurrentLessonContext } from "./currentLesson";
@@ -21,23 +21,53 @@ import { FigureView } from "./FigureView";
 import { LessonContextCard } from "./LessonContext";
 import { BeatTitle, Feedback } from "./parts";
 import { Recap } from "./Recap";
+import { SPLIT_PREVIEW, SlotsContext, ToLab, type Slots } from "./split";
 import { TaskRunner } from "./TaskRunner";
 
 export type ScriptedLesson = Lesson & { script: LessonScript };
 
-type Screen = { phase: 0; beat: 0; kind: "hook" } | { phase: 1; beat: number; kind: "beat"; b: Beat } | { phase: 2; beat: 0; kind: "task" } | { phase: 3; beat: 0; kind: "check" } | { phase: 4; beat: 0; kind: "recap" };
+// A split screen also shows the text beats around its beat: `lead` before it, `tail` after it is done.
+type Screen =
+  | { phase: 0; beat: 0; kind: "hook" }
+  | { phase: 1; beat: number; kind: "beat"; b: Beat; lead?: Beat[]; tail?: Beat[]; span?: number[] }
+  | { phase: 2; beat: 0; kind: "task" }
+  | { phase: 3; beat: 0; kind: "check" }
+  | { phase: 4; beat: 0; kind: "recap" };
 
 export const PHASES = ["Hook", "Learn", "Try", "Check", "Recap"] as const;
 
-export function lessonScreens(script: LessonScript): Screen[] {
+/** Learn beats one per screen; split, the text beats join the beat they lead into (or the last one). */
+function learnScreens(learn: Beat[], split: boolean): Screen[] {
+  if (!split) return learn.map((b, i) => ({ phase: 1, beat: i, kind: "beat", b }));
+  const out: Extract<Screen, { kind: "beat" }>[] = [];
+  let lead: number[] = [];
+  learn.forEach((b, i) => {
+    if (isTextBeat(b)) return void lead.push(i);
+    out.push({ phase: 1, beat: i, kind: "beat", b, lead: lead.map((j) => learn[j]), span: [...lead, i] });
+    lead = [];
+  });
+  const last = out[out.length - 1];
+  if (lead.length && last) Object.assign(last, { tail: lead.map((j) => learn[j]), span: [...last.span!, ...lead] });
+  else if (lead.length) out.push({ phase: 1, beat: lead[0], kind: "beat", b: learn[lead[0]], tail: lead.slice(1).map((j) => learn[j]), span: lead });
+  return out;
+}
+
+export function lessonScreens(script: LessonScript, split = false): Screen[] {
   return [
     { phase: 0, beat: 0, kind: "hook" },
-    ...script.learn.map((b, i): Screen => ({ phase: 1, beat: i, kind: "beat", b })),
+    ...learnScreens(script.learn, split),
     ...(script.task ? [{ phase: 2, beat: 0, kind: "task" } as Screen] : []),
     { phase: 3, beat: 0, kind: "check" },
     { phase: 4, beat: 0, kind: "recap" },
   ];
 }
+
+/** Whether a screen shows the beat at (phase, beat), on its own or with others. */
+const covers = (s: Screen, phase: number, beat: number) => s.phase === phase && (s.beat === beat || (s.kind === "beat" && !!s.span?.includes(beat)));
+
+/** Beats that send their prompt to the left pane themselves; the others go whole into the lab. */
+const SPLITS_ITSELF = new Set<Beat["kind"]>(["task", "match", "worked"]);
+const isSplit = (s: Screen) => s.kind === "task" || (s.kind === "beat" && !isTextBeat(s.b) && (SPLITS_ITSELF.has(s.b.kind) || !!s.lead?.length));
 
 const BEAT_LABEL: Record<Beat["kind"], string> = {
   explain: "Explanation",
@@ -54,8 +84,10 @@ const BEAT_LABEL: Record<Beat["kind"], string> = {
   scene: "Animation",
 };
 
+const beatTitle = (b: Beat) => ("title" in b && b.title) || BEAT_LABEL[b.kind];
+
 export function screenLabel(s: Screen): string {
-  if (s.kind === "beat") return ("title" in s.b && s.b.title) || BEAT_LABEL[s.b.kind];
+  if (s.kind === "beat") return beatTitle(s.lead?.[0] ?? s.b);
   return PHASES[s.phase];
 }
 
@@ -175,7 +207,7 @@ function Notes({ lessonId, screen, screens }: { lessonId: string; screen: Screen
     if (draft === "") ref.current?.focus();
   }, [draft]);
   const where = (phase: number, beat: number) => {
-    const s = screens.find((x) => x.phase === phase && x.beat === beat);
+    const s = screens.find((x) => covers(x, phase, beat));
     return s ? screenLabel(s) : PHASES[phase];
   };
   return (
@@ -271,6 +303,42 @@ function Rail({ lesson, screens, idx, reachable, onGo }: { lesson: ScriptedLesso
   );
 }
 
+/** Split layout: where you are in the lesson, and a jump to any screen you've reached. */
+function ScreenNav({ screens, idx, completed, reachable, open, setOpen, onGo }: { screens: Screen[]; idx: number; completed: Set<number>; reachable: (i: number) => boolean; open: boolean; setOpen: (o: boolean) => void; onGo: (i: number) => void }) {
+  return (
+    <div className="lp-nav" onMouseLeave={() => setOpen(false)}>
+      <button type="button" className="lp-nav-btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <span className="num">
+          {idx + 1}/{screens.length}
+        </span>
+        <span className="lp-nav-label">{screenLabel(screens[idx])}</span>
+        <Icon name="chevron-down" size={14} className={open ? "lp-rot180" : undefined} />
+      </button>
+      {open && (
+        <div className="lp-menu lp-nav-menu" role="menu">
+          {screens.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              role="menuitem"
+              className={cx(i === idx && "is-current")}
+              disabled={!reachable(i)}
+              onClick={() => {
+                setOpen(false);
+                onGo(i);
+              }}
+            >
+              <span className={cx("lp-nav-mark num", completed.has(i) && "is-done")}>{completed.has(i) ? <Icon name="check" size={11} /> : i + 1}</span>
+              <span className="lp-nav-item">{screenLabel(s)}</span>
+              <span className="lp-nav-phase">{PHASES[s.phase]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── The player ────────────────────────────────────────────────────────────
 
 const SHORTCUTS: [string, string][] = [
@@ -291,13 +359,20 @@ function isTyping(t: EventTarget | null): boolean {
 }
 
 export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
+  const lab = useLab();
+  const split = SPLIT_PREVIEW.has(lesson.id) && lab.learnPrefs.layout !== "classic";
+  // Switching layouts starts the player again at the saved position.
+  return <Player key={split ? "split" : "classic"} lesson={lesson} split={split} />;
+}
+
+function Player({ lesson, split }: { lesson: ScriptedLesson; split: boolean }) {
   useFocusMode();
   const lab = useLab();
   const store = useStore();
   const { navigate } = useRouter();
   const wide = useMediaQuery("(min-width: 1024px)");
   const script = lesson.script;
-  const screens = useMemo(() => lessonScreens(script), [script]);
+  const screens = useMemo(() => lessonScreens(script, split), [script, split]);
   const recapIdx = screens.length - 1;
   const checkIdx = screens.findIndex((s) => s.kind === "check");
   const progress = lab.lessons[lesson.id];
@@ -306,7 +381,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
     if (progress?.completedAt) return recapIdx;
     const pos = progress?.position;
     if (!pos) return 0;
-    const i = screens.findIndex((s) => s.phase === pos.phase && s.beat === pos.beat);
+    const i = screens.findIndex((s) => covers(s, pos.phase, pos.beat));
     return i < 0 ? 0 : Math.min(i, checkIdx);
   });
   const [completed, setCompleted] = useState<Set<number>>(() => new Set(progress?.completedAt ? screens.map((_, i) => i) : screens.map((_, i) => i).filter((i) => i < idx)));
@@ -315,6 +390,11 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
   const [menu, setMenu] = useState(false);
   const [help, setHelp] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [nav, setNav] = useState(false);
+  // The panes of a split screen, once they're on the page.
+  const [learnEl, setLearnEl] = useState<HTMLElement | null>(null);
+  const [labEl, setLabEl] = useState<HTMLElement | null>(null);
+  const slots = useMemo<Slots | null>(() => (learnEl && labEl ? { learn: learnEl, lab: labEl } : null), [learnEl, labEl]);
   // First-try scores of graded Learn interactions, for "Skip to Try?" (PLAN_LEARN §6.4).
   const [learnScores, setLearnScores] = useState<Record<number, number>>({});
   const [skipDismissed, setSkipDismissed] = useState(false);
@@ -338,6 +418,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
       const s = screens[i];
       if (!lab.lessons[lesson.id]?.completedAt || s.kind === "recap") store.setLessonPosition(lesson.id, s.phase, s.beat);
       mainRef.current?.scrollTo?.({ top: 0 });
+      mainRef.current?.querySelectorAll(".lp-pane").forEach((p) => p.scrollTo?.({ top: 0 }));
       window.scrollTo?.({ top: 0 });
     },
     [screens, store, lesson.id, lab.lessons],
@@ -397,24 +478,33 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
       else if (key === "\\") store.setLearnPrefs({ railOpen: !railOpen });
       else if (key === "?") setHelp(true);
       else if (key === "Escape") {
-        if (sheet || menu) return setSheet(false), setMenu(false);
+        if (sheet || menu || nav) return setSheet(false), setMenu(false), setNav(false);
         if (screen.kind === "check" && !completed.has(idx)) setLeaving(true);
         else exit();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [registry, next, back, reachable, idx, completed, go, store, railOpen, sheet, menu, screen.kind, exit]);
+  }, [registry, next, back, reachable, idx, completed, go, store, railOpen, sheet, menu, nav, screen.kind, exit]);
 
   // Progress: one segment per screen, grouped by phase.
   const minutesLeft = Math.max(1, Math.ceil(lesson.minutes * (1 - idx / (screens.length - 1))));
   const unitName = getCourseUnit(script.unit)?.title ?? TOPIC_BY_ID[lesson.topic].name;
-  const showRail = wide && railOpen;
+  const showRail = wide && railOpen && !split;
+  // Phones keep one column: the same screens, with the text first.
+  const showSplit = split && wide && isSplit(screen);
   const nextUp = useMemo(() => nextLesson(lesson), [lesson]);
 
   let content: React.ReactNode;
   if (screen.kind === "hook") content = <HookScreen lesson={lesson} />;
-  else if (screen.kind === "beat") content = <BeatView beat={screen.b} />;
+  else if (screen.kind === "beat")
+    content = (
+      <>
+        {screen.lead?.map((b, i) => <TextBeat key={i} b={b} />)}
+        <BeatView beat={screen.b} />
+        {ready && screen.tail?.map((b, i) => <TextBeat key={i} b={b} />)}
+      </>
+    );
   else if (screen.kind === "task")
     content = (
       <>
@@ -463,7 +553,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
   return (
     <CurrentLessonContext.Provider value={lesson.id}>
     <KeysContext.Provider value={registry}>
-      <div className={cx("lp", showRail && "has-rail")}>
+      <div className={cx("lp", showRail && "has-rail", split && "is-split", showSplit && "has-split")}>
         <header className="lp-bar">
           <div className="lp-bar-row">
             <Link to="/learn/lessons" className="lp-bar-back" aria-label="Back to lessons">
@@ -476,7 +566,12 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
               <h1>{lesson.title}</h1>
             </div>
             <div className="lp-bar-tools">
-              {wide ? (
+              {SPLIT_PREVIEW.has(lesson.id) && (
+                <button type="button" className={cx("lp-layout", split && "is-on")} aria-pressed={split} title="Text on the left, the lab on the right" onClick={() => store.setLearnPrefs({ layout: split ? "classic" : "split" })}>
+                  <Icon name="columns" size={16} /> <span>Split view</span>
+                </button>
+              )}
+              {wide && !split ? (
                 <button type="button" className="ml-iconbtn ml-iconbtn--md ml-iconbtn--tertiary" aria-label={railOpen ? "Hide side panel" : "Show side panel"} aria-pressed={railOpen} title="Side panel (\)" onClick={() => store.setLearnPrefs({ railOpen: !railOpen })}>
                   <Icon name="panel" size={18} />
                 </button>
@@ -539,20 +634,61 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
           </div>
         </header>
 
-        <div className="lp-body">
-          <main ref={mainRef} className="lp-main" aria-live="off">
-            <ScreenContext.Provider value={api}>
-              <div key={`${take}-${idx}`} className={cx("lp-screen", `lp-screen--${screen.kind}`)}>
-                {content}
+        {showSplit && (screen.kind === "beat" || screen.kind === "task") ? (
+          <main ref={mainRef} className="lp-split" aria-live="off">
+            <section className="lp-pane lp-learn" aria-label="Learn">
+              <div className="lp-pane-head">
+                <Icon name="book" size={14} /> Learn
               </div>
+              <div key={`${take}-${idx}`} className="lp-learn-text">
+                {screen.kind === "task" ? (
+                  <h2 className="lp-beat-title">Your turn</h2>
+                ) : screen.lead?.length ? (
+                  screen.lead.map((b, i) => <TextBeat key={i} b={b} />)
+                ) : (
+                  <h2 className="lp-beat-title">{beatTitle(screen.b)}</h2>
+                )}
+              </div>
+              <div ref={setLearnEl} className="lp-slot" />
+              {ready && screen.kind === "beat" && !!screen.tail?.length && (
+                <div key={`tail-${take}-${idx}`} className="lp-learn-text">
+                  {screen.tail.map((b, i) => (
+                    <TextBeat key={i} b={b} />
+                  ))}
+                </div>
+              )}
+            </section>
+            <section className="lp-pane lp-lab" aria-label="Lab">
+              <div className="lp-pane-head">
+                <Icon name="flask" size={14} /> {screen.kind === "task" ? "Try it" : BEAT_LABEL[screen.b.kind]}
+                {screen.kind === "beat" && !!screen.lead?.length && <span className="lp-pane-title">{beatTitle(screen.b)}</span>}
+              </div>
+              <div ref={setLabEl} className="lp-slot" />
+            </section>
+            <ScreenContext.Provider value={api}>
+              <SlotsContext.Provider value={slots}>
+                <div key={`${take}-${idx}`} hidden>
+                  {slots && (screen.kind === "task" ? <TaskRunner task={script.task!} /> : SPLITS_ITSELF.has(screen.b.kind) ? <BeatView beat={screen.b} /> : <ToLab><BeatView beat={screen.b} /></ToLab>)}
+                </div>
+              </SlotsContext.Provider>
             </ScreenContext.Provider>
           </main>
-          {showRail && (
-            <aside className="lp-rail" aria-label="Lesson panel">
-              <Rail lesson={lesson} screens={screens} idx={idx} reachable={reachable} onGo={go} />
-            </aside>
-          )}
-        </div>
+        ) : (
+          <div className="lp-body">
+            <main ref={mainRef} className="lp-main" aria-live="off">
+              <ScreenContext.Provider value={api}>
+                <div key={`${take}-${idx}`} className={cx("lp-screen", `lp-screen--${screen.kind}`)}>
+                  {content}
+                </div>
+              </ScreenContext.Provider>
+            </main>
+            {showRail && (
+              <aside className="lp-rail" aria-label="Lesson panel">
+                <Rail lesson={lesson} screens={screens} idx={idx} reachable={reachable} onGo={go} />
+              </aside>
+            )}
+          </div>
+        )}
 
         {offerSkip && (
           <div className="lp-skip" role="status">
@@ -584,6 +720,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
               <button type="button" className="ml-btn ml-btn--tertiary ml-btn--md lp-action-back" onClick={back} disabled={idx === 0}>
                 <Icon name="arrow-left" size={16} /> <span>Back</span>
               </button>
+              {split && <ScreenNav screens={screens} idx={idx} completed={completed} reachable={reachable} open={nav} setOpen={setNav} onGo={go} />}
               <span className="lp-action-need" aria-live="polite">
                 {ready ? (
                   <span className="lp-action-hint">
@@ -610,7 +747,7 @@ export function LessonPlayer({ lesson }: { lesson: ScriptedLesson }) {
           </footer>
         )}
 
-        <Dialog open={sheet && !wide} onClose={() => setSheet(false)} title={lesson.title} variant="sheet">
+        <Dialog open={sheet && (!wide || split)} onClose={() => setSheet(false)} title={lesson.title} variant="sheet">
           <div className="lp-sheet">
             <Rail
               lesson={lesson}

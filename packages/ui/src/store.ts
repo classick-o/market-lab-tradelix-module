@@ -283,7 +283,7 @@ export interface LabData {
   bookmarks: string[];
   /** Notes the learner wrote in lessons, at a phase and beat. */
   lessonNotes: LessonNote[];
-  learnPrefs: { mode: "learn" | "read"; railOpen: boolean };
+  learnPrefs: { mode: "learn" | "read"; railOpen: boolean; layout?: "split" | "classic" };
   dailies: Record<string, { at: number; correct: number; total: number; answers: Record<string, string> }>;
   weeklies: Record<string, { at: number }>;
   plan: PlanState;

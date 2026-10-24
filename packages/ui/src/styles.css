@@ -17,6 +17,7 @@
 @import "./styles/screens/scene.css";
 @import "./styles/screens/auction.css";
 @import "./styles/screens/ghost.css";
+@import "./styles/screens/split.css";
 @import "./styles/screens/course.css";
 @import "./styles/screens/practice.css";
 @import "./styles/screens/library.css";

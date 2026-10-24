@@ -49,6 +49,7 @@ O singură regulă alege pasul următor pentru pagina Course, recap-ul unei lec�
 - Lecția se redeschide unde a rămas; o lecție terminată se redeschide la recap.
 - Un ecran deja parcurs arată răspunsul. La un task apare și „Try again”, care repornește widget-ul de la început, cu animațiile lui.
 - „Replay lesson” (din recap) și „Start over” (din meniu) reiau lecția de la zero: animațiile pornesc singure, task-urile sunt goale, iar Continue cere din nou interacțiunea. Checkul refăcut nu schimbă primul scor și nu mai dă XP.
+- Split view (în probă pe 0.1.4, pornit implicit; butonul „Split view” revine la layoutul clasic): ecranul se împarte ca la Codecademy, cu textul și instrucțiunile în stânga și laboratorul (widget, potrivire, exemplu rezolvat) în dreapta. Explicațiile fără figură se unesc cu exercițiul care urmează, iar ideea-cheie de la final apare sub ultimul exercițiu după ce e rezolvat. Instrucțiunea se bifează când exercițiul e rezolvat, indiciile vin din „Stuck? Get a hint”, iar navigatorul „n/N” din bara de jos sare la orice ecran atins. Hook, Check și Recap rămân pe o coloană; pe telefon toate ecranele sunt pe o coloană, cu textul deasupra.
 - Dacă primele două interacțiuni notate din Learn sunt corecte din prima, player-ul oferă „You seem to know this. Skip to Try?”.
 - **Read mode** arată toată lecția pe o pagină, cu aceleași interacțiuni. Marcarea „Read” nu dă XP de lecție; checkul de la final o termină.
 - Cât e deschisă o lecție, sidebar-ul se strânge la rail, iar pe telefon bara de jos dispare.
